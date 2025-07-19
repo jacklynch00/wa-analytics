@@ -1,0 +1,328 @@
+{
+	"designSystem": {
+		"name": "WhatsApp Analytics Dashboard",
+		"primaryColors": {
+			"brand": "#4285F4",
+			"accent": "#34A853",
+			"warning": "#EA4335",
+			"neutral": "#5F6368"
+		},
+		"layout": {
+			"containerBackground": "#F8F9FA",
+			"contentMaxWidth": "1200px",
+			"gridGap": "24px",
+			"sectionSpacing": "32px"
+		},
+		"elementStyling": {
+			"header": {
+				"background": "#FFFFFF",
+				"border": "none",
+				"shadow": "0 2px 8px rgba(0,0,0,0.08)",
+				"height": "64px",
+				"logo": {
+					"iconBackground": "#4285F4",
+					"iconColor": "#FFFFFF",
+					"textColor": "#202124",
+					"fontSize": "20px",
+					"fontWeight": "600"
+				},
+				"userAvatar": {
+					"size": "32px",
+					"borderRadius": "50%",
+					"border": "2px solid #E8F0FE"
+				},
+				"searchIcon": {
+					"color": "#5F6368",
+					"hoverColor": "#202124"
+				},
+				"settingsIcon": {
+					"color": "#5F6368",
+					"hoverColor": "#202124"
+				}
+			},
+			"cards": {
+				"statsCards": {
+					"background": "#FFFFFF",
+					"border": "1px solid #E8EAED",
+					"borderRadius": "8px",
+					"shadow": "0 1px 3px rgba(0,0,0,0.12)",
+					"padding": "20px",
+					"hoverShadow": "0 4px 12px rgba(0,0,0,0.15)",
+					"transition": "all 0.2s ease",
+					"minHeight": "120px",
+					"icons": {
+						"calendar": {
+							"color": "#5F6368",
+							"background": "none",
+							"size": "20px"
+						},
+						"dollar": {
+							"color": "#5F6368",
+							"background": "none",
+							"size": "20px"
+						},
+						"trending": {
+							"color": "#5F6368",
+							"background": "none",
+							"size": "20px"
+						},
+						"warning": {
+							"color": "#EA4335",
+							"background": "none",
+							"size": "20px"
+						}
+					}
+				},
+				"activityCards": {
+					"background": "#FFFFFF",
+					"border": "1px solid #E8EAED",
+					"borderRadius": "8px",
+					"shadow": "0 1px 3px rgba(0,0,0,0.12)",
+					"padding": "16px 20px",
+					"hoverBackground": "#F8F9FA",
+					"transition": "background-color 0.2s ease"
+				}
+			},
+			"buttons": {
+				"primary": {
+					"background": "#4285F4",
+					"color": "#FFFFFF",
+					"border": "none",
+					"borderRadius": "6px",
+					"padding": "10px 16px",
+					"fontSize": "14px",
+					"fontWeight": "500",
+					"shadow": "0 1px 3px rgba(66,133,244,0.3)",
+					"hoverBackground": "#3367D6",
+					"hoverShadow": "0 2px 6px rgba(66,133,244,0.4)",
+					"activeBackground": "#2851C7",
+					"transition": "all 0.2s ease"
+				},
+				"icon": {
+					"background": "transparent",
+					"color": "#5F6368",
+					"border": "none",
+					"padding": "8px",
+					"borderRadius": "4px",
+					"hoverBackground": "#F1F3F4",
+					"hoverColor": "#202124",
+					"transition": "all 0.2s ease"
+				}
+			},
+			"typography": {
+				"pageTitle": {
+					"color": "#202124",
+					"fontSize": "28px",
+					"fontWeight": "400",
+					"lineHeight": "36px",
+					"margin": "0 0 24px 0"
+				},
+				"sectionTitle": {
+					"color": "#202124",
+					"fontSize": "20px",
+					"fontWeight": "500",
+					"lineHeight": "28px",
+					"margin": "0 0 16px 0"
+				},
+				"cardTitle": {
+					"color": "#5F6368",
+					"fontSize": "14px",
+					"fontWeight": "400",
+					"lineHeight": "20px",
+					"textTransform": "none",
+					"margin": "0 0 4px 0"
+				},
+				"cardValue": {
+					"color": "#202124",
+					"fontSize": "24px",
+					"fontWeight": "400",
+					"lineHeight": "32px",
+					"margin": "0"
+				},
+				"cardMetric": {
+					"positive": {
+						"color": "#34A853",
+						"fontSize": "12px",
+						"fontWeight": "500",
+						"lineHeight": "16px"
+					},
+					"neutral": {
+						"color": "#5F6368",
+						"fontSize": "12px",
+						"fontWeight": "400",
+						"lineHeight": "16px"
+					}
+				},
+				"listItemTitle": {
+					"color": "#202124",
+					"fontSize": "14px",
+					"fontWeight": "400",
+					"lineHeight": "20px"
+				},
+				"listItemSubtitle": {
+					"color": "#5F6368",
+					"fontSize": "12px",
+					"fontWeight": "400",
+					"lineHeight": "16px"
+				},
+				"listItemPrice": {
+					"color": "#202124",
+					"fontSize": "14px",
+					"fontWeight": "500",
+					"lineHeight": "20px"
+				}
+			},
+			"tags": {
+				"nutrition": {
+					"background": "#E3F2FD",
+					"color": "#1565C0",
+					"border": "1px solid #BBDEFB",
+					"borderRadius": "12px",
+					"padding": "4px 8px",
+					"fontSize": "11px",
+					"fontWeight": "500",
+					"textTransform": "lowercase"
+				},
+				"streaming": {
+					"background": "#F3E5F5",
+					"color": "#7B1FA2",
+					"border": "1px solid #E1BEE7",
+					"borderRadius": "12px",
+					"padding": "4px 8px",
+					"fontSize": "11px",
+					"fontWeight": "500",
+					"textTransform": "lowercase"
+				},
+				"security": {
+					"background": "#FFF3E0",
+					"color": "#EF6C00",
+					"border": "1px solid #FFCC02",
+					"borderRadius": "12px",
+					"padding": "4px 8px",
+					"fontSize": "11px",
+					"fontWeight": "500",
+					"textTransform": "lowercase"
+				}
+			},
+			"chart": {
+				"donutChart": {
+					"streaming": {
+						"color": "#8BC34A",
+						"percentage": "66%"
+					},
+					"security": {
+						"color": "#FF9800",
+						"percentage": "17%"
+					},
+					"nutrition": {
+						"color": "#2196F3",
+						"percentage": "10.2%"
+					},
+					"other": {
+						"color": "#E0E0E0",
+						"percentage": "6.8%"
+					},
+					"strokeWidth": "40px",
+					"innerRadius": "60px",
+					"backgroundColor": "#F5F5F5"
+				},
+				"legend": {
+					"itemSpacing": "12px",
+					"dotSize": "8px",
+					"textColor": "#5F6368",
+					"fontSize": "14px",
+					"fontWeight": "400"
+				}
+			},
+			"notifications": {
+				"badge": {
+					"background": "#EA4335",
+					"color": "#FFFFFF",
+					"borderRadius": "50%",
+					"size": "20px",
+					"fontSize": "12px",
+					"fontWeight": "500",
+					"position": "absolute",
+					"top": "-2px",
+					"right": "-2px"
+				},
+				"actionRequired": {
+					"color": "#EA4335",
+					"fontSize": "12px",
+					"fontWeight": "500"
+				}
+			}
+		},
+		"animations": {
+			"cardHover": {
+				"property": "box-shadow, background-color",
+				"duration": "0.2s",
+				"timing": "ease"
+			},
+			"buttonHover": {
+				"property": "background-color, box-shadow",
+				"duration": "0.2s",
+				"timing": "ease"
+			},
+			"iconHover": {
+				"property": "color, background-color",
+				"duration": "0.2s",
+				"timing": "ease"
+			}
+		},
+		"spacing": {
+			"containerPadding": "24px",
+			"cardPadding": "20px",
+			"cardGap": "24px",
+			"sectionGap": "32px",
+			"elementGap": "8px"
+		},
+		"shadows": {
+			"card": "0 1px 3px rgba(0,0,0,0.12)",
+			"cardHover": "0 4px 12px rgba(0,0,0,0.15)",
+			"header": "0 2px 8px rgba(0,0,0,0.08)",
+			"button": "0 1px 3px rgba(66,133,244,0.3)",
+			"buttonHover": "0 2px 6px rgba(66,133,244,0.4)"
+		},
+		"borders": {
+			"card": "1px solid #E8EAED",
+			"tag": "1px solid",
+			"input": "1px solid #DADCE0",
+			"radius": {
+				"small": "4px",
+				"medium": "6px",
+				"large": "8px",
+				"pill": "12px",
+				"circle": "50%"
+			}
+		},
+		"doNotRules": {
+			"gradients": [
+				"DO NOT apply gradients to text elements",
+				"DO NOT use gradients on small UI elements like icons or tags",
+				"DO NOT apply card shadows to text or inline elements"
+			],
+			"colors": [
+				"DO NOT use button colors for card backgrounds",
+				"DO NOT apply tag colors to main typography",
+				"DO NOT use chart colors for UI elements outside of data visualization"
+			],
+			"effects": [
+				"DO NOT apply hover effects to static text",
+				"DO NOT use card border radius on buttons",
+				"DO NOT apply button shadows to cards"
+			]
+		},
+		"accessibility": {
+			"colorContrast": {
+				"primaryText": "4.5:1 minimum ratio",
+				"secondaryText": "3:1 minimum ratio",
+				"buttonText": "4.5:1 minimum ratio"
+			},
+			"focusStates": {
+				"outline": "2px solid #4285F4",
+				"outlineOffset": "2px"
+			}
+		}
+	}
+}
