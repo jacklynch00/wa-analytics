@@ -1,85 +1,95 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  /* Design System Colors */
-  --brand: #4285F4;
-  --accent: #34A853;
-  --warning: #EA4335;
-  --neutral: #5F6368;
-  
-  /* Layout Colors */
-  --container-bg: #F8F9FA;
-  --content-bg: #FFFFFF;
-  --border: #E8EAED;
-  --border-light: #DADCE0;
-  
-  /* Typography Colors */
-  --text-primary: #202124;
-  --text-secondary: #5F6368;
-  
-  /* Component Colors */
-  --card-bg: #FFFFFF;
-  --card-hover-bg: #F8F9FA;
-  --button-primary-bg: #4285F4;
-  --button-primary-hover: #3367D6;
-  --button-primary-active: #2851C7;
-  --icon-hover-bg: #F1F3F4;
-  
-  /* Tag Colors */
-  --tag-nutrition-bg: #E3F2FD;
-  --tag-nutrition-color: #1565C0;
-  --tag-nutrition-border: #BBDEFB;
-  --tag-streaming-bg: #F3E5F5;
-  --tag-streaming-color: #7B1FA2;
-  --tag-streaming-border: #E1BEE7;
-  --tag-security-bg: #FFF3E0;
-  --tag-security-color: #EF6C00;
-  --tag-security-border: #FFCC02;
-  
-  /* Chart Colors */
-  --chart-streaming: #8BC34A;
-  --chart-security: #FF9800;
-  --chart-nutrition: #2196F3;
-  --chart-other: #E0E0E0;
-  
-  /* Shadows */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.12);
-  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.15);
-  --shadow-header: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-button: 0 1px 3px rgba(66,133,244,0.3);
-  --shadow-button-hover: 0 2px 6px rgba(66,133,244,0.4);
-  
-  /* Spacing */
-  --container-padding: 24px;
-  --card-padding: 20px;
-  --section-spacing: 32px;
-  --grid-gap: 24px;
-  
-  /* Border Radius */
-  --radius-small: 4px;
-  --radius-medium: 6px;
-  --radius-large: 8px;
-  --radius-pill: 12px;
-  
-  /* Focus State */
-  --focus-outline: 2px solid #4285F4;
-  --focus-offset: 2px;
-}
+@layer base {
+  :root {
+    /* Design System Colors */
+    --brand: #4285F4;
+    --accent: #34A853;
+    --warning: #EA4335;
+    --neutral: #5F6368;
+    
+    /* Layout Colors */
+    --container-bg: #F8F9FA;
+    --content-bg: #FFFFFF;
+    --border: #E8EAED;
+    --border-light: #DADCE0;
+    
+    /* Typography Colors */
+    --text-primary: #202124;
+    --text-secondary: #5F6368;
+    
+    /* Component Colors */
+    --card-bg: #FFFFFF;
+    --card-hover-bg: #F8F9FA;
+    --button-primary-bg: #4285F4;
+    --button-primary-hover: #3367D6;
+    --button-primary-active: #2851C7;
+    --icon-hover-bg: #F1F3F4;
+    
+    /* Tag Colors */
+    --tag-nutrition-bg: #E3F2FD;
+    --tag-nutrition-color: #1565C0;
+    --tag-nutrition-border: #BBDEFB;
+    --tag-streaming-bg: #F3E5F5;
+    --tag-streaming-color: #7B1FA2;
+    --tag-streaming-border: #E1BEE7;
+    --tag-security-bg: #FFF3E0;
+    --tag-security-color: #EF6C00;
+    --tag-security-border: #FFCC02;
+    
+    /* Chart Colors */
+    --chart-streaming: #8BC34A;
+    --chart-security: #FF9800;
+    --chart-nutrition: #2196F3;
+    --chart-other: #E0E0E0;
+    
+    /* Shadows */
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.12);
+    --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.15);
+    --shadow-header: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-button: 0 1px 3px rgba(66,133,244,0.3);
+    --shadow-button-hover: 0 2px 6px rgba(66,133,244,0.4);
+    
+    /* Spacing */
+    --container-padding: 24px;
+    --card-padding: 20px;
+    --section-spacing: 32px;
+    --grid-gap: 24px;
+    
+    /* Border Radius */
+    --radius-small: 4px;
+    --radius-medium: 6px;
+    --radius-large: 8px;
+    --radius-pill: 12px;
+    
+    /* Focus State */
+    --focus-outline: 2px solid #4285F4;
+    --focus-offset: 2px;
 
-@theme inline {
-  --color-brand: var(--brand);
-  --color-accent: var(--accent);
-  --color-warning: var(--warning);
-  --color-neutral: var(--neutral);
-  --color-container-bg: var(--container-bg);
-  --color-content-bg: var(--content-bg);
-  --color-border: var(--border);
-  --color-border-light: var(--border-light);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-card-bg: var(--card-bg);
-  --color-card-hover-bg: var(--card-hover-bg);
-  --font-sans: system-ui, -apple-system, sans-serif;
+    /* Shadcn Variables */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --radius: 0.5rem;
+  }
 }
 
 * {

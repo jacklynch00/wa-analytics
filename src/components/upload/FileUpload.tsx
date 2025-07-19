@@ -136,8 +136,8 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
             <ol className="list-decimal list-inside space-y-2 text-[var(--text-secondary)] text-sm leading-6">
               <li>Open your WhatsApp group chat</li>
               <li>Tap the group name at the top</li>
-              <li>Scroll down and tap "Export Chat"</li>
-              <li>Choose "Without Media" for faster processing</li>
+              <li>Scroll down and tap &ldquo;Export Chat&rdquo;</li>
+              <li>Choose &ldquo;Without Media&rdquo; for faster processing</li>
               <li>Save the .txt file and upload it here</li>
             </ol>
           </CardContent>

@@ -51,7 +51,7 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
         
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
+          onChange={(e) => setSortBy(e.target.value as 'totalMessages' | 'messageFrequency' | 'lastActive')}
           className="px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="totalMessages">Sort by Total Messages</option>
@@ -148,7 +148,7 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
                       <div className="space-y-2">
                         {member.recentMessages.slice(0, 2).map((message, index) => (
                           <div key={index} className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                            "{linkifyText(message.length > 80 ? message.substring(0, 80) + '...' : message)}"
+                            &ldquo;{linkifyText(message.length > 80 ? message.substring(0, 80) + '...' : message)}&rdquo;
                           </div>
                         ))}
                       </div>
@@ -165,7 +165,7 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
         <Card>
           <CardContent className="p-8 text-center">
             <div className="text-gray-500">
-              No members found matching "{searchTerm}"
+              No members found matching &ldquo;{searchTerm}&rdquo;
             </div>
           </CardContent>
         </Card>

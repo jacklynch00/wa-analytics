@@ -111,7 +111,7 @@ export default function ResourceHub({ resources }: ResourceHubProps) {
             key={category}
             variant={selectedCategory === category ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setSelectedCategory(category as any)}
+            onClick={() => setSelectedCategory(category as 'all' | 'link' | 'tool' | 'document')}
           >
             <Filter className="w-4 h-4 mr-2" />
             {category.charAt(0).toUpperCase() + category.slice(1)} ({count})

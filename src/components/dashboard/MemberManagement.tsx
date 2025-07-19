@@ -91,13 +91,13 @@ export default function MemberManagement({ members }: MemberManagementProps) {
     };
   }, [filteredAndSortedMembers, members.length, filter.dateRangeDays]);
 
-  const getInactivityBadgeVariant = (member: any) => {
+  const getInactivityBadgeVariant = (member: { recentMessages: number; isInactive: boolean }) => {
     if (member.recentMessages === 0) return 'destructive';
     if (member.isInactive) return 'security';
     return 'secondary';
   };
 
-  const getInactivityLabel = (member: any) => {
+  const getInactivityLabel = (member: { recentMessages: number; isInactive: boolean }) => {
     if (member.recentMessages === 0) return 'No Activity';
     if (member.isInactive) return 'Low Activity';
     return 'Active';
@@ -218,7 +218,7 @@ export default function MemberManagement({ members }: MemberManagementProps) {
               <label className="card-title block mb-2">Sort By</label>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as 'inactivity' | 'name' | 'lastActive')}
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-[var(--radius-medium)] focus:outline-[var(--focus-outline)] focus:outline-offset-[var(--focus-offset)] text-[var(--text-primary)] bg-[var(--card-bg)]"
               >
                 <option value="inactivity">Inactivity Level</option>
