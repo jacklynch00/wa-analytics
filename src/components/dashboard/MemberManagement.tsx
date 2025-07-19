@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { MemberProfile } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Users, Filter, AlertTriangle, TrendingDown, Calendar, MessageCircle, Search } from 'lucide-react';
@@ -79,7 +78,6 @@ export default function MemberManagement({ members }: MemberManagementProps) {
   }, [members, filter, searchTerm, sortBy]);
 
   const stats = useMemo(() => {
-    const cutoffDate = subDays(new Date(), filter.dateRangeDays);
     const inactiveMembers = filteredAndSortedMembers.filter(m => m.isInactive);
     const completelyInactive = filteredAndSortedMembers.filter(m => m.recentMessages === 0);
     
@@ -89,7 +87,7 @@ export default function MemberManagement({ members }: MemberManagementProps) {
       completelyInactive: completelyInactive.length,
       activeMembers: members.length - inactiveMembers.length,
     };
-  }, [filteredAndSortedMembers, members.length, filter.dateRangeDays]);
+  }, [filteredAndSortedMembers, members.length]);
 
   const getInactivityBadgeVariant = (member: { recentMessages: number; isInactive: boolean }) => {
     if (member.recentMessages === 0) return 'destructive';

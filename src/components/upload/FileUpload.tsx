@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
@@ -13,7 +12,6 @@ interface FileUploadProps {
 export default function FileUpload({ onFileSelect }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const validateFile = (file: File): boolean => {
     if (!file.name.endsWith('.txt')) {
@@ -44,7 +42,7 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
     if (files.length > 0) {
       handleFile(files[0]);
     }
-  }, []);
+  }, [handleFile]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();

@@ -5,7 +5,7 @@ import { AIRecapData } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, MessageSquare, Link, Sparkles, Loader2 } from 'lucide-react';
+import { Calendar, Users, MessageSquare, Link, Sparkles } from 'lucide-react';
 
 interface AIRecapProps {
   aiRecaps: { [key: string]: AIRecapData };
@@ -40,11 +40,11 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
       </div>
 
       {!currentRecapData && (
-        <Card className="border-orange-200">
+        <Card className="border-[var(--tag-security-border)]">
           <CardContent className="p-6">
-            <div className="text-orange-600 text-center">
+            <div className="text-[var(--warning)] text-center">
               <p className="font-medium">No recap available for this time range</p>
-              <p className="text-sm mt-1">This recap was not generated during the initial analysis.</p>
+              <p className="text-sm mt-1 text-[var(--text-secondary)]">This recap was not generated during the initial analysis.</p>
             </div>
           </CardContent>
         </Card>
@@ -61,7 +61,7 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700 leading-relaxed">{currentRecapData.summary}</p>
+              <p className="text-[var(--text-primary)] leading-relaxed">{currentRecapData.summary}</p>
             </CardContent>
           </Card>
 
@@ -78,13 +78,13 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
                   <ul className="space-y-2">
                     {currentRecapData.topTopics.map((topic, index) => (
                       <li key={index} className="flex items-start space-x-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-gray-700">{topic}</span>
+                        <div className="w-2 h-2 bg-[var(--brand)] rounded-full mt-2 flex-shrink-0" />
+                        <span className="text-[var(--text-primary)]">{topic}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-500 italic">No significant topics identified</p>
+                  <p className="text-[var(--text-secondary)] italic">No significant topics identified</p>
                 )}
               </CardContent>
             </Card>
@@ -106,7 +106,7 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 italic">No active contributors identified</p>
+                  <p className="text-[var(--text-secondary)] italic">No active contributors identified</p>
                 )}
               </CardContent>
             </Card>
@@ -123,13 +123,13 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
                   <ul className="space-y-2">
                     {currentRecapData.keyDecisions.map((decision, index) => (
                       <li key={index} className="flex items-start space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-gray-700">{decision}</span>
+                        <div className="w-2 h-2 bg-[var(--accent)] rounded-full mt-2 flex-shrink-0" />
+                        <span className="text-[var(--text-primary)]">{decision}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-500 italic">No key decisions identified</p>
+                  <p className="text-[var(--text-secondary)] italic">No key decisions identified</p>
                 )}
               </CardContent>
             </Card>
@@ -146,13 +146,13 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
                   <ul className="space-y-2">
                     {currentRecapData.importantResources.map((resource, index) => (
                       <li key={index} className="flex items-start space-x-2">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-gray-700">{resource}</span>
+                        <div className="w-2 h-2 bg-[var(--chart-nutrition)] rounded-full mt-2 flex-shrink-0" />
+                        <span className="text-[var(--text-primary)]">{resource}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-500 italic">No important resources identified</p>
+                  <p className="text-[var(--text-secondary)] italic">No important resources identified</p>
                 )}
               </CardContent>
             </Card>

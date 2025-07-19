@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Users, Calendar, TrendingUp, Clock, BarChart3 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, parseISO, subDays, isAfter, isBefore } from 'date-fns';
+import { format, parseISO, subDays, isAfter } from 'date-fns';
 
 interface AnalyticsProps {
   analysis: ChatAnalysis;
@@ -18,10 +18,10 @@ export default function Analytics({ analysis }: AnalyticsProps) {
   
   const timeRangeOptions = [
     { label: 'All Time', value: 'all' as const },
-    { label: 'Last 7 Days', value: 7 },
-    { label: 'Last 14 Days', value: 14 },
-    { label: 'Last 30 Days', value: 30 },
-    { label: 'Last 90 Days', value: 90 },
+    { label: 'Last 7 Days', value: 7 as const },
+    { label: 'Last 14 Days', value: 14 as const },
+    { label: 'Last 30 Days', value: 30 as const },
+    { label: 'Last 90 Days', value: 90 as const },
   ];
 
   const filteredData = useMemo(() => {
@@ -110,7 +110,7 @@ export default function Analytics({ analysis }: AnalyticsProps) {
             ))}
           </div>
           {selectedTimeRange !== 'all' && (
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-[var(--text-secondary)] mt-2">
               Showing data from {format(subDays(new Date(), selectedTimeRange), 'MMM dd, yyyy')} to {format(new Date(), 'MMM dd, yyyy')}
             </p>
           )}
@@ -119,49 +119,57 @@ export default function Analytics({ analysis }: AnalyticsProps) {
 
       {/* Overview Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <MessageCircle className="w-8 h-8 text-blue-600" />
+        <Card className="stats-card">
+          <CardContent className="p-5">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[var(--tag-nutrition-bg)] rounded-[var(--radius-medium)]">
+                <MessageCircle className="w-5 h-5 text-[var(--brand)]" />
+              </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{analysis.totalMessages.toLocaleString()}</div>
-                <div className="text-sm text-gray-600">Total Messages</div>
+                <div className="card-value text-lg">{analysis.totalMessages.toLocaleString()}</div>
+                <div className="card-title">Total Messages</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Users className="w-8 h-8 text-green-600" />
+        <Card className="stats-card">
+          <CardContent className="p-5">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[var(--tag-streaming-bg)] rounded-[var(--radius-medium)]">
+                <Users className="w-5 h-5 text-[var(--accent)]" />
+              </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{analysis.activeMembersLast7Days}</div>
-                <div className="text-sm text-gray-600">Active Members (7d)</div>
+                <div className="card-value text-lg">{analysis.activeMembersLast7Days}</div>
+                <div className="card-title">Active Members (7d)</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Calendar className="w-8 h-8 text-purple-600" />
+        <Card className="stats-card">
+          <CardContent className="p-5">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[var(--tag-food-bg)] rounded-[var(--radius-medium)]">
+                <Calendar className="w-5 h-5 text-[var(--chart-nutrition)]" />
+              </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{totalDays}</div>
-                <div className="text-sm text-gray-600">Days Analyzed</div>
+                <div className="card-value text-lg">{totalDays}</div>
+                <div className="card-title">Days Analyzed</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="w-8 h-8 text-orange-600" />
+        <Card className="stats-card">
+          <CardContent className="p-5">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[var(--tag-security-bg)] rounded-[var(--radius-medium)]">
+                <TrendingUp className="w-5 h-5 text-[var(--warning)]" />
+              </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{analysis.averageMessagesPerDay.toFixed(1)}</div>
-                <div className="text-sm text-gray-600">Avg Messages/Day</div>
+                <div className="card-value text-lg">{analysis.averageMessagesPerDay.toFixed(1)}</div>
+                <div className="card-title">Avg Messages/Day</div>
               </div>
             </div>
           </CardContent>
@@ -199,9 +207,9 @@ export default function Analytics({ analysis }: AnalyticsProps) {
                 <Line 
                   type="monotone" 
                   dataKey="messageCount" 
-                  stroke="#3b82f6" 
+                  stroke="#4285F4" 
                   strokeWidth={2}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                  dot={{ fill: '#4285F4', strokeWidth: 2, r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -234,7 +242,7 @@ export default function Analytics({ analysis }: AnalyticsProps) {
                   labelFormatter={(value) => formatHour(value as number)}
                   formatter={(value: number) => [value, 'Messages']}
                 />
-                <Bar dataKey="count" fill="#10b981" />
+                <Bar dataKey="count" fill="#34A853" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -252,25 +260,27 @@ export default function Analytics({ analysis }: AnalyticsProps) {
         <CardContent>
           <div className="space-y-4">
             {topContributors.map((member, index) => (
-              <div key={member.name} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold ${
-                    index === 0 ? 'bg-yellow-500' : 
-                    index === 1 ? 'bg-gray-400' : 
-                    index === 2 ? 'bg-orange-600' : 'bg-blue-500'
-                  }`}>
-                    {index + 1}
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">{member.name}</div>
-                    <div className="text-sm text-gray-600">
-                      {member.messageFrequency.toFixed(1)} messages/day
+              <div key={member.name} className="activity-card p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold ${
+                      index === 0 ? 'bg-[var(--chart-food)]' : 
+                      index === 1 ? 'bg-[var(--neutral)]' : 
+                      index === 2 ? 'bg-[var(--warning)]' : 'bg-[var(--brand)]'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="font-medium text-[var(--text-primary)]">{member.name}</div>
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        {member.messageFrequency.toFixed(1)} messages/day
+                      </div>
                     </div>
                   </div>
+                  <Badge variant="secondary">
+                    {member.totalMessages} messages
+                  </Badge>
                 </div>
-                <Badge variant="secondary">
-                  {member.totalMessages} messages
-                </Badge>
               </div>
             ))}
           </div>
@@ -285,28 +295,28 @@ export default function Analytics({ analysis }: AnalyticsProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Peak Activity Hour</span>
+              <span className="text-[var(--text-secondary)]">Peak Activity Hour</span>
               <Badge variant="outline">
                 {formatHour(peakHour.hour)} ({peakHour.count} messages)
               </Badge>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Most Active Day</span>
+              <span className="text-[var(--text-secondary)]">Most Active Day</span>
               <Badge variant="outline">
                 {formatChartDate(mostActiveDay.date)} ({mostActiveDay.messageCount} messages)
               </Badge>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Total Members</span>
+              <span className="text-[var(--text-secondary)]">Total Members</span>
               <Badge variant="outline">
                 {analysis.members.length} members
               </Badge>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Chat Duration</span>
+              <span className="text-[var(--text-secondary)]">Chat Duration</span>
               <Badge variant="outline">
                 {totalDays} days
               </Badge>
@@ -319,18 +329,18 @@ export default function Analytics({ analysis }: AnalyticsProps) {
             <CardTitle>Engagement Insights</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-sm text-gray-600 space-y-2">
+            <div className="text-sm text-[var(--text-secondary)] space-y-2">
               <p>
-                <strong>Most Active Hour:</strong> {formatHour(peakHour.hour)} with {peakHour.count} messages
+                <strong className="text-[var(--text-primary)]">Most Active Hour:</strong> {formatHour(peakHour.hour)} with {peakHour.count} messages
               </p>
               <p>
-                <strong>Daily Average:</strong> {analysis.averageMessagesPerDay.toFixed(1)} messages per day
+                <strong className="text-[var(--text-primary)]">Daily Average:</strong> {analysis.averageMessagesPerDay.toFixed(1)} messages per day
               </p>
               <p>
-                <strong>Recent Activity:</strong> {analysis.activeMembersLast7Days} members active in the last 7 days
+                <strong className="text-[var(--text-primary)]">Recent Activity:</strong> {analysis.activeMembersLast7Days} members active in the last 7 days
               </p>
               <p>
-                <strong>Top Contributor:</strong> {topContributors[0]?.name} with {topContributors[0]?.totalMessages} messages
+                <strong className="text-[var(--text-primary)]">Top Contributor:</strong> {topContributors[0]?.name} with {topContributors[0]?.totalMessages} messages
               </p>
             </div>
           </CardContent>

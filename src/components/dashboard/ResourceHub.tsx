@@ -20,9 +20,9 @@ export default function ResourceHub({ resources }: ResourceHubProps) {
   const [sortBy, setSortBy] = useState<'date' | 'domain'>('date');
 
   const categoryColors = {
-    link: 'bg-blue-100 text-blue-800',
-    tool: 'bg-green-100 text-green-800',
-    document: 'bg-purple-100 text-purple-800',
+    link: 'bg-[var(--tag-nutrition-bg)] text-[var(--brand)]',
+    tool: 'bg-[var(--tag-streaming-bg)] text-[var(--accent)]',
+    document: 'bg-[var(--tag-food-bg)] text-[var(--chart-nutrition)]',
   };
 
   const filteredResources = resources
@@ -121,7 +121,7 @@ export default function ResourceHub({ resources }: ResourceHubProps) {
 
       <div className="grid gap-4">
         {filteredResources.map((resource, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow">
+          <Card key={index} className="hover:shadow-[var(--shadow-hover)] transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-start justify-between space-x-4">
                 <div className="flex-1 min-w-0">
@@ -129,25 +129,25 @@ export default function ResourceHub({ resources }: ResourceHubProps) {
                     <Badge className={categoryColors[resource.category]}>
                       {resource.category}
                     </Badge>
-                    <span className="text-sm text-gray-500">{resource.domain}</span>
+                    <span className="text-sm text-[var(--text-secondary)]">{resource.domain}</span>
                   </div>
                   
-                  <h3 className="font-medium text-gray-900 mb-2">
+                  <h3 className="font-medium text-[var(--text-primary)] mb-2">
                     <a 
                       href={resource.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-blue-600 hover:underline transition-colors"
+                      className="hover:text-[var(--brand)] hover:underline transition-colors"
                     >
                       {resource.title || resource.url}
                     </a>
                   </h3>
                   
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                  <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">
                     {linkifyText(resource.context)}
                   </p>
                   
-                  <div className="flex items-center space-x-4 text-xs text-gray-500">
+                  <div className="flex items-center space-x-4 text-xs text-[var(--text-secondary)]">
                     <div className="flex items-center space-x-1">
                       <User className="w-3 h-3" />
                       <span>Shared by {resource.sharedBy}</span>
@@ -177,7 +177,7 @@ export default function ResourceHub({ resources }: ResourceHubProps) {
       {filteredResources.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
-            <div className="text-gray-500">
+            <div className="text-[var(--text-secondary)]">
               {searchTerm || selectedCategory !== 'all' 
                 ? 'No resources found matching your criteria'
                 : 'No resources found in this chat'
