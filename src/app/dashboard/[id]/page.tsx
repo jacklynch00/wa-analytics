@@ -135,46 +135,42 @@ function AnalysisPageContent() {
 			<div className='bg-white'>
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<div className='flex justify-between items-center py-4'>
-						<div className='w-full'>
-							<div className='flex items-center justify-between w-full'>
-								<Button variant='outline' onClick={handleBackToDashboard}>
-									<ArrowLeft className='w-4 h-4 mr-2' />
-									Back to Dashboard
-								</Button>
-								<div className='text-right'>
-									{isEditingTitle ? (
-										<div className='flex items-center justify-end gap-2 mb-2'>
-											<Input
-												value={editTitle}
-												onChange={(e) => setEditTitle(e.target.value)}
-												className='text-2xl font-bold text-gray-900 text-right h-auto py-1 px-2'
-												onKeyDown={(e) => {
-													if (e.key === 'Enter') handleSaveTitle();
-													if (e.key === 'Escape') handleCancelEditTitle();
-												}}
-												autoFocus
-											/>
-											<Button size='sm' variant='outline' onClick={handleSaveTitle}>
-												<Check className='w-4 h-4' />
-											</Button>
-											<Button size='sm' variant='outline' onClick={handleCancelEditTitle}>
-												<X className='w-4 h-4' />
-											</Button>
-										</div>
-									) : (
-										<div className='flex items-center justify-end gap-2 mb-2'>
-											<h1 className='text-2xl font-bold text-gray-900'>{analysis.title}</h1>
-											<Button size='sm' variant='ghost' onClick={handleStartEditTitle}>
-												<Edit2 className='w-4 h-4' />
-											</Button>
-										</div>
-									)}
-									<p className='text-sm text-gray-600'>
-										{analysis.totalMessages.toLocaleString()} messages • {analysis.members.length} members •
-										{Math.ceil((analysis.dateRange.end.getTime() - analysis.dateRange.start.getTime()) / (1000 * 60 * 60 * 24))} days
-									</p>
+						<Button variant='outline' onClick={handleBackToDashboard}>
+							<ArrowLeft className='w-4 h-4 mr-2' />
+							Back to Dashboard
+						</Button>
+						<div className='text-right'>
+							{isEditingTitle ? (
+								<div className='flex items-center justify-end gap-2 mb-2'>
+									<Input
+										value={editTitle}
+										onChange={(e) => setEditTitle(e.target.value)}
+										className='text-2xl font-bold text-gray-900 text-right h-auto py-1 px-2'
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') handleSaveTitle();
+											if (e.key === 'Escape') handleCancelEditTitle();
+										}}
+										autoFocus
+									/>
+									<Button size='sm' variant='outline' onClick={handleSaveTitle}>
+										<Check className='w-4 h-4' />
+									</Button>
+									<Button size='sm' variant='outline' onClick={handleCancelEditTitle}>
+										<X className='w-4 h-4' />
+									</Button>
 								</div>
-							</div>
+							) : (
+								<div className='flex items-center justify-end gap-2 mb-2'>
+									<h1 className='text-2xl font-bold text-gray-900'>{analysis.title}</h1>
+									<Button size='sm' variant='ghost' onClick={handleStartEditTitle}>
+										<Edit2 className='w-4 h-4' />
+									</Button>
+								</div>
+							)}
+							<p className='text-sm text-gray-600'>
+								{analysis.totalMessages.toLocaleString()} messages • {analysis.members.length} members •
+								{Math.ceil((analysis.dateRange.end.getTime() - analysis.dateRange.start.getTime()) / (1000 * 60 * 60 * 24))} days
+							</p>
 						</div>
 					</div>
 				</div>
@@ -182,13 +178,25 @@ function AnalysisPageContent() {
 
 			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
 				<Tabs defaultValue='analytics' className='space-y-6'>
-					<TabsList className='grid w-full grid-cols-5'>
-						<TabsTrigger value='analytics'>Analytics</TabsTrigger>
-						<TabsTrigger value='members'>Member Directory</TabsTrigger>
-						<TabsTrigger value='management'>Member Management</TabsTrigger>
-						<TabsTrigger value='ai-recap'>AI Recap</TabsTrigger>
-						<TabsTrigger value='resources'>Resource Hub</TabsTrigger>
-					</TabsList>
+					<div className='w-full overflow-x-auto'>
+						<TabsList className='inline-flex w-auto min-w-full justify-start'>
+							<TabsTrigger value='analytics' className='min-w-[100px] flex-shrink-0'>
+								Analytics
+							</TabsTrigger>
+							<TabsTrigger value='members' className='min-w-[120px] flex-shrink-0'>
+								Member Directory
+							</TabsTrigger>
+							<TabsTrigger value='management' className='min-w-[140px] flex-shrink-0'>
+								Member Management
+							</TabsTrigger>
+							<TabsTrigger value='ai-recap' className='min-w-[100px] flex-shrink-0'>
+								AI Recap
+							</TabsTrigger>
+							<TabsTrigger value='resources' className='min-w-[120px] flex-shrink-0'>
+								Resource Hub
+							</TabsTrigger>
+						</TabsList>
+					</div>
 
 					<TabsContent value='analytics' className='space-y-6'>
 						<Analytics analysis={analysis} />

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, FileText, Users, Calendar, Trash2, Share2, Eye, MoreVertical } from 'lucide-react';
+import { Upload, FileText, Users, Calendar, Trash2, Share2, Eye, EyeOff, MoreVertical } from 'lucide-react';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +34,15 @@ export default function DashboardPage() {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [analyses, setAnalyses] = useState<ChatAnalysis[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
+
+  const togglePasswordVisibility = (analysisId: string) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [analysisId]: !prev[analysisId]
+    }));
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -223,7 +231,9 @@ export default function DashboardPage() {
                 <Users className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Shared Directories</p>
-                  <p className="text-2xl font-bold text-gray-900">0</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {analyses.filter(analysis => analysis.shareLink).length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -286,10 +296,37 @@ export default function DashboardPage() {
                             {new Date(analysis.createdAt).toLocaleDateString()}
                           </span>
                           {analysis.shareLink && (
-                            <span className="flex items-center text-blue-600">
-                              <Share2 className="w-4 h-4 mr-1" />
-                              Shared
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <a 
+                                href={analysis.shareLink.shareUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                              >
+                                <Share2 className="w-4 h-4 mr-1" />
+                                Shared
+                              </a>
+                              {analysis.shareLink.password && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono">
+                                    {showPasswords[analysis.id] 
+                                      ? analysis.shareLink.password 
+                                      : '•'.repeat(analysis.shareLink.password.length)
+                                    }
+                                  </span>
+                                  <button
+                                    onClick={() => togglePasswordVisibility(analysis.id)}
+                                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                                  >
+                                    {showPasswords[analysis.id] ? (
+                                      <EyeOff className="w-3 h-3" />
+                                    ) : (
+                                      <Eye className="w-3 h-3" />
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>

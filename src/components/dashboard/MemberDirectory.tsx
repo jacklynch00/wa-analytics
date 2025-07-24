@@ -5,7 +5,7 @@ import { MemberProfile } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Pagination, usePagination } from '@/components/ui/pagination';
-import { Search, MessageCircle, Clock } from 'lucide-react';
+import { Search, MessageCircle, Clock, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
@@ -15,24 +15,54 @@ interface MemberDirectoryProps {
 
 export default function MemberDirectory({ members }: MemberDirectoryProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'totalMessages' | 'messageFrequency' | 'lastActive'>('totalMessages');
+  const [sortBy, setSortBy] = useState<'name' | 'totalMessages' | 'messageFrequency' | 'lastActive' | 'firstActive'>('totalMessages');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedMember, setSelectedMember] = useState<MemberProfile | null>(null);
+
+  const handleSort = (field: typeof sortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const getSortIcon = (field: typeof sortBy) => {
+    if (sortBy !== field) {
+      return <ArrowUpDown className="w-4 h-4" />;
+    }
+    return sortOrder === 'desc' ? <ArrowDown className="w-4 h-4" /> : <ArrowUp className="w-4 h-4" />;
+  };
 
   const filteredMembers = members
     .filter(member => 
       member.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
+      let comparison = 0;
+      
       switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
         case 'totalMessages':
-          return b.totalMessages - a.totalMessages;
+          comparison = a.totalMessages - b.totalMessages;
+          break;
         case 'messageFrequency':
-          return b.messageFrequency - a.messageFrequency;
+          comparison = a.messageFrequency - b.messageFrequency;
+          break;
         case 'lastActive':
-          return b.lastActive.getTime() - a.lastActive.getTime();
+          comparison = a.lastActive.getTime() - b.lastActive.getTime();
+          break;
+        case 'firstActive':
+          comparison = a.firstActive.getTime() - b.firstActive.getTime();
+          break;
         default:
           return 0;
       }
+      
+      return sortOrder === 'desc' ? -comparison : comparison;
     });
 
   const {
@@ -46,8 +76,8 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-4">
+        <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-[var(--text-secondary)]" />
           <Input
             placeholder="Search members..."
@@ -57,15 +87,62 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
           />
         </div>
         
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as 'totalMessages' | 'messageFrequency' | 'lastActive')}
-          className="px-3 py-2 border border-[var(--border)] rounded-[var(--radius-medium)] focus:outline-[var(--focus-outline)] focus:outline-offset-[var(--focus-offset)] text-[var(--text-primary)] bg-[var(--card-bg)]"
-        >
-          <option value="totalMessages">Sort by Total Messages</option>
-          <option value="messageFrequency">Sort by Frequency</option>
-          <option value="lastActive">Sort by Last Active</option>
-        </select>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => handleSort('name')}
+            className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              sortBy === 'name'
+                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+            }`}
+          >
+            Name {getSortIcon('name')}
+          </button>
+          
+          <button
+            onClick={() => handleSort('totalMessages')}
+            className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              sortBy === 'totalMessages'
+                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+            }`}
+          >
+            Messages {getSortIcon('totalMessages')}
+          </button>
+          
+          <button
+            onClick={() => handleSort('messageFrequency')}
+            className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              sortBy === 'messageFrequency'
+                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+            }`}
+          >
+            Frequency {getSortIcon('messageFrequency')}
+          </button>
+          
+          <button
+            onClick={() => handleSort('lastActive')}
+            className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              sortBy === 'lastActive'
+                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+            }`}
+          >
+            Last Active {getSortIcon('lastActive')}
+          </button>
+          
+          <button
+            onClick={() => handleSort('firstActive')}
+            className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              sortBy === 'firstActive'
+                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+            }`}
+          >
+            First Active {getSortIcon('firstActive')}
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-4">

@@ -33,46 +33,49 @@ export default function SharedDirectoryPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState('');
 
-	const loadDirectory = useCallback(async (passwordAttempt?: string) => {
-		try {
-			setLoading(true);
-			setError(null);
+	const loadDirectory = useCallback(
+		async (passwordAttempt?: string) => {
+			try {
+				setLoading(true);
+				setError(null);
 
-			const body: { password?: string } = {};
-			if (passwordAttempt) {
-				body.password = passwordAttempt;
-			}
+				const body: { password?: string } = {};
+				if (passwordAttempt) {
+					body.password = passwordAttempt;
+				}
 
-			const response = await fetch(`/api/directory/${shareId}`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(body),
-			});
+				const response = await fetch(`/api/directory/${shareId}`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(body),
+				});
 
-			const result = await response.json();
+				const result = await response.json();
 
-			if (response.status === 401) {
-				setIsPasswordRequired(true);
+				if (response.status === 401) {
+					setIsPasswordRequired(true);
+					setLoading(false);
+					return;
+				}
+
+				if (!response.ok) {
+					setError(result.error || 'Failed to load directory');
+					setLoading(false);
+					return;
+				}
+
+				setDirectoryData(result);
+				setIsPasswordRequired(false);
+			} catch {
+				setError('Failed to load directory');
+			} finally {
 				setLoading(false);
-				return;
 			}
-
-			if (!response.ok) {
-				setError(result.error || 'Failed to load directory');
-				setLoading(false);
-				return;
-			}
-
-			setDirectoryData(result);
-			setIsPasswordRequired(false);
-		} catch {
-			setError('Failed to load directory');
-		} finally {
-			setLoading(false);
-		}
-	}, [shareId]);
+		},
+		[shareId]
+	);
 
 	useEffect(() => {
 		loadDirectory();
@@ -86,9 +89,7 @@ export default function SharedDirectoryPage() {
 	};
 
 	// Filter members based on search query
-	const filteredMembers = directoryData?.members?.filter(member =>
-		member.name.toLowerCase().includes(searchQuery.toLowerCase())
-	) || [];
+	const filteredMembers = directoryData?.members?.filter((member) => member.name.toLowerCase().includes(searchQuery.toLowerCase())) || [];
 
 	const { currentItems: paginatedMembers, currentPage, totalPages, totalItems, itemsPerPage, handlePageChange } = usePagination(filteredMembers, 12);
 
@@ -166,7 +167,9 @@ export default function SharedDirectoryPage() {
 							<p className='text-sm text-gray-600'>
 								Public Member Directory • Expires {format(new Date(directoryData.expiresAt), 'MMM dd, yyyy')}
 								{directoryData.password && (
-									<span className='ml-2'>• Password: <span className='font-mono bg-gray-100 px-2 py-1 rounded'>{directoryData.password}</span></span>
+									<span className='ml-2'>
+										• Password: <span className='font-mono bg-gray-100 px-2 py-1 rounded'>{directoryData.password}</span>
+									</span>
 								)}
 							</p>
 						</div>
@@ -219,16 +222,13 @@ export default function SharedDirectoryPage() {
 					<CardHeader>
 						<CardTitle className='flex items-center justify-between'>
 							<span>Member Directory</span>
-							<Badge variant='secondary'>{totalItems} {searchQuery ? 'filtered' : 'total'} members</Badge>
+							<Badge variant='secondary'>
+								{totalItems} {searchQuery ? 'filtered' : 'total'} members
+							</Badge>
 						</CardTitle>
 						<div className='relative mt-4'>
 							<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
-							<Input
-								placeholder='Search members...'
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className='pl-10'
-							/>
+							<Input placeholder='Search members...' value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className='pl-10' />
 						</div>
 					</CardHeader>
 					<CardContent>
@@ -236,33 +236,31 @@ export default function SharedDirectoryPage() {
 							<div className='text-center py-8'>
 								<Search className='mx-auto h-12 w-12 text-gray-400' />
 								<h3 className='mt-4 text-lg font-medium text-gray-900'>No members found</h3>
-								<p className='mt-2 text-sm text-gray-600'>
-									No members match your search for &ldquo;{searchQuery}&rdquo;. Try a different search term.
-								</p>
+								<p className='mt-2 text-sm text-gray-600'>No members match your search for &ldquo;{searchQuery}&rdquo;. Try a different search term.</p>
 							</div>
 						) : (
 							<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
 								{paginatedMembers.map((member) => (
-								<div key={member.name} className='p-4 rounded-lg hover:bg-gray-50 transition-colors bg-white shadow-sm'>
-									<div className='flex items-center space-x-3'>
-										<div className='w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center'>
-											<span className='text-blue-600 font-semibold'>{member.name.charAt(0).toUpperCase()}</span>
-										</div>
-										<div className='flex-1 min-w-0'>
-											<h3 className='font-medium text-gray-900 truncate'>{member.name}</h3>
-											<div className='text-sm text-gray-500'>
-												<div className='flex items-center space-x-1'>
-													<MessageCircle className='w-3 h-3' />
-													<span>{member.totalMessages} messages</span>
-												</div>
-												<div className='flex items-center space-x-1 mt-1'>
-													<Calendar className='w-3 h-3' />
-													<span>Last active: {format(member.lastActive, 'MMM dd')}</span>
+									<div key={member.name} className='p-4 rounded-lg hover:bg-gray-50 transition-colors bg-white shadow-sm'>
+										<div className='flex items-center space-x-3'>
+											<div className='w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center'>
+												<span className='text-blue-600 font-semibold'>{member.name.charAt(0).toUpperCase()}</span>
+											</div>
+											<div className='flex-1 min-w-0'>
+												<h3 className='font-medium text-gray-900 truncate'>{member.name}</h3>
+												<div className='text-sm text-gray-500'>
+													<div className='flex items-center space-x-1'>
+														<MessageCircle className='w-3 h-3' />
+														<span>{member.totalMessages} messages</span>
+													</div>
+													<div className='flex items-center space-x-1 mt-1'>
+														<Calendar className='w-3 h-3' />
+														<span>Last active: {format(member.lastActive, 'MMM dd')}</span>
+													</div>
 												</div>
 											</div>
 										</div>
 									</div>
-								</div>
 								))}
 							</div>
 						)}
@@ -277,7 +275,9 @@ export default function SharedDirectoryPage() {
 
 				{/* Footer */}
 				<div className='mt-8 text-center text-sm text-gray-500'>
-					<p>Generated by WhatsApp Community Analytics</p>
+					<a href='https://usewaly.com' target='_blank' rel='noopener noreferrer'>
+						Generated by Waly
+					</a>
 				</div>
 			</div>
 		</div>

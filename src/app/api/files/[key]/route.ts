@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getFileStream } from '@/lib/storage-secure';
+import { generateSignedDownloadUrl } from '@/lib/storage-secure';
 
 export async function GET(
   request: NextRequest,
@@ -19,32 +19,11 @@ export async function GET(
     const userId = session.user.id;
     const fileKey = decodeURIComponent(params.key);
 
-    // Get file stream with user validation
-    const fileStream = await getFileStream(fileKey, userId);
-    
-    if (!fileStream) {
-      return NextResponse.json({ error: 'File not found' }, { status: 404 });
-    }
+    // Generate a signed URL for the file (expires in 1 hour)
+    const signedUrl = await generateSignedDownloadUrl(fileKey, userId, 3600);
 
-    // Convert stream to response
-    const chunks: Uint8Array[] = [];
-    const reader = fileStream.getReader();
-    
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-    }
-
-    const fileBuffer = Buffer.concat(chunks);
-
-    return new NextResponse(fileBuffer, {
-      headers: {
-        'Content-Type': 'text/plain',
-        'Content-Disposition': 'attachment',
-        'Cache-Control': 'private, no-cache',
-      },
-    });
+    // Redirect to the signed URL
+    return NextResponse.redirect(signedUrl);
 
   } catch (error) {
     console.error('File access error:', error);

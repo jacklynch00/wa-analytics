@@ -45,8 +45,6 @@ export async function uploadFileSecurely(
       'original-filename': filename,
       'upload-timestamp': Date.now().toString(),
     },
-    // Add tags for access control
-    Tagging: `AccessLevel=private&UserId=${userId}`,
   });
 
   await s3Client.send(command);
