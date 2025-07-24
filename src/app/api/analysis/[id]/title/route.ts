@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -19,7 +19,7 @@ export async function PATCH(
     }
 
     const userId = session.user.id;
-    const analysisId = params.id;
+    const { id: analysisId } = await params;
     const { title } = await request.json();
 
     if (!title || typeof title !== 'string' || title.trim().length === 0) {

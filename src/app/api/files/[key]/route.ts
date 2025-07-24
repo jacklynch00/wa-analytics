@@ -4,7 +4,7 @@ import { generateSignedDownloadUrl } from '@/lib/storage-secure';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { key: string } }
+  { params }: { params: Promise<{ key: string }> }
 ) {
   try {
     // Check authentication
@@ -17,7 +17,8 @@ export async function GET(
     }
 
     const userId = session.user.id;
-    const fileKey = decodeURIComponent(params.key);
+    const { key } = await params;
+    const fileKey = decodeURIComponent(key);
 
     // Generate a signed URL for the file (expires in 1 hour)
     const signedUrl = await generateSignedDownloadUrl(fileKey, userId, 3600);
