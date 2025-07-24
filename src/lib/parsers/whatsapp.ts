@@ -54,22 +54,6 @@ function parseTimestamp(dateStr: string, timeStr: string): Date {
   return new Date(year, month - 1, day, hours, minutes, seconds);
 }
 
-function isSystemMessage(content: string): boolean {
-  const systemPatterns = [
-    /added/i,
-    /removed/i,
-    /left/i,
-    /joined/i,
-    /changed.*subject/i,
-    /changed.*group.*icon/i,
-    /created.*group/i,
-    /security.*code.*changed/i,
-    /messages.*encryption/i,
-    /missed.*call/i,
-  ];
-  
-  return systemPatterns.some(pattern => pattern.test(content));
-}
 
 function detectAttachment(content: string): { isAttachment: boolean; info?: string } {
   const attachmentPatterns = [

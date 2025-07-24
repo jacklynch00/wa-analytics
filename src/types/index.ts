@@ -34,6 +34,8 @@ export interface DailyActivity {
 }
 
 export interface ChatAnalysis {
+  id?: string;
+  title?: string;
   messages: ParsedMessage[];
   members: MemberProfile[];
   dateRange: { start: Date; end: Date };

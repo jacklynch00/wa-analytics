@@ -5,14 +5,18 @@ import { AIRecapData } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, MessageSquare, Link, Sparkles } from 'lucide-react';
+import { CopyButton } from '@/components/ui/copy-button';
+import { Calendar, Users, MessageSquare, Link, Sparkles, RefreshCw } from 'lucide-react';
 
 interface AIRecapProps {
   aiRecaps: { [key: string]: AIRecapData };
+  analysisId?: string;
+  onRecapRegenerated?: (newRecaps: { [key: string]: AIRecapData }) => void;
 }
 
-export default function AIRecap({ aiRecaps }: AIRecapProps) {
+export default function AIRecap({ aiRecaps, analysisId, onRecapRegenerated }: AIRecapProps) {
   const [selectedTimeRange, setSelectedTimeRange] = useState(7);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const timeRangeOptions = [
     { label: 'Last 1 Day', value: 1 },
@@ -23,24 +27,115 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
 
   const currentRecapData = aiRecaps[selectedTimeRange.toString()] || null;
 
+  const getFullRecapText = () => {
+    if (!currentRecapData) return '';
+    
+    const sections = [
+      `Executive Summary (${currentRecapData.timeRange}):`,
+      currentRecapData.summary,
+      '',
+      'Top Discussion Topics:',
+      ...currentRecapData.topTopics.map(topic => `• ${topic}`),
+      '',
+      'Active Contributors:',
+      currentRecapData.activeContributors.join(', '),
+      '',
+      'Key Decisions & Announcements:',
+      ...currentRecapData.keyDecisions.map(decision => `• ${decision}`),
+      '',
+      'Important Resources:',
+      ...currentRecapData.importantResources.map(resource => `• ${resource}`)
+    ];
+    
+    return sections.filter(line => line !== undefined && line !== null).join('\n');
+  };
+
+  const getTopicsText = () => {
+    return currentRecapData?.topTopics.map(topic => `• ${topic}`).join('\n') || '';
+  };
+
+  const getDecisionsText = () => {
+    return currentRecapData?.keyDecisions.map(decision => `• ${decision}`).join('\n') || '';
+  };
+
+  const getResourcesText = () => {
+    return currentRecapData?.importantResources.map(resource => `• ${resource}`).join('\n') || '';
+  };
+
+  const handleRegenerateRecap = async () => {
+    if (!analysisId || !onRecapRegenerated) {
+      alert('Regeneration not available - please refresh the page and try again.');
+      return;
+    }
+
+    setIsRegenerating(true);
+    try {
+      const response = await fetch(`/api/analysis/${analysisId}/regenerate-recap`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          timeRange: selectedTimeRange,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        onRecapRegenerated(result.aiRecaps);
+      } else {
+        const error = await response.json();
+        alert(`Failed to regenerate recap: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error regenerating recap:', error);
+      alert('Failed to regenerate recap. Please try again.');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
-        {timeRangeOptions.map((option) => (
-          <Button
-            key={option.value}
-            variant={selectedTimeRange === option.value ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedTimeRange(option.value)}
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            {option.label}
-          </Button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2 justify-between">
+        <div className="flex flex-wrap gap-2">
+          {timeRangeOptions.map((option) => (
+            <Button
+              key={option.value}
+              variant={selectedTimeRange === option.value ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedTimeRange(option.value)}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              {option.label}
+            </Button>
+          ))}
+        </div>
+        
+        <div className="flex gap-2">
+          {currentRecapData && (
+            <CopyButton 
+              text={getFullRecapText()} 
+              showText 
+              variant="secondary"
+            />
+          )}
+          {analysisId && onRecapRegenerated && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRegenerateRecap}
+              disabled={isRegenerating}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
+              {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+            </Button>
+          )}
+        </div>
       </div>
 
       {!currentRecapData && (
-        <Card className="border-[var(--tag-security-border)]">
+        <Card>
           <CardContent className="p-6">
             <div className="text-[var(--warning)] text-center">
               <p className="font-medium">No recap available for this time range</p>
@@ -54,10 +149,13 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5" />
-                <span>Executive Summary</span>
-                <Badge variant="secondary">{currentRecapData.timeRange}</Badge>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="w-5 h-5" />
+                  <span>Executive Summary</span>
+                  <Badge variant="secondary">{currentRecapData.timeRange}</Badge>
+                </div>
+                <CopyButton text={currentRecapData.summary} />
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -68,9 +166,14 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <MessageSquare className="w-5 h-5" />
-                  <span>Top Discussion Topics</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="w-5 h-5" />
+                    <span>Top Discussion Topics</span>
+                  </div>
+                  {currentRecapData.topTopics.length > 0 && (
+                    <CopyButton text={getTopicsText()} />
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -113,9 +216,14 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5" />
-                  <span>Key Decisions & Announcements</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-5 h-5" />
+                    <span>Key Decisions & Announcements</span>
+                  </div>
+                  {currentRecapData.keyDecisions.length > 0 && (
+                    <CopyButton text={getDecisionsText()} />
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -136,9 +244,14 @@ export default function AIRecap({ aiRecaps }: AIRecapProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Link className="w-5 h-5" />
-                  <span>Important Resources</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Link className="w-5 h-5" />
+                    <span>Important Resources</span>
+                  </div>
+                  {currentRecapData.importantResources.length > 0 && (
+                    <CopyButton text={getResourcesText()} />
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>

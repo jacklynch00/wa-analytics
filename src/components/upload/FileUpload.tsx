@@ -28,11 +28,11 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
     return true;
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = useCallback((file: File) => {
     if (validateFile(file)) {
       onFileSelect(file);
     }
-  };
+  }, [onFileSelect]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();

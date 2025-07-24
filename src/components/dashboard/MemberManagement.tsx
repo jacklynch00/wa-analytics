@@ -5,6 +5,7 @@ import { MemberProfile } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Pagination, usePagination } from '@/components/ui/pagination';
 import { Users, Filter, AlertTriangle, TrendingDown, Calendar, MessageCircle, Search } from 'lucide-react';
 import { format, subDays, isAfter } from 'date-fns';
 
@@ -76,6 +77,15 @@ export default function MemberManagement({ members }: MemberManagementProps) {
 
     return sorted;
   }, [members, filter, searchTerm, sortBy]);
+
+  const {
+    currentItems: paginatedMembers,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    handlePageChange,
+  } = usePagination(filteredAndSortedMembers, 10);
 
   const stats = useMemo(() => {
     const inactiveMembers = filteredAndSortedMembers.filter(m => m.isInactive);
@@ -249,7 +259,7 @@ export default function MemberManagement({ members }: MemberManagementProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {filteredAndSortedMembers.map((member) => (
+            {paginatedMembers.map((member) => (
               <div
                 key={member.name}
                 className={`activity-card p-4 ${
@@ -298,6 +308,18 @@ export default function MemberManagement({ members }: MemberManagementProps) {
               </div>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                itemsPerPage={itemsPerPage}
+                totalItems={totalItems}
+              />
+            </div>
+          )}
 
           {filteredAndSortedMembers.length === 0 && (
             <div className="text-center py-8 text-[var(--text-secondary)]">

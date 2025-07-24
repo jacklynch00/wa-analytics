@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { MemberProfile } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Pagination, usePagination } from '@/components/ui/pagination';
 import { Search, MessageCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
-import { linkifyText } from '@/lib/linkify';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 interface MemberDirectoryProps {
@@ -35,6 +35,15 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
       }
     });
 
+  const {
+    currentItems: paginatedMembers,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    handlePageChange,
+  } = usePagination(filteredMembers, 10);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4">
@@ -60,7 +69,7 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
       </div>
 
       <div className="grid gap-4">
-        {filteredMembers.map((member) => (
+        {paginatedMembers.map((member) => (
           <Card 
             key={member.name}
             className="cursor-pointer hover:shadow-[var(--shadow-hover)] transition-shadow"
@@ -100,7 +109,7 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
 
               {selectedMember?.name === member.name && (
                 <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <h4 className="font-medium text-[var(--text-primary)] mb-2">Activity Timeline</h4>
                       <div className="text-sm text-[var(--text-secondary)]">
@@ -141,17 +150,6 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
                         </ResponsiveContainer>
                       </div>
                     </div>
-                    
-                    <div>
-                      <h4 className="font-medium text-[var(--text-primary)] mb-2">Recent Messages</h4>
-                      <div className="space-y-2">
-                        {member.recentMessages.slice(0, 2).map((message, index) => (
-                          <div key={index} className="text-xs text-[var(--text-secondary)] bg-[var(--card-hover-bg)] p-2 rounded-[var(--radius-small)]">
-                            &ldquo;{linkifyText(message.length > 80 ? message.substring(0, 80) + '...' : message)}&rdquo;
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}
@@ -159,6 +157,16 @@ export default function MemberDirectory({ members }: MemberDirectoryProps) {
           </Card>
         ))}
       </div>
+
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+        />
+      )}
 
       {filteredMembers.length === 0 && (
         <Card>

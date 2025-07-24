@@ -176,117 +176,6 @@ export default function Analytics({ analysis }: AnalyticsProps) {
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5" />
-                <span>Daily Message Volume</span>
-              </div>
-              {selectedTimeRange !== 'all' && (
-                <Badge variant="secondary">{timeRangeOptions.find(opt => opt.value === selectedTimeRange)?.label}</Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={filteredData.dailyStats}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={formatChartDate}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip 
-                  labelFormatter={(value) => formatChartDate(value as string)}
-                  formatter={(value: number) => [value, 'Messages']}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="messageCount" 
-                  stroke="#4285F4" 
-                  strokeWidth={2}
-                  dot={{ fill: '#4285F4', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Clock className="w-5 h-5" />
-                <span>Messages by Hour</span>
-              </div>
-              {selectedTimeRange !== 'all' && (
-                <Badge variant="secondary">{timeRangeOptions.find(opt => opt.value === selectedTimeRange)?.label}</Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={filteredData.hourlyDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="hour" 
-                  tickFormatter={formatHour}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip 
-                  labelFormatter={(value) => formatHour(value as number)}
-                  formatter={(value: number) => [value, 'Messages']}
-                />
-                <Bar dataKey="count" fill="#34A853" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top Contributors */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <BarChart3 className="w-5 h-5" />
-            <span>Top Contributors</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {topContributors.map((member, index) => (
-              <div key={member.name} className="activity-card p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold ${
-                      index === 0 ? 'bg-[var(--chart-food)]' : 
-                      index === 1 ? 'bg-[var(--neutral)]' : 
-                      index === 2 ? 'bg-[var(--warning)]' : 'bg-[var(--brand)]'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <div>
-                      <div className="font-medium text-[var(--text-primary)]">{member.name}</div>
-                      <div className="text-sm text-[var(--text-secondary)]">
-                        {member.messageFrequency.toFixed(1)} messages/day
-                      </div>
-                    </div>
-                  </div>
-                  <Badge variant="secondary">
-                    {member.totalMessages} messages
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Activity Patterns */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
@@ -346,6 +235,129 @@ export default function Analytics({ analysis }: AnalyticsProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="w-5 h-5" />
+                <span>Daily Message Volume</span>
+              </div>
+              {selectedTimeRange !== 'all' && (
+                <Badge variant="secondary">{timeRangeOptions.find(opt => opt.value === selectedTimeRange)?.label}</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={filteredData.dailyStats}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E8EAED" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={formatChartDate}
+                  tick={{ fontSize: 12 }}
+                  axisLine={{ stroke: '#E8EAED' }}
+                  tickLine={{ stroke: '#E8EAED' }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }} 
+                  axisLine={{ stroke: '#E8EAED' }}
+                  tickLine={{ stroke: '#E8EAED' }}
+                />
+                <Tooltip 
+                  labelFormatter={(value) => formatChartDate(value as string)}
+                  formatter={(value: number) => [value, 'Messages']}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="messageCount" 
+                  stroke="#4285F4" 
+                  strokeWidth={2}
+                  dot={{ fill: '#4285F4', strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Clock className="w-5 h-5" />
+                <span>Messages by Hour</span>
+              </div>
+              {selectedTimeRange !== 'all' && (
+                <Badge variant="secondary">{timeRangeOptions.find(opt => opt.value === selectedTimeRange)?.label}</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={filteredData.hourlyDistribution}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E8EAED" />
+                <XAxis 
+                  dataKey="hour" 
+                  tickFormatter={formatHour}
+                  tick={{ fontSize: 12 }}
+                  axisLine={{ stroke: '#E8EAED' }}
+                  tickLine={{ stroke: '#E8EAED' }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }} 
+                  axisLine={{ stroke: '#E8EAED' }}
+                  tickLine={{ stroke: '#E8EAED' }}
+                />
+                <Tooltip 
+                  labelFormatter={(value) => formatHour(value as number)}
+                  formatter={(value: number) => [value, 'Messages']}
+                />
+                <Bar dataKey="count" fill="#34A853" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Contributors */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <BarChart3 className="w-5 h-5" />
+            <span>Top Contributors</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {topContributors.map((member, index) => (
+              <div key={member.name} className="activity-card p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold ${
+                      index === 0 ? 'bg-[var(--chart-food)]' : 
+                      index === 1 ? 'bg-[var(--neutral)]' : 
+                      index === 2 ? 'bg-[var(--warning)]' : 'bg-[var(--brand)]'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="font-medium text-[var(--text-primary)]">{member.name}</div>
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        {member.messageFrequency.toFixed(1)} messages/day
+                      </div>
+                    </div>
+                  </div>
+                  <Badge variant="secondary">
+                    {member.totalMessages} messages
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

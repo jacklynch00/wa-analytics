@@ -1,0 +1,20 @@
+---
+description: When we are talking about implementing a frontend feature using shadcn ui react components
+alwaysApply: false
+---
+
+Usage rule
+When asked to use shadcn components, use the MCP server.
+
+Planning rule
+When asked to plan using anything related to shadcn:
+
+Use the MCP server during planning
+Apply components wherever componets are applicable
+Use whole blocks where possible (e.g., login page, calendar)
+
+Implementation rule
+When implementing:
+
+First call the demo tool to se how it is used
+Then implement it so that it is implemented correctly
