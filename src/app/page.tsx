@@ -10,15 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-	NavigationMenu,
-	NavigationMenuContent,
-	NavigationMenuItem,
-	NavigationMenuLink,
-	NavigationMenuList,
-	NavigationMenuTrigger,
-	navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from '@/components/ui/navigation-menu';
 import { Users, MessageCircle, BarChart3, Shield, Zap, TrendingUp, Share2, ArrowRight, CheckCircle, Star, Upload, Users2, Calendar, Lock } from 'lucide-react';
 
 export default function HomePage() {
@@ -165,16 +157,6 @@ export default function HomePage() {
 											</div>
 										</div>
 									</NavigationMenuContent>
-								</NavigationMenuItem>
-								<NavigationMenuItem>
-									<Link href='#pricing' legacyBehavior passHref>
-										<NavigationMenuLink className={navigationMenuTriggerStyle()}>Pricing</NavigationMenuLink>
-									</Link>
-								</NavigationMenuItem>
-								<NavigationMenuItem>
-									<Link href='#about' legacyBehavior passHref>
-										<NavigationMenuLink className={navigationMenuTriggerStyle()}>About</NavigationMenuLink>
-									</Link>
 								</NavigationMenuItem>
 							</NavigationMenuList>
 						</NavigationMenu>
