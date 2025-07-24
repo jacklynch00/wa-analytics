@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: 'WhatsApp Community Analytics',
+	title: 'Waly',
 	description: 'Analyze WhatsApp group chat exports to gain insights into member engagement, resources shared, and community activity patterns.',
 };
 
