@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Pagination, usePagination } from '@/components/ui/pagination';
 import { CopyButton } from '@/components/ui/copy-button';
 import { Search, ExternalLink, Calendar, User, Filter, FileText, Link2, Wrench, File } from 'lucide-react';
+import { WebsiteIcon } from '@/components/ui/website-icon';
 import { format } from 'date-fns';
 import { linkifyText } from '@/lib/linkify';
 
@@ -154,11 +155,15 @@ export default function ResourceHub({ resources }: ResourceHubProps) {
 					<Card key={index}>
 						<CardContent className='p-4'>
 							<div className='flex items-start justify-between space-x-4'>
-								<div className='flex-1 min-w-0'>
-									<div className='flex items-center space-x-2 mb-2'>
-										<Badge className={categoryColors[resource.category]}>{resource.category}</Badge>
-										<span className='text-sm text-[var(--text-secondary)]'>{resource.domain}</span>
+								<div className='flex items-start space-x-3 flex-1 min-w-0'>
+									<div className='flex-shrink-0 mt-1'>
+										<WebsiteIcon domain={resource.domain} size={20} />
 									</div>
+									<div className='flex-1 min-w-0'>
+										<div className='flex items-center space-x-2 mb-2'>
+											<Badge className={categoryColors[resource.category]}>{resource.category}</Badge>
+											<span className='text-sm text-[var(--text-secondary)]'>{resource.domain}</span>
+										</div>
 
 									<h3 className='font-medium text-[var(--text-primary)] mb-2'>
 										<a
@@ -173,14 +178,15 @@ export default function ResourceHub({ resources }: ResourceHubProps) {
 
 									<p className='text-sm text-[var(--text-secondary)] mb-3 line-clamp-2'>{linkifyText(resource.context)}</p>
 
-									<div className='flex items-center space-x-4 text-xs text-[var(--text-secondary)]'>
-										<div className='flex items-center space-x-1'>
-											<User className='w-3 h-3' />
-											<span>Shared by {resource.sharedBy}</span>
-										</div>
-										<div className='flex items-center space-x-1'>
-											<Calendar className='w-3 h-3' />
-											<span>{format(resource.dateShared, 'MMM dd, yyyy')}</span>
+										<div className='flex items-center space-x-4 text-xs text-[var(--text-secondary)]'>
+											<div className='flex items-center space-x-1'>
+												<User className='w-3 h-3' />
+												<span>Shared by {resource.sharedBy}</span>
+											</div>
+											<div className='flex items-center space-x-1'>
+												<Calendar className='w-3 h-3' />
+												<span>{format(resource.dateShared, 'MMM dd, yyyy')}</span>
+											</div>
 										</div>
 									</div>
 								</div>
