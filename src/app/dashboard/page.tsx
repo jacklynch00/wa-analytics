@@ -572,7 +572,8 @@ export default function DashboardPage() {
 																	</span>
 																	<span className='flex items-center'>
 																		<Calendar className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
-																		<span className='hidden sm:inline'>Created </span>{new Date(community.createdAt).toLocaleDateString()}
+																		<span className='hidden sm:inline'>Created </span>
+																		{new Date(community.createdAt).toLocaleDateString()}
 																	</span>
 																</div>
 																{community.memberDirectories.length > 0 && (
@@ -584,7 +585,7 @@ export default function DashboardPage() {
 																				handleOpenShareMessage(community.memberDirectories[0], community.name);
 																			}}
 																			className='text-blue-600 hover:text-blue-800 hover:underline transition-colors text-xs sm:text-sm'>
-																			share
+																			Share with community
 																		</button>
 																		{community.memberDirectories[0].password && (
 																			<div className='flex items-center gap-1'>
@@ -618,12 +619,19 @@ export default function DashboardPage() {
 														</div>
 														<div className='flex flex-col sm:flex-row gap-2 sm:space-x-2 w-full sm:w-auto' onClick={(e) => e.stopPropagation()}>
 															<div className='flex gap-2 sm:gap-0 sm:space-x-2'>
-																<Button variant='outline' size='sm' onClick={() => router.push(`/dashboard/community/${community.id}`)} className='text-xs flex-1 sm:flex-initial'>
+																<Button
+																	variant='outline'
+																	size='sm'
+																	onClick={() => router.push(`/dashboard/community/${community.id}`)}
+																	className='text-xs flex-1 sm:flex-initial'>
 																	<Eye className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
 																	View
 																</Button>
 																{community.memberDirectories.length > 0 ? (
-																	<Button size='sm' onClick={() => handleShareCommunity(community.id, community.memberDirectories[0])} className='text-xs flex-1 sm:flex-initial'>
+																	<Button
+																		size='sm'
+																		onClick={() => handleShareCommunity(community.id, community.memberDirectories[0])}
+																		className='text-xs flex-1 sm:flex-initial'>
 																		<Share2 className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
 																		<span className='hidden sm:inline'>Copy Directory </span>Link
 																	</Button>
@@ -683,7 +691,9 @@ export default function DashboardPage() {
 															) : (
 																<div className='space-y-2 sm:space-y-3'>
 																	{community.chatAnalyses.map((analysis) => (
-																		<div key={analysis.id} className='flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg gap-2 sm:gap-0'>
+																		<div
+																			key={analysis.id}
+																			className='flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg gap-2 sm:gap-0'>
 																			<div className='flex-1 min-w-0'>
 																				<p className='font-medium text-xs sm:text-sm text-gray-900 truncate'>{analysis.title}</p>
 																				<div className='flex items-center space-x-2 sm:space-x-4 text-xs text-gray-500 mt-1'>
