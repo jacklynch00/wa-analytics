@@ -130,7 +130,7 @@ export default function HomePage() {
 					<h1 className='text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-none'>
 						<span className='bg-gradient-to-r from-purple-200 via-blue-200 to-indigo-200 bg-clip-text text-transparent'>DECODE</span>
 						<br />
-						<span className='text-white'>YOUR CHATS</span>
+						<span className='text-white'>YOUR COMMUNITY</span>
 					</h1>
 
 					{/* Subheadline */}
@@ -161,7 +161,7 @@ export default function HomePage() {
 					</div>
 
 					{/* Stats */}
-					<div className='grid grid-cols-3 gap-8 max-w-2xl mx-auto'>
+					{/* <div className='grid grid-cols-3 gap-8 max-w-2xl mx-auto'>
 						<div className='text-center'>
 							<div className='text-3xl font-bold text-white mb-2'>10K+</div>
 							<div className='text-purple-200 text-sm'>Chats Analyzed</div>
@@ -174,7 +174,7 @@ export default function HomePage() {
 							<div className='text-3xl font-bold text-white mb-2'>99%</div>
 							<div className='text-purple-200 text-sm'>Privacy Protected</div>
 						</div>
-					</div>
+					</div> */}
 				</div>
 			</section>
 
