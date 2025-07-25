@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import { ChatAnalysis } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MessageCircle, Users, Calendar, TrendingUp, Clock, BarChart3 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -99,7 +98,13 @@ export default function Analytics({ analysis }: AnalyticsProps) {
         </CardHeader>
         <CardContent>
           <div className="w-full max-w-xs">
-            <Select value={selectedTimeRange.toString()} onValueChange={(value) => setSelectedTimeRange(parseInt(value))}>
+            <Select value={selectedTimeRange.toString()} onValueChange={(value) => {
+              if (value === 'all') {
+                setSelectedTimeRange('all');
+              } else {
+                setSelectedTimeRange(parseInt(value) as 7 | 14 | 30 | 90);
+              }
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Select time range" />
               </SelectTrigger>

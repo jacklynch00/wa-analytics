@@ -10,8 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from '@/components/ui/navigation-menu';
-import { Users, MessageCircle, BarChart3, Shield, Zap, TrendingUp, Share2, ArrowRight, CheckCircle, Star, Upload, Users2, Calendar, Lock } from 'lucide-react';
+import { Users, MessageCircle, BarChart3, Shield, TrendingUp, Share2, ArrowRight, CheckCircle, Users2, Calendar, Lock } from 'lucide-react';
 
 export default function HomePage() {
 	const [isProcessing, setIsProcessing] = useState(false);

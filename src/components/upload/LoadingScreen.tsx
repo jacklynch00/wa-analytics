@@ -56,7 +56,7 @@ export default function LoadingScreen({ onComplete, progress: externalProgress, 
         }, index * stepDuration);
       });
     }
-  }, [onComplete, externalProgress, steps.length]);
+  }, [onComplete, externalProgress, steps]);
 
   useEffect(() => {
     if (externalCurrentStep) {
