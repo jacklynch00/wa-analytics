@@ -73,14 +73,10 @@ function CommunityPageContent() {
 			formData.append('file', file);
 			formData.append('communityId', communityId);
 
-			// Add a minimum delay to show the progress bar properly
-			const uploadPromise = fetch('/api/upload', {
+			const response = await fetch('/api/upload', {
 				method: 'POST',
 				body: formData,
 			});
-
-			// Wait at least 3 seconds to show progress
-			const [response] = await Promise.all([uploadPromise, new Promise((resolve) => setTimeout(resolve, 3000))]);
 
 			const result = await response.json();
 

@@ -46,12 +46,10 @@ export default function HomePage() {
 			const formData = new FormData();
 			formData.append('file', file);
 
-			const uploadPromise = fetch('/api/upload', {
+			const response = await fetch('/api/upload', {
 				method: 'POST',
 				body: formData,
 			});
-
-			const [response] = await Promise.all([uploadPromise, new Promise((resolve) => setTimeout(resolve, 3000))]);
 
 			const result = await response.json();
 
