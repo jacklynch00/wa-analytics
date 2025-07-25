@@ -115,7 +115,7 @@ export default function SharedDirectoryPage() {
 	}
 
 	// Filter analyses based on selection
-	const filteredAnalyses = directoryData?.analyses?.filter(analysis => analysis.id === selectedAnalysisId) || [];
+	const filteredAnalyses = directoryData?.analyses?.filter((analysis) => analysis.id === selectedAnalysisId) || [];
 
 	// Aggregate members from filtered analyses
 	const allMembers = filteredAnalyses.flatMap((analysis) => analysis.members) || [];
@@ -138,7 +138,6 @@ export default function SharedDirectoryPage() {
 	const uniqueMembers = Array.from(memberMap.values());
 
 	// Calculate totals
-	const totalMessages = filteredAnalyses.reduce((sum, analysis) => sum + (analysis.totalMessages || 0), 0) || 0;
 	const totalMembers = uniqueMembers.length;
 
 	// Aggregate resources from filtered analyses
@@ -244,14 +243,14 @@ export default function SharedDirectoryPage() {
 						<div className='flex flex-col lg:flex-row justify-between items-start gap-4 lg:gap-6'>
 							<div className='flex-1 min-w-0'>
 								<h1 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate'>{directoryData.communityName}</h1>
-								{directoryData.communityDescription && <p className='text-sm sm:text-base lg:text-lg text-gray-700 mt-2 line-clamp-2'>{directoryData.communityDescription}</p>}
+								{directoryData.communityDescription && (
+									<p className='text-sm sm:text-base lg:text-lg text-gray-700 mt-2 line-clamp-2'>{directoryData.communityDescription}</p>
+								)}
 							</div>
-							
+
 							{/* Analysis Selector */}
 							<div className='w-full lg:w-auto lg:min-w-[250px]'>
-								<label className='block text-sm font-medium text-gray-700 mb-2'>
-									View Analysis
-								</label>
+								<label className='block text-sm font-medium text-gray-700 mb-2'>View Analysis</label>
 								<Select value={selectedAnalysisId} onValueChange={setSelectedAnalysisId}>
 									<SelectTrigger className='w-full'>
 										<SelectValue placeholder='Select analysis' />
@@ -266,7 +265,7 @@ export default function SharedDirectoryPage() {
 								</Select>
 							</div>
 						</div>
-						
+
 						<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 sm:mt-4 gap-2 sm:gap-0'>
 							<div className='text-xs sm:text-sm text-gray-600'>
 								<div className='flex flex-wrap items-center gap-1 sm:gap-2'>
@@ -458,7 +457,9 @@ export default function SharedDirectoryPage() {
 															<Sparkles className='w-4 h-4 sm:w-5 sm:h-5' />
 															<span>Executive Summary</span>
 														</div>
-														<Badge variant='secondary' className='text-xs w-fit'>{recap.recapData.timeRange}</Badge>
+														<Badge variant='secondary' className='text-xs w-fit'>
+															{recap.recapData.timeRange}
+														</Badge>
 													</CardTitle>
 												</CardHeader>
 												<CardContent className='pt-0'>
