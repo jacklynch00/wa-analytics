@@ -108,7 +108,7 @@ function AnalysisPageContent() {
 
 	if (loading) {
 		return (
-			<div className='min-h-screen flex items-center justify-center'>
+			<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center'>
 				<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
 			</div>
 		);
@@ -116,8 +116,8 @@ function AnalysisPageContent() {
 
 	if (!analysis) {
 		return (
-			<div className='min-h-screen flex items-center justify-center px-4'>
-				<Card className='w-full max-w-md'>
+			<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center px-4'>
+				<Card className='w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
 					<CardContent className='p-6 sm:p-8 text-center'>
 						<h2 className='text-lg sm:text-xl font-semibold mb-4'>Analysis Not Found</h2>
 						<p className='text-sm sm:text-base text-gray-600 mb-4'>The requested analysis could not be found.</p>
@@ -132,8 +132,14 @@ function AnalysisPageContent() {
 	}
 
 	return (
-		<div className='min-h-screen bg-gray-50'>
-			<div className='bg-white'>
+		<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
+			{/* Subtle Animated Background */}
+			<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+				<div className='absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse'></div>
+				<div className='absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000'></div>
+			</div>
+
+			<div className='relative z-10 bg-white/80 backdrop-blur-sm border-b border-white/50'>
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-3 sm:gap-0'>
 						<Button variant='outline' size='sm' onClick={handleBackToCommunity} className='text-xs sm:text-sm'>
@@ -182,7 +188,7 @@ function AnalysisPageContent() {
 				</div>
 			</div>
 
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
+			<div className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
 				<Tabs defaultValue='ai-recap' className='space-y-4 sm:space-y-6'>
 					<div className='w-full overflow-x-auto'>
 						<TabsList className='inline-flex w-auto min-w-full justify-start'>
@@ -233,7 +239,7 @@ export default function AnalysisPage() {
 	return (
 		<Suspense
 			fallback={
-				<div className='min-h-screen flex items-center justify-center'>
+				<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center'>
 					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
 				</div>
 			}>

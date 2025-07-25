@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Users, Calendar, Trash2, Share2, Eye, EyeOff, MoreVertical, Plus, ChevronDown, ChevronRight, Lock, LockOpen } from 'lucide-react';
+import { FileText, Users, Calendar, Trash2, Share2, Eye, EyeOff, MoreVertical, Plus, ChevronDown, ChevronRight, Lock, LockOpen, MessageCircle } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -375,13 +375,24 @@ export default function DashboardPage() {
 	const totalSharedDirectories = communities.reduce((sum, community) => sum + community.memberDirectories.length, 0);
 
 	return (
-		<div className='min-h-screen bg-gray-50'>
-			<div className='bg-white'>
+		<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
+			{/* Subtle Animated Background */}
+			<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+				<div className='absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse'></div>
+				<div className='absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000'></div>
+			</div>
+
+			<div className='relative z-10 bg-white/80 backdrop-blur-sm border-b border-white/50'>
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-3 sm:gap-0'>
-						<div>
-							<h1 className='text-xl sm:text-2xl font-bold text-gray-900'>Dashboard</h1>
-							<p className='text-sm text-gray-600'>Welcome back, {user.name}</p>
+						<div className='flex items-center space-x-3'>
+							<div className='w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-lg flex items-center justify-center'>
+								<MessageCircle className='w-5 h-5 text-white' />
+							</div>
+							<div>
+								<h1 className='text-xl sm:text-2xl font-bold text-gray-900'>Dashboard</h1>
+								<p className='text-sm text-gray-600'>Welcome back, {user.name}</p>
+							</div>
 						</div>
 						<div className='flex space-x-2'>
 							<Button onClick={handleSignOut} variant='outline' size='sm' className='sm:size-default'>
@@ -392,9 +403,9 @@ export default function DashboardPage() {
 				</div>
 			</div>
 
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+			<div className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
 				<div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8'>
-					<Card>
+					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200'>
 						<CardContent className='p-3 md:p-6'>
 							<div className='flex flex-col md:flex-row items-center md:items-start'>
 								<Users className='h-6 w-6 md:h-8 md:w-8 text-blue-600 mb-2 md:mb-0' />
@@ -406,7 +417,7 @@ export default function DashboardPage() {
 						</CardContent>
 					</Card>
 
-					<Card>
+					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200'>
 						<CardContent className='p-3 md:p-6'>
 							<div className='flex flex-col md:flex-row items-center md:items-start'>
 								<FileText className='h-6 w-6 md:h-8 md:w-8 text-green-600 mb-2 md:mb-0' />
@@ -419,7 +430,7 @@ export default function DashboardPage() {
 						</CardContent>
 					</Card>
 
-					<Card>
+					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200'>
 						<CardContent className='p-3 md:p-6'>
 							<div className='flex flex-col md:flex-row items-center md:items-start'>
 								<Share2 className='h-6 w-6 md:h-8 md:w-8 text-purple-600 mb-2 md:mb-0' />
@@ -484,7 +495,7 @@ export default function DashboardPage() {
 					</div>
 
 					{communities.length === 0 ? (
-						<Card>
+						<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
 							<CardContent className='p-6 sm:p-12 text-center'>
 								<Users className='mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400' />
 								<h3 className='mt-4 text-base sm:text-lg font-medium text-gray-900'>No communities yet</h3>
@@ -536,7 +547,7 @@ export default function DashboardPage() {
 						<div className='space-y-4'>
 							<div className='grid gap-4'>
 								{communities.map((community) => (
-									<Card key={community.id}>
+									<Card key={community.id} className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200'>
 										<CardContent className='p-0'>
 											<Collapsible open={openCommunities[community.id] || false} onOpenChange={() => toggleCommunity(community.id)}>
 												<div className='p-4 sm:p-6 cursor-pointer' onClick={() => toggleCommunity(community.id)}>

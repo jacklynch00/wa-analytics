@@ -80,10 +80,7 @@ function CommunityPageContent() {
 			});
 
 			// Wait at least 3 seconds to show progress
-			const [response] = await Promise.all([
-				uploadPromise,
-				new Promise(resolve => setTimeout(resolve, 3000))
-			]);
+			const [response] = await Promise.all([uploadPromise, new Promise((resolve) => setTimeout(resolve, 3000))]);
 
 			const result = await response.json();
 
@@ -132,7 +129,7 @@ function CommunityPageContent() {
 	if (!community) {
 		return (
 			<div className='min-h-screen flex items-center justify-center px-4'>
-				<Card className='w-full max-w-md'>
+				<Card className='w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
 					<CardContent className='p-6 sm:p-8 text-center'>
 						<h2 className='text-lg sm:text-xl font-semibold mb-4'>Community Not Found</h2>
 						<p className='text-sm sm:text-base text-gray-600 mb-4'>The requested community could not be found.</p>
@@ -151,19 +148,25 @@ function CommunityPageContent() {
 	}
 
 	return (
-		<div className='min-h-screen bg-gray-50'>
-			<div className='bg-white'>
+		<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
+			{/* Subtle Animated Background */}
+			<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+				<div className='absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse'></div>
+				<div className='absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000'></div>
+			</div>
+
+			<div className='relative z-10 bg-white/80 backdrop-blur-sm border-b border-white/50'>
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-3 sm:gap-0'>
-						<Button variant='outline' size='sm' onClick={handleBackToDashboard} className='text-xs sm:text-sm'>
-							<ArrowLeft className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
-							<span className='hidden sm:inline'>Back to </span>Dashboard
-						</Button>
+						<div className='flex items-center space-x-3'>
+							<Button variant='outline' size='sm' onClick={handleBackToDashboard} className='text-xs sm:text-sm'>
+								<ArrowLeft className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
+								<span className='hidden sm:inline'>Back to </span>Dashboard
+							</Button>
+						</div>
 						<div className='text-left sm:text-right w-full sm:w-auto'>
 							<h1 className='text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate'>{community.name}</h1>
-							{community.description && (
-								<p className='text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2'>{community.description}</p>
-							)}
+							{community.description && <p className='text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2'>{community.description}</p>}
 							<div className='text-xs sm:text-sm text-gray-500 mt-1 flex flex-wrap items-center gap-1 sm:gap-2'>
 								<span>{community._count.chatAnalyses} analyses</span>
 								<span>•</span>
@@ -174,7 +177,7 @@ function CommunityPageContent() {
 				</div>
 			</div>
 
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
+			<div className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
 				<div className='space-y-4 sm:space-y-6'>
 					<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0'>
 						<h2 className='text-lg sm:text-xl font-semibold text-gray-900'>Chat Analyses</h2>
@@ -189,7 +192,8 @@ function CommunityPageContent() {
 								<DialogHeader>
 									<DialogTitle>Upload WhatsApp Chat Export</DialogTitle>
 									<DialogDescription>
-										Upload your WhatsApp chat export file to create a new analysis for this community. We&apos;ll process your data and provide comprehensive insights about your group dynamics.
+										Upload your WhatsApp chat export file to create a new analysis for this community. We&apos;ll process your data and provide comprehensive
+										insights about your group dynamics.
 									</DialogDescription>
 								</DialogHeader>
 								<div className='py-4'>
@@ -200,13 +204,11 @@ function CommunityPageContent() {
 					</div>
 
 					{community.chatAnalyses.length === 0 ? (
-						<Card>
+						<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
 							<CardContent className='p-6 sm:p-12 text-center'>
 								<Upload className='mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400' />
 								<h3 className='mt-4 text-base sm:text-lg font-medium text-gray-900'>No analyses yet</h3>
-								<p className='mt-2 text-sm text-gray-600'>
-									Upload your first WhatsApp chat export to start analyzing your community dynamics.
-								</p>
+								<p className='mt-2 text-sm text-gray-600'>Upload your first WhatsApp chat export to start analyzing your community dynamics.</p>
 								<div className='mt-4 sm:mt-6'>
 									<Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
 										<DialogTrigger asChild>
@@ -219,9 +221,7 @@ function CommunityPageContent() {
 										<DialogContent className='sm:max-w-lg max-h-[90vh] overflow-y-auto'>
 											<DialogHeader>
 												<DialogTitle>Upload WhatsApp Chat Export</DialogTitle>
-												<DialogDescription>
-													Upload your WhatsApp chat export file to create a new analysis for this community.
-												</DialogDescription>
+												<DialogDescription>Upload your WhatsApp chat export file to create a new analysis for this community.</DialogDescription>
 											</DialogHeader>
 											<div className='py-4'>
 												<FileUpload onFileSelect={handleFileSelect} />
@@ -235,7 +235,7 @@ function CommunityPageContent() {
 						<div className='space-y-3 sm:space-y-4'>
 							<div className='grid gap-3 sm:gap-4'>
 								{community.chatAnalyses.map((analysis) => (
-									<Card key={analysis.id}>
+									<Card key={analysis.id} className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200'>
 										<CardContent className='p-4 sm:p-6'>
 											<div className='flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0'>
 												<div className='flex-1 min-w-0 w-full sm:w-auto'>
@@ -253,12 +253,17 @@ function CommunityPageContent() {
 														</div>
 														<span className='flex items-center'>
 															<Calendar className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
-															<span className='hidden sm:inline'>Created </span>{new Date(analysis.createdAt).toLocaleDateString()}
+															<span className='hidden sm:inline'>Created </span>
+															{new Date(analysis.createdAt).toLocaleDateString()}
 														</span>
 													</div>
 												</div>
 												<div className='flex space-x-2 w-full sm:w-auto'>
-													<Button variant='outline' size='sm' onClick={() => router.push(`/dashboard/community/${communityId}/analysis/${analysis.id}`)} className='text-xs sm:text-sm w-full sm:w-auto'>
+													<Button
+														variant='outline'
+														size='sm'
+														onClick={() => router.push(`/dashboard/community/${communityId}/analysis/${analysis.id}`)}
+														className='text-xs sm:text-sm w-full sm:w-auto'>
 														<FileText className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
 														<span className='hidden sm:inline'>View </span>Analysis
 													</Button>
