@@ -350,22 +350,15 @@ export default function HomePage() {
 						Join thousands who&apos;ve discovered the hidden secrets in their group chats. Your first analysis is completely free!
 					</p>
 
-					{user ? (
-						<div className='bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-lg mx-auto'>
-							<p className='text-white mb-6 text-xl font-semibold'>Drop your chat file and let&apos;s go! 🚀</p>
-							<FileUpload onFileSelect={handleFileSelect} />
-						</div>
-					) : (
-						<div className='flex flex-col sm:flex-row gap-4 justify-center'>
-							<Button
-								size='lg'
-								className='bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-500 hover:from-yellow-500 hover:via-pink-500 hover:to-purple-600 text-white px-12 py-6 text-xl font-bold rounded-full shadow-2xl transform hover:scale-105 transition-all duration-200'>
-								<Link href='/sign-up' className='flex items-center'>
-									START FOR FREE <Star className='ml-3 w-6 h-6' />
-								</Link>
-							</Button>
-						</div>
-					)}
+					<div className='flex flex-col sm:flex-row gap-4 justify-center'>
+						<Button
+							size='lg'
+							className='bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-500 hover:from-yellow-500 hover:via-pink-500 hover:to-purple-600 text-white px-12 py-6 text-xl font-bold rounded-full shadow-2xl transform hover:scale-105 transition-all duration-200'>
+							<Link href='/sign-up' className='flex items-center'>
+								START FOR FREE <Star className='ml-3 w-6 h-6' />
+							</Link>
+						</Button>
+					</div>
 
 					{/* Trust badges */}
 					<div className='mt-16 flex justify-center items-center space-x-8 opacity-60'>
