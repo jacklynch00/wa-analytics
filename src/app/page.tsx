@@ -112,54 +112,10 @@ export default function HomePage() {
 							<span className='text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>Waly</span>
 						</div>
 
-						{/* Navigation */}
-						<NavigationMenu className='hidden md:flex'>
-							<NavigationMenuList>
-								<NavigationMenuItem>
-									<NavigationMenuTrigger>Features</NavigationMenuTrigger>
-									<NavigationMenuContent>
-										<div className='grid gap-3 p-4 w-[400px]'>
-											<div className='grid grid-cols-2 gap-4'>
-												<NavigationMenuLink asChild>
-													<a
-														href='#features'
-														className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'>
-														<div className='text-sm font-medium leading-none'>AI Analysis</div>
-														<p className='line-clamp-2 text-sm leading-snug text-muted-foreground'>
-															Advanced AI-powered insights from your WhatsApp data
-														</p>
-													</a>
-												</NavigationMenuLink>
-												<NavigationMenuLink asChild>
-													<a
-														href='#analytics'
-														className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'>
-														<div className='text-sm font-medium leading-none'>Analytics</div>
-														<p className='line-clamp-2 text-sm leading-snug text-muted-foreground'>Comprehensive analytics and visualizations</p>
-													</a>
-												</NavigationMenuLink>
-												<NavigationMenuLink asChild>
-													<a
-														href='#security'
-														className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'>
-														<div className='text-sm font-medium leading-none'>Security</div>
-														<p className='line-clamp-2 text-sm leading-snug text-muted-foreground'>Enterprise-grade security and privacy</p>
-													</a>
-												</NavigationMenuLink>
-												<NavigationMenuLink asChild>
-													<a
-														href='#sharing'
-														className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'>
-														<div className='text-sm font-medium leading-none'>Sharing</div>
-														<p className='line-clamp-2 text-sm leading-snug text-muted-foreground'>Secure sharing with team members</p>
-													</a>
-												</NavigationMenuLink>
-											</div>
-										</div>
-									</NavigationMenuContent>
-								</NavigationMenuItem>
-							</NavigationMenuList>
-						</NavigationMenu>
+						{/* Navigation - Features removed */}
+						<div className='hidden md:flex'>
+							{/* Simple navigation without dropdown */}
+						</div>
 
 						{/* Auth Buttons */}
 						<div className='flex items-center space-x-4'>
@@ -190,22 +146,21 @@ export default function HomePage() {
 				<div className='max-w-7xl mx-auto'>
 					<div className='text-center'>
 						<Badge variant='secondary' className='mb-4'>
-							<Zap className='w-3 h-3 mr-1' />
-							AI-Powered WhatsApp Analytics
+							<Users className='w-3 h-3 mr-1' />
+							Community Analytics Platform
 						</Badge>
 						<h1 className='text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6'>
-							Transform Your <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>WhatsApp Data</span> into Actionable
+							Build Stronger <span className='bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'>Communities</span> with AI-Powered
 							Insights
 						</h1>
 						<p className='text-xl text-gray-600 mb-8 max-w-3xl mx-auto'>
-							Upload your WhatsApp chat export and get instant AI-powered analysis, member insights, engagement metrics, and comprehensive analytics to understand
-							your group dynamics.
+							Create communities, analyze your WhatsApp group chats, and discover powerful insights about member engagement, activity patterns, and group dynamics.
 						</p>
 						<div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
 							<Button asChild size='lg' className='bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'>
 								<Link href='/sign-up'>
-									<Upload className='w-4 h-4 mr-2' />
-									Get Started Free
+									<Users className='w-4 h-4 mr-2' />
+									Create Your Community
 								</Link>
 							</Button>
 						</div>
@@ -213,8 +168,49 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			{/* Problems Section */}
+			{/* How It Works Section */}
 			<section className='py-16 px-4 sm:px-6 lg:px-8 bg-white'>
+				<div className='max-w-7xl mx-auto'>
+					<div className='text-center mb-12'>
+						<h2 className='text-3xl font-bold text-gray-900 mb-4'>How It Works</h2>
+						<p className='text-lg text-gray-600 max-w-2xl mx-auto'>
+							Get started with your community analytics in three simple steps
+						</p>
+					</div>
+					<div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+						<div className='text-center'>
+							<div className='w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6'>
+								<span className='text-2xl font-bold text-white'>1</span>
+							</div>
+							<h3 className='text-xl font-semibold text-gray-900 mb-4'>Create Your Community</h3>
+							<p className='text-gray-600'>
+								Set up your community with a name and description. This will be your central hub for all chat analyses.
+							</p>
+						</div>
+						<div className='text-center'>
+							<div className='w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6'>
+								<span className='text-2xl font-bold text-white'>2</span>
+							</div>
+							<h3 className='text-xl font-semibold text-gray-900 mb-4'>Upload WhatsApp Export</h3>
+							<p className='text-gray-600'>
+								Export your WhatsApp group chat and upload it to your community. Our AI will analyze the data instantly.
+							</p>
+						</div>
+						<div className='text-center'>
+							<div className='w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6'>
+								<span className='text-2xl font-bold text-white'>3</span>
+							</div>
+							<h3 className='text-xl font-semibold text-gray-900 mb-4'>Discover Insights</h3>
+							<p className='text-gray-600'>
+								Explore member analytics, activity patterns, and AI-powered insights to understand your community better.
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Problems Section */}
+			<section className='py-16 px-4 sm:px-6 lg:px-8 bg-gray-50'>
 				<div className='max-w-7xl mx-auto'>
 					<div className='text-center mb-12'>
 						<h2 className='text-3xl font-bold text-gray-900 mb-4'>Problems We Solve</h2>
@@ -331,7 +327,7 @@ export default function HomePage() {
 				<div className='max-w-4xl mx-auto'>
 					<div className='text-center mb-8'>
 						<h2 className='text-3xl font-bold text-gray-900 mb-4'>Ready to Get Started?</h2>
-						<p className='text-lg text-gray-600'>Create an account to upload your WhatsApp chat export and get instant insights in minutes.</p>
+						<p className='text-lg text-gray-600'>Create an account to build your first community and start analyzing your WhatsApp group chats.</p>
 					</div>
 					{user ? (
 						<Card className='p-8'>
@@ -345,14 +341,14 @@ export default function HomePage() {
 								<div className='w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6'>
 									<Lock className='w-8 h-8 text-white' />
 								</div>
-								<h3 className='text-xl font-semibold text-gray-900 mb-4'>Sign Up to Start Analyzing</h3>
+								<h3 className='text-xl font-semibold text-gray-900 mb-4'>Sign Up to Build Communities</h3>
 								<p className='text-gray-600 mb-6 max-w-md mx-auto'>
-									Create your free account to upload WhatsApp chat exports and get AI-powered insights about your group dynamics.
+									Create your free account to build communities and get AI-powered insights about your WhatsApp group dynamics.
 								</p>
 								<div className='flex flex-col sm:flex-row gap-4 justify-center'>
 									<Button asChild size='lg' className='bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'>
 										<Link href='/sign-up'>
-											<Upload className='w-4 h-4 mr-2' />
+											<Users className='w-4 h-4 mr-2' />
 											Create Free Account
 										</Link>
 									</Button>
@@ -441,92 +437,16 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			{/* Testimonials Section */}
-			<section className='py-16 px-4 sm:px-6 lg:px-8 bg-white'>
-				<div className='max-w-7xl mx-auto'>
-					<div className='text-center mb-12'>
-						<h2 className='text-3xl font-bold text-gray-900 mb-4'>What Our Users Say</h2>
-						<p className='text-lg text-gray-600 max-w-2xl mx-auto'>Join thousands of satisfied users who trust Waly for their WhatsApp analytics.</p>
-					</div>
-					<div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-						<Card className='p-6'>
-							<div className='flex items-center mb-4'>
-								<div className='flex text-yellow-400'>
-									{[...Array(5)].map((_, i) => (
-										<Star key={i} className='w-4 h-4 fill-current' />
-									))}
-								</div>
-							</div>
-							<p className='text-gray-600 mb-4'>
-								&ldquo;Waly transformed how we understand our community. The insights helped us identify our most engaged members and optimize our communication
-								strategy.&rdquo;
-							</p>
-							<div className='flex items-center'>
-								<div className='w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3'>
-									<span className='text-blue-600 font-semibold'>S</span>
-								</div>
-								<div>
-									<p className='font-semibold text-gray-900'>Sarah Chen</p>
-									<p className='text-sm text-gray-500'>Community Manager</p>
-								</div>
-							</div>
-						</Card>
-						<Card className='p-6'>
-							<div className='flex items-center mb-4'>
-								<div className='flex text-yellow-400'>
-									{[...Array(5)].map((_, i) => (
-										<Star key={i} className='w-4 h-4 fill-current' />
-									))}
-								</div>
-							</div>
-							<p className='text-gray-600 mb-4'>
-								&ldquo;The AI analysis is incredible. It found patterns in our group that we never noticed before. Highly recommended for any WhatsApp group
-								admin.&rdquo;
-							</p>
-							<div className='flex items-center'>
-								<div className='w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3'>
-									<span className='text-green-600 font-semibold'>M</span>
-								</div>
-								<div>
-									<p className='font-semibold text-gray-900'>Mike Rodriguez</p>
-									<p className='text-sm text-gray-500'>Team Lead</p>
-								</div>
-							</div>
-						</Card>
-						<Card className='p-6'>
-							<div className='flex items-center mb-4'>
-								<div className='flex text-yellow-400'>
-									{[...Array(5)].map((_, i) => (
-										<Star key={i} className='w-4 h-4 fill-current' />
-									))}
-								</div>
-							</div>
-							<p className='text-gray-600 mb-4'>
-								&ldquo;Finally, a tool that makes sense of our massive WhatsApp group data. The member analytics helped us improve engagement significantly.&rdquo;
-							</p>
-							<div className='flex items-center'>
-								<div className='w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3'>
-									<span className='text-purple-600 font-semibold'>A</span>
-								</div>
-								<div>
-									<p className='font-semibold text-gray-900'>Alex Thompson</p>
-									<p className='text-sm text-gray-500'>Product Manager</p>
-								</div>
-							</div>
-						</Card>
-					</div>
-				</div>
-			</section>
 
 			{/* CTA Section */}
 			<section className='py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-indigo-600'>
 				<div className='max-w-4xl mx-auto text-center'>
-					<h2 className='text-3xl font-bold text-white mb-4'>Ready to Transform Your WhatsApp Analytics?</h2>
-					<p className='text-xl text-blue-100 mb-8'>Create your free account and join thousands of users who trust Waly for their WhatsApp group insights.</p>
+					<h2 className='text-3xl font-bold text-white mb-4'>Ready to Build Your Community?</h2>
+					<p className='text-xl text-blue-100 mb-8'>Create your free account and start building stronger communities with AI-powered insights.</p>
 					<div className='flex flex-col sm:flex-row gap-4 justify-center'>
 						<Button asChild size='lg' variant='secondary'>
 							<Link href='/sign-up'>
-								Get Started Free
+								Create Your Community
 								<ArrowRight className='w-4 h-4 ml-2' />
 							</Link>
 						</Button>

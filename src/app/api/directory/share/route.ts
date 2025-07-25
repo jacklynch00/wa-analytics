@@ -17,26 +17,28 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const { analysisId, password, expiresInDays = 30 } = await request.json();
+    const { communityId, password, expiresInDays = 30 } = await request.json();
 
-    // Verify the analysis belongs to the user and check for existing share
-    const analysis = await prisma.chatAnalysis.findFirst({
+    // Verify the community belongs to the user and check for existing share
+    const community = await prisma.community.findFirst({
       where: {
-        id: analysisId,
+        id: communityId,
         userId,
       },
       include: {
-        memberDirectories: true,
+        memberDirectories: {
+          where: { isActive: true },
+        },
       },
     });
 
-    if (!analysis) {
-      return NextResponse.json({ error: 'Analysis not found' }, { status: 404 });
+    if (!community) {
+      return NextResponse.json({ error: 'Community not found' }, { status: 404 });
     }
 
     // Check if a share link already exists
-    if (analysis.memberDirectories.length > 0) {
-      const existingShare = analysis.memberDirectories[0];
+    if (community.memberDirectories.length > 0) {
+      const existingShare = community.memberDirectories[0];
       return NextResponse.json({
         shareId: existingShare.id,
         shareUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/directory/${existingShare.id}`,
@@ -53,13 +55,13 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
-    // Create member directory share record
+    // Create member directory share record for the community
     const sharedDirectory = await prisma.memberDirectory.create({
       data: {
         id: shareId,
-        chatAnalysis: {
+        community: {
           connect: {
-            id: analysisId
+            id: communityId
           }
         },
         user: {

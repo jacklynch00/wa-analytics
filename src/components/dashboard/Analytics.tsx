@@ -5,6 +5,7 @@ import { ChatAnalysis } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MessageCircle, Users, Calendar, TrendingUp, Clock, BarChart3 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, parseISO, subDays, isAfter } from 'date-fns';
@@ -97,17 +98,19 @@ export default function Analytics({ analysis }: AnalyticsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {timeRangeOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={selectedTimeRange === option.value ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedTimeRange(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
+          <div className="w-full max-w-xs">
+            <Select value={selectedTimeRange.toString()} onValueChange={(value) => setSelectedTimeRange(parseInt(value))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select time range" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeRangeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {selectedTimeRange !== 'all' && (
             <p className="text-sm text-[var(--text-secondary)] mt-2">
@@ -176,65 +179,68 @@ export default function Analytics({ analysis }: AnalyticsProps) {
         </Card>
       </div>
 
-      {/* Activity Patterns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Activity Patterns</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-[var(--text-secondary)]">Peak Activity Hour</span>
-              <Badge variant="outline">
-                {formatHour(peakHour.hour)} ({peakHour.count} messages)
-              </Badge>
+      {/* Comprehensive Activity & Engagement Insights */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Activity & Engagement Insights</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Key Metrics */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-[var(--text-primary)] mb-3">Key Activity Metrics</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-[var(--text-secondary)]">Peak Activity Hour</span>
+                  <Badge variant="outline">
+                    {formatHour(peakHour.hour)} ({peakHour.count} messages)
+                  </Badge>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-[var(--text-secondary)]">Most Active Day</span>
+                  <Badge variant="outline">
+                    {formatChartDate(mostActiveDay.date)} ({mostActiveDay.messageCount} messages)
+                  </Badge>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-[var(--text-secondary)]">Total Members</span>
+                  <Badge variant="outline">
+                    {analysis.members.length} members
+                  </Badge>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-[var(--text-secondary)]">Chat Duration</span>
+                  <Badge variant="outline">
+                    {totalDays} days
+                  </Badge>
+                </div>
+              </div>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-[var(--text-secondary)]">Most Active Day</span>
-              <Badge variant="outline">
-                {formatChartDate(mostActiveDay.date)} ({mostActiveDay.messageCount} messages)
-              </Badge>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-[var(--text-secondary)]">Total Members</span>
-              <Badge variant="outline">
-                {analysis.members.length} members
-              </Badge>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-[var(--text-secondary)]">Chat Duration</span>
-              <Badge variant="outline">
-                {totalDays} days
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Engagement Insights</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-sm text-[var(--text-secondary)] space-y-2">
-              <p>
-                <strong className="text-[var(--text-primary)]">Most Active Hour:</strong> {formatHour(peakHour.hour)} with {peakHour.count} messages
-              </p>
-              <p>
-                <strong className="text-[var(--text-primary)]">Daily Average:</strong> {analysis.averageMessagesPerDay.toFixed(1)} messages per day
-              </p>
-              <p>
-                <strong className="text-[var(--text-primary)]">Recent Activity:</strong> {analysis.activeMembersLast7Days} members active in the last 7 days
-              </p>
-              <p>
-                <strong className="text-[var(--text-primary)]">Top Contributor:</strong> {topContributors[0]?.name} with {topContributors[0]?.totalMessages} messages
-              </p>
+            {/* Detailed Insights */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-[var(--text-primary)] mb-3">Engagement Summary</h4>
+              <div className="text-sm text-[var(--text-secondary)] space-y-2">
+                <p>
+                  <strong className="text-[var(--text-primary)]">Peak Activity:</strong> The community is most active at {formatHour(peakHour.hour)} with {peakHour.count} messages during that hour.
+                </p>
+                <p>
+                  <strong className="text-[var(--text-primary)]">Daily Engagement:</strong> On average, {analysis.averageMessagesPerDay.toFixed(1)} messages are sent per day across the community.
+                </p>
+                <p>
+                  <strong className="text-[var(--text-primary)]">Recent Activity:</strong> {analysis.activeMembersLast7Days} out of {analysis.members.length} members have been active in the last 7 days ({((analysis.activeMembersLast7Days / analysis.members.length) * 100).toFixed(1)}% engagement rate).
+                </p>
+                <p>
+                  <strong className="text-[var(--text-primary)]">Top Contributor:</strong> {topContributors[0]?.name} leads the community with {topContributors[0]?.totalMessages} messages ({((topContributors[0]?.totalMessages / analysis.totalMessages) * 100).toFixed(1)}% of all messages).
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

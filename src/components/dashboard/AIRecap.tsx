@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AIRecapData } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/ui/copy-button';
 import { Calendar, Users, MessageSquare, Link, Sparkles, RefreshCw } from 'lucide-react';
@@ -97,19 +98,24 @@ export default function AIRecap({ aiRecaps, analysisId, onRecapRegenerated }: AI
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-2 justify-between">
-        <div className="flex flex-wrap gap-2">
-          {timeRangeOptions.map((option) => (
-            <Button
-              key={option.value}
-              variant={selectedTimeRange === option.value ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedTimeRange(option.value)}
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              {option.label}
-            </Button>
-          ))}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+        <div className="w-full max-w-xs">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Calendar className="w-4 h-4 inline mr-2" />
+            Time Range
+          </label>
+          <Select value={selectedTimeRange.toString()} onValueChange={(value) => setSelectedTimeRange(parseInt(value))}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select time range" />
+            </SelectTrigger>
+            <SelectContent>
+              {timeRangeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value.toString()}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         <div className="flex gap-2">

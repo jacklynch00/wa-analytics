@@ -27,6 +27,9 @@ export async function GET(
         id: analysisId,
         userId, // Ensure user can only access their own analyses
       },
+      include: {
+        community: true,
+      },
     });
 
     if (!chatAnalysis) {
@@ -54,6 +57,7 @@ export async function GET(
     const analysis = {
       id: chatAnalysis.id,
       title: chatAnalysis.title,
+      communityId: chatAnalysis.communityId,
       ...analysisData,
       dateRange,
       totalMessages: chatAnalysis.totalMessages,

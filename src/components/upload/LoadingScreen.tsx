@@ -6,51 +6,72 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface LoadingStep {
   label: string;
-  duration: number;
+  completed: boolean;
 }
 
-const steps: LoadingStep[] = [
-  { label: 'Parsing chat messages...', duration: 2000 },
-  { label: 'Identifying members...', duration: 1500 },
-  { label: 'Analyzing resources...', duration: 2000 },
-  { label: 'Generating AI insights...', duration: 8000 },
+const initialSteps: LoadingStep[] = [
+  { label: 'Uploading file...', completed: false },
+  { label: 'Parsing chat messages...', completed: false },
+  { label: 'Analyzing member activity...', completed: false },
+  { label: 'Extracting resources...', completed: false },
+  { label: 'Generating AI insights...', completed: false },
 ];
 
 interface LoadingScreenProps {
   onComplete: () => void;
+  progress?: number;
+  currentStep?: string;
 }
 
-export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
-  const [currentStep, setCurrentStep] = useState(0);
+export default function LoadingScreen({ onComplete, progress: externalProgress, currentStep: externalCurrentStep }: LoadingScreenProps) {
+  const [steps, setSteps] = useState(initialSteps);
   const [progress, setProgress] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   useEffect(() => {
-    let totalDuration = 0;
-    let currentDuration = 0;
-
-    steps.forEach((step, index) => {
-      totalDuration += step.duration;
+    if (externalProgress !== undefined) {
+      setProgress(externalProgress);
+      if (externalProgress >= 100) {
+        setTimeout(onComplete, 500);
+      }
+    } else {
+      // Fallback to simulated progress if no external progress provided
+      const totalDuration = 15000; // 15 seconds
+      const stepDuration = totalDuration / steps.length;
       
-      setTimeout(() => {
-        setCurrentStep(index);
-        
-        const stepInterval = setInterval(() => {
-          currentDuration += 100;
-          const newProgress = (currentDuration / totalDuration) * 100;
-          setProgress(Math.min(newProgress, 100));
+      steps.forEach((_, index) => {
+        setTimeout(() => {
+          setCurrentStepIndex(index);
+          setSteps(prev => prev.map((step, i) => ({
+            ...step,
+            completed: i < index
+          })));
           
-          if (currentDuration >= totalDuration) {
-            clearInterval(stepInterval);
-            setTimeout(onComplete, 500);
+          const stepProgress = ((index + 1) / steps.length) * 100;
+          setProgress(stepProgress);
+          
+          if (index === steps.length - 1) {
+            setTimeout(onComplete, 1000);
           }
-        }, 100);
-        
-        return () => clearInterval(stepInterval);
-      }, currentDuration);
-      
-      currentDuration += step.duration;
-    });
-  }, [onComplete]);
+        }, index * stepDuration);
+      });
+    }
+  }, [onComplete, externalProgress, steps.length]);
+
+  useEffect(() => {
+    if (externalCurrentStep) {
+      const stepIndex = initialSteps.findIndex(step => 
+        step.label.toLowerCase().includes(externalCurrentStep.toLowerCase())
+      );
+      if (stepIndex !== -1) {
+        setCurrentStepIndex(stepIndex);
+        setSteps(prev => prev.map((step, i) => ({
+          ...step,
+          completed: i < stepIndex
+        })));
+      }
+    }
+  }, [externalCurrentStep]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -78,22 +99,22 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
                   <div
                     key={index}
                     className={`flex items-center space-x-3 text-sm ${
-                      index < currentStep
+                      step.completed
                         ? 'text-green-600'
-                        : index === currentStep
+                        : index === currentStepIndex
                         ? 'text-blue-600'
                         : 'text-gray-400'
                     }`}
                   >
                     <div className={`w-2 h-2 rounded-full ${
-                      index < currentStep
+                      step.completed
                         ? 'bg-green-600'
-                        : index === currentStep
+                        : index === currentStepIndex
                         ? 'bg-blue-600 animate-pulse'
                         : 'bg-gray-300'
                     }`} />
                     <span>{step.label}</span>
-                    {index < currentStep && (
+                    {step.completed && (
                       <span className="text-green-600">✓</span>
                     )}
                   </div>
@@ -102,7 +123,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
             </div>
 
             <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
-              <strong>Estimated time:</strong> {Math.ceil((steps.reduce((acc, step) => acc + step.duration, 0)) / 1000)}s
+              <strong>Estimated time:</strong> 30-60s
               <br />
               <span className="text-xs">AI analysis may take longer for large chats</span>
             </div>

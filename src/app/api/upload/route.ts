@@ -22,6 +22,27 @@ export async function POST(request: NextRequest) {
 
 		const userId = session.user.id;
 
+		// Parse form data
+		const formData = await request.formData();
+		const file = formData.get('file') as File;
+		const communityId = formData.get('communityId') as string;
+
+		if (!communityId) {
+			return NextResponse.json({ error: 'Community ID is required' }, { status: 400 });
+		}
+
+		// Verify the community belongs to the user
+		const community = await prisma.community.findFirst({
+			where: {
+				id: communityId,
+				userId,
+			},
+		});
+
+		if (!community) {
+			return NextResponse.json({ error: 'Community not found' }, { status: 404 });
+		}
+
 		// Check upload limit
 		const existingAnalyses = await prisma.chatAnalysis.count({
 			where: { userId },
@@ -30,10 +51,6 @@ export async function POST(request: NextRequest) {
 		if (existingAnalyses >= 3) {
 			return NextResponse.json({ error: 'Upload limit reached. You can only have 3 analyses per account.' }, { status: 403 });
 		}
-
-		// Parse form data
-		const formData = await request.formData();
-		const file = formData.get('file') as File;
 
 		if (!file) {
 			return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -109,6 +126,7 @@ export async function POST(request: NextRequest) {
 		const chatAnalysis = await prisma.chatAnalysis.create({
 			data: {
 				userId,
+				communityId,
 				title: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
 				fileName: file.name,
 				fileUrl,

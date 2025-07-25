@@ -22,6 +22,7 @@ model User {
   accounts          Account[]
   chatAnalyses      ChatAnalysis[]
   memberDirectories MemberDirectory[]
+  communities       Community[]
 
   @@unique([email])
   @@map("user")
@@ -72,10 +73,26 @@ model Verification {
   @@map("verification")
 }
 
+model Community {
+  id                String            @id @default(cuid())
+  name              String
+  description       String?
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatAnalyses      ChatAnalysis[]
+  memberDirectories MemberDirectory[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@map("community")
+}
+
 model ChatAnalysis {
   id                String            @id @default(cuid())
   userId            String
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  communityId       String
+  community         Community         @relation(fields: [communityId], references: [id], onDelete: Cascade)
   title             String
   fileName          String
   fileUrl           String?
@@ -92,8 +109,10 @@ model ChatAnalysis {
 
 model MemberDirectory {
   id             String       @id @default(cuid())
-  chatAnalysisId String
-  chatAnalysis   ChatAnalysis @relation(fields: [chatAnalysisId], references: [id], onDelete: Cascade)
+  communityId    String
+  community      Community    @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  chatAnalysisId String?
+  chatAnalysis   ChatAnalysis? @relation(fields: [chatAnalysisId], references: [id], onDelete: Cascade)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   password       String?

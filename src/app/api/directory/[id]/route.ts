@@ -15,6 +15,13 @@ export async function POST(
     const sharedDirectory = await prisma.memberDirectory.findUnique({
       where: { id: shareId },
       include: {
+        community: {
+          include: {
+            chatAnalyses: {
+              orderBy: { createdAt: 'desc' },
+            },
+          },
+        },
         chatAnalysis: true,
       },
     });
@@ -40,24 +47,36 @@ export async function POST(
       }
     }
 
-    // Parse the analysis data
-    const analysisData = JSON.parse(JSON.stringify(sharedDirectory.chatAnalysis.analysisData), (key, value) => {
-      if (key === 'timestamp' || key === 'firstActive' || key === 'lastActive' || 
-          key === 'dateShared' || key === 'start' || key === 'end') {
-        return new Date(value);
-      }
-      return value;
+    // Get all analyses from the community
+    const analyses = sharedDirectory.community.chatAnalyses.map((analysis) => {
+      const analysisData = JSON.parse(JSON.stringify(analysis.analysisData), (key, value) => {
+        if (key === 'timestamp' || key === 'firstActive' || key === 'lastActive' || 
+            key === 'dateShared' || key === 'start' || key === 'end') {
+          return new Date(value);
+        }
+        return value;
+      });
+
+      return {
+        id: analysis.id,
+        title: analysis.title,
+        totalMessages: analysis.totalMessages,
+        totalMembers: analysis.totalMembers,
+        createdAt: analysis.createdAt,
+        members: analysisData.members || [],
+        resources: analysisData.resources || [],
+        aiRecaps: analysisData.aiRecaps || {},
+      };
     });
 
-    // Return only the member directory data
+    // Return community directory data
     const directoryData = {
-      members: analysisData.members || [],
-      title: sharedDirectory.chatAnalysis.title,
+      communityName: sharedDirectory.community.name,
+      communityDescription: sharedDirectory.community.description,
+      analyses: analyses,
       isPasswordProtected: !!sharedDirectory.password,
       password: sharedDirectory.password,
       expiresAt: sharedDirectory.expiresAt,
-      totalMessages: sharedDirectory.chatAnalysis.totalMessages,
-      totalMembers: sharedDirectory.chatAnalysis.totalMembers,
     };
 
     return NextResponse.json(directoryData);
