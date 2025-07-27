@@ -44,7 +44,53 @@ export async function POST(
       }
     }
 
-    // Get all analyses from the community
+    // Get all accepted applications from the community
+    const applications = await prisma.memberApplication.findMany({
+      where: {
+        form: {
+          communityId: sharedDirectory.communityId,
+        },
+        status: 'ACCEPTED',
+      },
+      include: {
+        form: {
+          include: {
+            community: true,
+          },
+        },
+      },
+      orderBy: {
+        invitedAt: 'desc',
+      },
+    });
+
+    // Transform application data for display
+    const members = applications.map((application) => {
+      const responses = application.responses as Record<string, unknown>;
+      const form = application.form;
+      const questions = form.questions as Array<{ id: string; label: string; type: string }>;
+      
+      // Extract member information from responses
+      const memberData: Record<string, unknown> = {
+        id: application.id,
+        email: application.email,
+        joinedAt: application.invitedAt,
+        appliedAt: application.createdAt,
+      };
+
+      // Add responses based on form questions
+      questions.forEach((question) => {
+        if (responses[question.id]) {
+          memberData[question.id] = responses[question.id];
+          // Also create a readable field name
+          memberData[question.label.toLowerCase().replace(/\s+/g, '_')] = responses[question.id];
+        }
+      });
+
+      return memberData;
+    });
+
+    // Get all analyses from the community for AI recap and resources
     const analyses = sharedDirectory.community.chatAnalyses.map((analysis) => {
       const analysisData = JSON.parse(JSON.stringify(analysis.analysisData), (key, value) => {
         if (key === 'timestamp' || key === 'firstActive' || key === 'lastActive' || 
@@ -66,13 +112,25 @@ export async function POST(
       };
     });
 
+    // Get field visibility settings
+    const visibleFields = sharedDirectory.visibleFields as Record<string, boolean> || {
+      name: true,
+      email: true,
+      linkedin: false,
+      phone: false,
+    };
+
     // Return community directory data
     const directoryData = {
       communityName: sharedDirectory.community.name,
       communityDescription: sharedDirectory.community.description,
+      members: members,
+      totalMembers: members.length,
       analyses: analyses,
       isPasswordProtected: !!sharedDirectory.password,
       password: sharedDirectory.password,
+      formQuestions: applications.length > 0 ? (applications[0].form.questions as Array<{ id: string; label: string; type: string }>) : [],
+      visibleFields: visibleFields,
     };
 
     return NextResponse.json(directoryData);
@@ -100,7 +158,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { password } = await request.json();
+    const { password, visibleFields } = await request.json();
 
     // Find the shared directory and verify ownership
     const sharedDirectory = await prisma.memberDirectory.findFirst({
@@ -116,17 +174,28 @@ export async function PATCH(
       return NextResponse.json({ error: 'Directory not found or access denied' }, { status: 404 });
     }
 
-    // Update the directory password
+    // Prepare update data
+    const updateData: {
+      password?: string | null;
+      visibleFields?: Record<string, boolean>;
+    } = {};
+    if (password !== undefined) {
+      updateData.password = password?.trim() || null;
+    }
+    if (visibleFields !== undefined) {
+      updateData.visibleFields = visibleFields;
+    }
+
+    // Update the directory
     const updatedDirectory = await prisma.memberDirectory.update({
       where: { id: shareId },
-      data: {
-        password: password?.trim() || null,
-      },
+      data: updateData,
     });
 
     return NextResponse.json({ 
       success: true,
       password: updatedDirectory.password,
+      visibleFields: updatedDirectory.visibleFields,
     });
 
   } catch (error) {

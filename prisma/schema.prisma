@@ -120,6 +120,7 @@ model MemberDirectory {
   isActive       Boolean      @default(true)
   accessCount    Int          @default(0)
   lastAccessed   DateTime?
+  visibleFields  Json?        @default("{\"name\": true, \"email\": true, \"linkedin\": false, \"phone\": false}")
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

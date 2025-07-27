@@ -6,12 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MemberProfile, AIRecapData } from '@/types';
-import { Users, MessageCircle, Calendar, Lock, Eye, EyeOff, Search, FileText, Lightbulb, Sparkles, Link } from 'lucide-react';
+import { Users, MessageCircle, Calendar, Lock, Eye, EyeOff, Search, FileText, Lightbulb, Sparkles, Link, Mail, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { Pagination, usePagination } from '@/components/ui/pagination';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { MemberProfile, AIRecapData } from '@/types';
+
+interface FormQuestion {
+	id: string;
+	label: string;
+	type: string;
+}
+
+interface MemberData {
+	id: string;
+	email: string;
+	joinedAt: string;
+	appliedAt: string;
+	[key: string]: unknown;
+}
 
 interface Analysis {
 	id: string;
@@ -27,10 +41,13 @@ interface Analysis {
 interface SharedDirectoryData {
 	communityName: string;
 	communityDescription: string | null;
-	analyses: Analysis[];
+	members: MemberData[];
+	totalMembers: number;
+	analyses?: Analysis[];
 	isPasswordProtected: boolean;
 	password?: string;
-	expiresAt: string;
+	formQuestions: FormQuestion[];
+	visibleFields?: Record<string, boolean>;
 }
 
 export default function SharedDirectoryPage() {
@@ -114,31 +131,24 @@ export default function SharedDirectoryPage() {
 		setSelectedAnalysisId(directoryData.analyses[0].id);
 	}
 
+	// Get members from directory data (application members)
+	const allMembers = directoryData?.members || [];
+
+	// Helper function to get display name for a member
+	const getMemberDisplayName = (member: MemberData): string => {
+		// Try to find name in various common field names
+		const nameFields = ['name', 'full_name', 'first_name', 'last_name'];
+		for (const field of nameFields) {
+			if (member[field] && typeof member[field] === 'string') {
+				return member[field] as string;
+			}
+		}
+		// Fallback to email username
+		return member.email.split('@')[0];
+	};
+
 	// Filter analyses based on selection
 	const filteredAnalyses = directoryData?.analyses?.filter((analysis) => analysis.id === selectedAnalysisId) || [];
-
-	// Aggregate members from filtered analyses
-	const allMembers = filteredAnalyses.flatMap((analysis) => analysis.members) || [];
-
-	// Create a map to merge members across analyses
-	const memberMap = new Map<string, MemberProfile>();
-	allMembers.forEach((member) => {
-		if (memberMap.has(member.name)) {
-			const existing = memberMap.get(member.name)!;
-			existing.totalMessages += member.totalMessages;
-			// Keep the latest activity date
-			if (member.lastActive > existing.lastActive) {
-				existing.lastActive = member.lastActive;
-			}
-		} else {
-			memberMap.set(member.name, { ...member });
-		}
-	});
-
-	const uniqueMembers = Array.from(memberMap.values());
-
-	// Calculate totals
-	const totalMembers = uniqueMembers.length;
 
 	// Aggregate resources from filtered analyses
 	const allResources = filteredAnalyses.flatMap((analysis) => analysis.resources || []) || [];
@@ -167,7 +177,11 @@ export default function SharedDirectoryPage() {
 	const selectedRecaps = allAIRecaps[selectedTimeRange.toString()] || [];
 
 	// Filter members based on search query
-	const filteredMembers = uniqueMembers.filter((member) => member.name.toLowerCase().includes(searchQuery.toLowerCase()));
+	const filteredMembers = allMembers.filter((member) => {
+		const displayName = getMemberDisplayName(member);
+		return displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			member.email.toLowerCase().includes(searchQuery.toLowerCase());
+	});
 
 	const { currentItems: paginatedMembers, currentPage, totalPages, totalItems, itemsPerPage, handlePageChange } = usePagination(filteredMembers, 12);
 
@@ -249,29 +263,29 @@ export default function SharedDirectoryPage() {
 							</div>
 
 							{/* Analysis Selector */}
-							<div className='w-full lg:w-auto lg:min-w-[250px]'>
-								<label className='block text-sm font-medium text-gray-700 mb-2'>View Analysis</label>
-								<Select value={selectedAnalysisId} onValueChange={setSelectedAnalysisId}>
-									<SelectTrigger className='w-full'>
-										<SelectValue placeholder='Select analysis' />
-									</SelectTrigger>
-									<SelectContent>
-										{directoryData.analyses.map((analysis) => (
-											<SelectItem key={analysis.id} value={analysis.id}>
-												{analysis.title}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
+							{directoryData.analyses && directoryData.analyses.length > 0 && (
+								<div className='w-full lg:w-auto lg:min-w-[250px]'>
+									<label className='block text-sm font-medium text-gray-700 mb-2'>View Analysis</label>
+									<Select value={selectedAnalysisId} onValueChange={setSelectedAnalysisId}>
+										<SelectTrigger className='w-full'>
+											<SelectValue placeholder='Select analysis' />
+										</SelectTrigger>
+										<SelectContent>
+											{directoryData.analyses.map((analysis) => (
+												<SelectItem key={analysis.id} value={analysis.id}>
+													{analysis.title}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</div>
+							)}
 						</div>
 
 						<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 sm:mt-4 gap-2 sm:gap-0'>
 							<div className='text-xs sm:text-sm text-gray-600'>
 								<div className='flex flex-wrap items-center gap-1 sm:gap-2'>
 									<span>Public Member Directory</span>
-									<span>•</span>
-									<span>Expires {format(new Date(directoryData.expiresAt), 'MMM dd, yyyy')}</span>
 									{directoryData.password && (
 										<>
 											<span>•</span>
@@ -294,28 +308,32 @@ export default function SharedDirectoryPage() {
 						<TabsList className='inline-flex w-auto min-w-full justify-start'>
 							<TabsTrigger value='members' className='flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-3 sm:px-4'>
 								<Users className='w-3 h-3 sm:w-4 sm:h-4' />
-								<span className='hidden sm:inline'>Members </span>({totalMembers})
+								<span className='hidden sm:inline'>Members </span>({directoryData?.totalMembers || 0})
 							</TabsTrigger>
-							<TabsTrigger value='resources' className='flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-3 sm:px-4'>
-								<FileText className='w-3 h-3 sm:w-4 sm:h-4' />
-								<span className='hidden sm:inline'>Resources </span>({allResources.length})
-							</TabsTrigger>
-							<TabsTrigger value='ai-recap' className='flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-3 sm:px-4'>
-								<Lightbulb className='w-3 h-3 sm:w-4 sm:h-4' />
-								<span className='hidden sm:inline'>AI Recap </span>({Object.keys(allAIRecaps).length})
-							</TabsTrigger>
+							{directoryData?.analyses && directoryData.analyses.length > 0 && (
+								<>
+									<TabsTrigger value='resources' className='flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-3 sm:px-4'>
+										<FileText className='w-3 h-3 sm:w-4 sm:h-4' />
+										<span className='hidden sm:inline'>Resources </span>({allResources.length})
+									</TabsTrigger>
+									<TabsTrigger value='ai-recap' className='flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-3 sm:px-4'>
+										<Lightbulb className='w-3 h-3 sm:w-4 sm:h-4' />
+										<span className='hidden sm:inline'>AI Recap </span>({Object.keys(allAIRecaps).length})
+									</TabsTrigger>
+								</>
+							)}
 						</TabsList>
 					</div>
 
 					<TabsContent value='members'>
 						<Card>
-							<CardHeader className='pb-4'>
-								<CardTitle className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0'>
-									<span className='text-base sm:text-lg'>Member Directory</span>
-									<Badge variant='secondary' className='text-xs'>
-										{totalItems} {searchQuery ? 'filtered' : 'total'} members
-									</Badge>
-								</CardTitle>
+						<CardHeader className='pb-4'>
+							<CardTitle className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0'>
+								<span className='text-base sm:text-lg'>Member Directory</span>
+								<Badge variant='secondary' className='text-xs'>
+									{totalItems} {searchQuery ? 'filtered' : 'total'} members
+								</Badge>
+							</CardTitle>
 								<div className='relative mt-3 sm:mt-4'>
 									<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
 									<Input placeholder='Search members...' value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className='pl-10' />
@@ -330,28 +348,89 @@ export default function SharedDirectoryPage() {
 									</div>
 								) : (
 									<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4'>
-										{paginatedMembers.map((member) => (
-											<div key={member.name} className='p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition-colors bg-white shadow-sm'>
-												<div className='flex items-center space-x-3'>
-													<div className='w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0'>
-														<span className='text-blue-600 font-semibold text-sm sm:text-base'>{member.name.charAt(0).toUpperCase()}</span>
-													</div>
-													<div className='flex-1 min-w-0'>
-														<h3 className='font-medium text-sm sm:text-base text-gray-900 truncate'>{member.name}</h3>
-														<div className='text-xs sm:text-sm text-gray-500 space-y-1'>
-															<div className='flex items-center space-x-1'>
-																<MessageCircle className='w-3 h-3 flex-shrink-0' />
-																<span>{member.totalMessages} messages</span>
-															</div>
-															<div className='flex items-center space-x-1'>
-																<Calendar className='w-3 h-3 flex-shrink-0' />
-																<span className='truncate'>Last active: {format(member.lastActive, 'MMM dd')}</span>
+										{paginatedMembers.map((member) => {
+											const displayName = getMemberDisplayName(member);
+											const visibleFields = directoryData?.visibleFields || {
+												name: true,
+												email: true,
+												linkedin: false,
+												phone: false,
+											};
+											return (
+												<div key={member.id} className='p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition-colors bg-white shadow-sm'>
+													<div className='flex items-start space-x-3'>
+														<div className='w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0'>
+															<span className='text-blue-600 font-semibold text-sm sm:text-base'>
+																{displayName.charAt(0).toUpperCase()}
+															</span>
+														</div>
+														<div className='flex-1 min-w-0'>
+															{visibleFields.name && (
+																<h3 className='font-medium text-sm sm:text-base text-gray-900 truncate'>
+																	{displayName}
+																</h3>
+															)}
+															<div className='text-xs sm:text-sm text-gray-500 space-y-1'>
+																{visibleFields.email && (
+																	<div className='flex items-center space-x-1'>
+																		<Mail className='w-3 h-3 flex-shrink-0' />
+																		<span className='truncate'>{member.email}</span>
+																	</div>
+																)}
+																{member.joinedAt && (
+																	<div className='flex items-center space-x-1'>
+																		<Calendar className='w-3 h-3 flex-shrink-0' />
+																		<span className='truncate'>
+																			Joined {format(new Date(member.joinedAt), 'MMM dd, yyyy')}
+																		</span>
+																	</div>
+																)}
+																{/* Display additional form fields based on visibility settings */}
+																{directoryData.formQuestions.map((question) => {
+																	const value = member[question.id];
+																	const label = question.label.toLowerCase();
+																	
+																	// Skip if no value
+																	if (!value) return null;
+																	
+																	// Skip name and email as they're handled separately
+																	if (label.includes('name') || label.includes('email')) {
+																		return null;
+																	}
+																	
+																	// Only show fields that are explicitly set to visible
+																	let shouldShow = false;
+																	
+																	// Check if this is a LinkedIn field
+																	if (label.includes('linkedin')) {
+																		shouldShow = visibleFields.linkedin;
+																	}
+																	// Check if this is a phone field
+																	else if (label.includes('phone') || label.includes('mobile') || label.includes('cell')) {
+																		shouldShow = visibleFields.phone;
+																	}
+																	// For any other field, don't show it (only show the 4 configured field types)
+																	else {
+																		shouldShow = false;
+																	}
+																	
+																	if (!shouldShow) return null;
+																	
+																	return (
+																		<div key={question.id} className='flex items-start space-x-1'>
+																			<User className='w-3 h-3 flex-shrink-0 mt-0.5' />
+																			<span className='truncate text-xs'>
+																				{question.label}: {String(value).substring(0, 50)}{String(value).length > 50 ? '...' : ''}
+																			</span>
+																		</div>
+																	);
+																})}
 															</div>
 														</div>
 													</div>
 												</div>
-											</div>
-										))}
+											);
+										})}
 									</div>
 								)}
 
@@ -371,47 +450,69 @@ export default function SharedDirectoryPage() {
 					</TabsContent>
 
 					<TabsContent value='resources'>
-						<Card>
-							<CardHeader className='pb-4'>
-								<CardTitle className='text-base sm:text-lg'>Resources</CardTitle>
-								<p className='text-xs sm:text-sm text-gray-600'>Shared links, documents, and media from community conversations</p>
-							</CardHeader>
-							<CardContent className='pt-0'>
-								{allResources.length === 0 ? (
-									<div className='text-center py-8 sm:py-12'>
-										<FileText className='mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400' />
-										<h3 className='mt-4 text-base sm:text-lg font-medium text-gray-900'>No resources found</h3>
-										<p className='mt-2 text-sm text-gray-600'>This community hasn&apos;t shared any resources yet.</p>
-									</div>
-								) : (
-									<div className='space-y-3 sm:space-y-4'>
-										{allResources.map((resource, index) => (
-											<div key={index} className='p-3 sm:p-4 border rounded-lg hover:bg-gray-50 transition-colors'>
-												<div className='flex items-start space-x-3'>
-													<div className='w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0'>
-														<FileText className='w-4 h-4 text-green-600' />
-													</div>
-													<div className='flex-1 min-w-0'>
-														<h4 className='font-medium text-sm sm:text-base text-gray-900 truncate'>{resource.type || 'Shared Resource'}</h4>
-														{resource.url && (
-															<a
-																href={resource.url}
-																target='_blank'
-																rel='noopener noreferrer'
-																className='text-blue-600 hover:text-blue-800 text-xs sm:text-sm truncate block break-all'>
-																{resource.url}
-															</a>
-														)}
-														{resource.description && <p className='text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2'>{resource.description}</p>}
-														{resource.sharedBy && <p className='text-xs text-gray-500 mt-2'>Shared by {resource.sharedBy}</p>}
+						<div className='space-y-4 sm:space-y-6'>
+							{/* Time Range Selector for Resources */}
+							<div className='w-full max-w-xs'>
+								<label className='block text-sm font-medium text-gray-700 mb-2'>
+									<Calendar className='w-4 h-4 inline mr-2' />
+									Time Range
+								</label>
+								<Select value={selectedTimeRange.toString()} onValueChange={(value) => setSelectedTimeRange(parseInt(value))}>
+									<SelectTrigger>
+										<SelectValue placeholder='Select time range' />
+									</SelectTrigger>
+									<SelectContent>
+										{timeRangeOptions.map((option) => (
+											<SelectItem key={option.value} value={option.value.toString()}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<Card>
+								<CardHeader className='pb-4'>
+									<CardTitle className='text-base sm:text-lg'>Resources</CardTitle>
+									<p className='text-xs sm:text-sm text-gray-600'>Shared links, documents, and media from community conversations</p>
+								</CardHeader>
+								<CardContent className='pt-0'>
+									{allResources.length === 0 ? (
+										<div className='text-center py-8 sm:py-12'>
+											<FileText className='mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400' />
+											<h3 className='mt-4 text-base sm:text-lg font-medium text-gray-900'>No resources found</h3>
+											<p className='mt-2 text-sm text-gray-600'>This community hasn&apos;t shared any resources yet.</p>
+										</div>
+									) : (
+										<div className='space-y-3 sm:space-y-4'>
+											{allResources.map((resource, index) => (
+												<div key={index} className='p-3 sm:p-4 border rounded-lg hover:bg-gray-50 transition-colors'>
+													<div className='flex items-start space-x-3'>
+														<div className='w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0'>
+															<FileText className='w-4 h-4 text-green-600' />
+														</div>
+														<div className='flex-1 min-w-0'>
+															<h4 className='font-medium text-sm sm:text-base text-gray-900 truncate'>{resource.type || 'Shared Resource'}</h4>
+															{resource.url && (
+																<a
+																	href={resource.url}
+																	target='_blank'
+																	rel='noopener noreferrer'
+																	className='text-blue-600 hover:text-blue-800 text-xs sm:text-sm truncate block break-all'>
+																	{resource.url}
+																</a>
+															)}
+															{resource.description && <p className='text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2'>{resource.description}</p>}
+															{resource.sharedBy && <p className='text-xs text-gray-500 mt-2'>Shared by {resource.sharedBy}</p>}
+														</div>
 													</div>
 												</div>
-											</div>
-										))}
-									</div>
-								)}
-							</CardContent>
-						</Card>
+											))}
+										</div>
+									)}
+								</CardContent>
+							</Card>
+						</div>
 					</TabsContent>
 
 					<TabsContent value='ai-recap'>

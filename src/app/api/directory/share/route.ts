@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
         shareId: existingShare.id,
         shareUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/directory/${existingShare.id}`,
         password: existingShare.password,
+        visibleFields: existingShare.visibleFields,
         isExisting: true,
       });
     }
@@ -73,6 +74,7 @@ export async function POST(request: NextRequest) {
       shareId: sharedDirectory.id,
       shareUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/directory/${shareId}`,
       password: sharedDirectory.password,
+      visibleFields: sharedDirectory.visibleFields,
       isExisting: false,
     });
 

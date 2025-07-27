@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, Search, Filter, Eye, Check, X, Clock, Users, Mail, FileText, MoreVertical, Send } from 'lucide-react';
+import { Plus, Search, Filter, Eye, Check, X, Clock, Users, Mail, FileText, MoreVertical, Send, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FormQuestion {
@@ -159,6 +159,61 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 		}
 	};
 
+	const exportToCSV = () => {
+		if (!fullFormData?.questions || applications.length === 0) {
+			toast.error('No data to export');
+			return;
+		}
+
+		// Create CSV headers
+		const headers = ['Email', 'Status', 'Submitted Date', 'Reviewed Date'];
+		fullFormData.questions.forEach(question => {
+			headers.push(question.label);
+		});
+
+		// Create CSV rows
+		const rows = applications.map(application => {
+			const row = [
+				application.email,
+				application.status,
+				new Date(application.createdAt).toLocaleDateString(),
+				application.reviewedAt ? new Date(application.reviewedAt).toLocaleDateString() : 'Not reviewed'
+			];
+			
+			// Add responses for each question
+			fullFormData.questions.forEach(question => {
+				const response = application.responses[question.id];
+				if (Array.isArray(response)) {
+					row.push(response.join('; '));
+				} else {
+					row.push(response || '');
+				}
+			});
+			
+			return row;
+		});
+
+		// Convert to CSV format
+		const csvContent = [
+			headers.map(header => `"${header}"`).join(','),
+			...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+		].join('\n');
+
+		// Create and download file
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		const url = URL.createObjectURL(blob);
+		link.setAttribute('href', url);
+		link.setAttribute('download', `applications-${applicationForm?.title || 'export'}-${new Date().toISOString().split('T')[0]}.csv`);
+		link.style.visibility = 'hidden';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+
+		toast.success('Applications exported to CSV successfully');
+	};
+
 	useEffect(() => {
 		if (applicationForm) {
 			loadApplications();
@@ -217,7 +272,18 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 				<CardHeader>
 					<div className='flex justify-between items-center'>
 						<CardTitle className='text-lg'>Applications</CardTitle>
-						<Badge variant='outline'>{applications.length} total</Badge>
+						<div className='flex items-center gap-2'>
+							<Button 
+								variant='outline' 
+								size='sm' 
+								onClick={exportToCSV}
+								disabled={applications.length === 0}
+							>
+								<Download className='w-4 h-4 mr-2' />
+								Export CSV
+							</Button>
+							<Badge variant='outline'>{applications.length} total</Badge>
+						</div>
 					</div>
 				</CardHeader>
 				<CardContent>

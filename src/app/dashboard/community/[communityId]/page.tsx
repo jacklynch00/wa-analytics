@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Upload, FileText, Users, Calendar, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2 } from 'lucide-react';
+import { Upload, FileText, Users, Calendar, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import FileUpload from '@/components/upload/FileUpload';
@@ -59,6 +59,7 @@ interface MemberDirectory {
 	id: string;
 	password?: string;
 	isActive: boolean;
+	visibleFields?: Record<string, boolean>;
 }
 
 function CommunityPageContent() {
@@ -75,6 +76,12 @@ function CommunityPageContent() {
 	const [isEditDirectoryModalOpen, setIsEditDirectoryModalOpen] = useState(false);
 	const [editDirectoryPassword, setEditDirectoryPassword] = useState('');
 	const [isUpdatingDirectory, setIsUpdatingDirectory] = useState(false);
+	const [fieldVisibility, setFieldVisibility] = useState<Record<string, boolean>>({
+		name: true,
+		email: true,
+		linkedin: false,
+		phone: false,
+	});
 	const router = useRouter();
 	const params = useParams();
 	const communityId = params.communityId as string;
@@ -93,12 +100,13 @@ function CommunityPageContent() {
 						setApplicationForm(result.community.applicationForm);
 					}
 
-					// Set member directory if it exists
+					// Set member directory if it exists (API already filters for active directories)
 					if (result.community.memberDirectories && result.community.memberDirectories.length > 0) {
-						const activeDirectory = result.community.memberDirectories.find((dir: MemberDirectory) => dir.isActive);
-						if (activeDirectory) {
-							setMemberDirectory(activeDirectory);
-						}
+						console.log('Loading member directory:', result.community.memberDirectories[0]);
+						setMemberDirectory(result.community.memberDirectories[0]);
+					} else {
+						console.log('No member directories found in API response');
+						setMemberDirectory(null);
 					}
 				} else {
 					console.error('Failed to load community');
@@ -195,6 +203,12 @@ function CommunityPageContent() {
 				id: result.shareId,
 				password: result.password || null,
 				isActive: true,
+				visibleFields: result.visibleFields || {
+					name: true,
+					email: true,
+					linkedin: false,
+					phone: false,
+				},
 			});
 
 			// Close modal and reset password
@@ -222,6 +236,7 @@ function CommunityPageContent() {
 				},
 				body: JSON.stringify({
 					password: editDirectoryPassword.trim() || null,
+					visibleFields: fieldVisibility,
 				}),
 			});
 
@@ -235,6 +250,7 @@ function CommunityPageContent() {
 			setMemberDirectory({
 				...memberDirectory,
 				password: result.password || null,
+				visibleFields: result.visibleFields,
 			});
 
 			// Close modal and reset password
@@ -280,6 +296,13 @@ function CommunityPageContent() {
 	const handleEditDirectory = () => {
 		if (memberDirectory) {
 			setEditDirectoryPassword(memberDirectory.password || '');
+			const currentVisibility = memberDirectory.visibleFields as Record<string, boolean> || {
+				name: true,
+				email: true,
+				linkedin: false,
+				phone: false,
+			};
+			setFieldVisibility(currentVisibility);
 			setIsEditDirectoryModalOpen(true);
 		}
 	};
@@ -719,7 +742,7 @@ function CommunityPageContent() {
 					<DialogContent className='sm:max-w-lg'>
 						<DialogHeader>
 							<DialogTitle>Edit Directory Settings</DialogTitle>
-							<DialogDescription>Update the password settings for your member directory.</DialogDescription>
+							<DialogDescription>Update the password and field visibility settings for your member directory.</DialogDescription>
 						</DialogHeader>
 						<div className='space-y-4 py-4'>
 							<div className='space-y-2'>
@@ -738,6 +761,48 @@ function CommunityPageContent() {
 										? 'Visitors will need this password to view the directory'
 										: 'Directory will be publicly accessible without a password'}
 								</p>
+							</div>
+
+							{/* Field Visibility Settings */}
+							<div className='space-y-3'>
+								<div className='space-y-2'>
+									<label className='text-sm font-medium'>Member Information Visibility</label>
+									<p className='text-xs text-gray-500'>Choose which member information to display in the public directory</p>
+								</div>
+								<div className='space-y-3'>
+									{[
+										{ key: 'name', label: 'Name', description: 'Display member names' },
+										{ key: 'email', label: 'Email', description: 'Display email addresses' },
+										{ key: 'linkedin', label: 'LinkedIn', description: 'Display LinkedIn profiles' },
+										{ key: 'phone', label: 'Phone', description: 'Display phone numbers' },
+									].map((field) => (
+										<div key={field.key} className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'>
+											<div className='flex items-center space-x-3'>
+												{fieldVisibility[field.key] ? (
+													<Eye className='w-4 h-4 text-green-600' />
+												) : (
+													<EyeOff className='w-4 h-4 text-gray-400' />
+												)}
+												<div>
+													<p className='text-sm font-medium text-gray-900'>{field.label}</p>
+													<p className='text-xs text-gray-500'>{field.description}</p>
+												</div>
+											</div>
+											<Button
+												variant={fieldVisibility[field.key] ? 'default' : 'outline'}
+												size='sm'
+												onClick={() =>
+													setFieldVisibility(prev => ({
+														...prev,
+														[field.key]: !prev[field.key]
+													}))
+												}
+											>
+												{fieldVisibility[field.key] ? 'Visible' : 'Hidden'}
+											</Button>
+										</div>
+									))}
+								</div>
 							</div>
 							{memberDirectory && (
 								<div className='bg-blue-50 p-3 rounded-lg'>
