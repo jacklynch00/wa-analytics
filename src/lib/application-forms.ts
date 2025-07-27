@@ -8,7 +8,7 @@ export class ApplicationFormService {
     const form = await prisma.applicationForm.create({
       data: {
         ...data,
-        questions: data.questions as any,
+        questions: data.questions as object,
       },
     });
 
@@ -56,7 +56,7 @@ export class ApplicationFormService {
       where: { id },
       data: {
         ...data,
-        questions: data.questions ? (data.questions as any) : undefined,
+        questions: data.questions ? (data.questions as object) : undefined,
       },
     });
 
@@ -91,6 +91,7 @@ export class ApplicationFormService {
     return true;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private transformFormData(form: any): ApplicationFormData {
     return {
       id: form.id,
@@ -116,7 +117,7 @@ export class MemberApplicationService {
     const application = await prisma.memberApplication.create({
       data: {
         ...data,
-        responses: data.responses as any,
+        responses: data.responses as object,
       },
     });
 
@@ -143,7 +144,7 @@ export class MemberApplicationService {
     status?: 'PENDING' | 'ACCEPTED' | 'DENIED';
     search?: string;
   }): Promise<MemberApplicationData[]> {
-    const where: any = { formId };
+    const where: Record<string, unknown> = { formId };
 
     if (filters?.status) {
       where.status = filters.status;
@@ -236,7 +237,7 @@ export class MemberApplicationService {
       confirmationEmailSentAt?: Date;
       statusEmailSent?: boolean;
       statusEmailSentAt?: Date;
-      emailDeliveryErrors?: any[];
+      emailDeliveryErrors?: Record<string, unknown>[];
     }
   ): Promise<void> {
     await prisma.memberApplication.update({
@@ -244,12 +245,13 @@ export class MemberApplicationService {
       data: {
         ...trackingData,
         emailDeliveryErrors: trackingData.emailDeliveryErrors 
-          ? trackingData.emailDeliveryErrors as any
+          ? trackingData.emailDeliveryErrors as object
           : undefined,
       },
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private transformApplicationData(application: any): MemberApplicationData {
     return {
       id: application.id,

@@ -53,7 +53,7 @@ export default function FormUrlSettings({ form, onUpdate }: FormUrlSettingsProps
         setSlugStatus('invalid');
         setSlugError(result.message || 'This URL is not available');
       }
-    } catch (error) {
+    } catch {
       setSlugStatus('invalid');
       setSlugError('Failed to validate URL');
     }

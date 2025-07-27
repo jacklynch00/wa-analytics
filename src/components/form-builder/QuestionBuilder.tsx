@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Library } from 'lucide-react';
 import { FormQuestion } from '@/types';
@@ -215,7 +214,7 @@ export default function QuestionBuilder({ questions, onUpdate }: QuestionBuilder
         {isAtLimit && (
           <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800">
-              You've reached the maximum of 12 questions per form. Remove a question to add a new one.
+              You&apos;ve reached the maximum of 12 questions per form. Remove a question to add a new one.
             </p>
           </div>
         )}

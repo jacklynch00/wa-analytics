@@ -65,7 +65,6 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -75,7 +74,7 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
         setMultiSelectValues(prev => ({ ...prev, [question.id]: [] }));
       }
       return acc;
-    }, {} as Record<string, any>),
+    }, {} as Record<string, string | string[]>),
   });
 
   const handleMultiSelectChange = (questionId: string, option: string, checked: boolean) => {
@@ -85,7 +84,7 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
       : currentValues.filter(v => v !== option);
     
     setMultiSelectValues(prev => ({ ...prev, [questionId]: newValues }));
-    setValue(questionId, newValues as any);
+    setValue(questionId, newValues);
   };
 
   const onSubmit = async (data: FormData) => {
@@ -123,6 +122,14 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
     }
   };
 
+  const getErrorMessage = (error: unknown): string => {
+    if (typeof error === 'string') return error;
+    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+      return error.message;
+    }
+    return 'This field is required';
+  };
+
   const renderQuestion = (question: FormQuestion) => {
     const error = errors[question.id];
 
@@ -143,7 +150,7 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
             {error && (
               <p className="text-sm text-red-600 flex items-center gap-1">
                 <AlertCircle className="w-4 h-4" />
-                {error.message}
+                <span>{getErrorMessage(error)}</span>
               </p>
             )}
           </div>
@@ -157,7 +164,7 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
               {question.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
             <RadioGroup
-              onValueChange={(value) => setValue(question.id, value as any)}
+              onValueChange={(value) => setValue(question.id, value)}
               className="space-y-2"
             >
               {question.options?.map((option, optionIndex) => (
@@ -178,7 +185,7 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
             {error && (
               <p className="text-sm text-red-600 flex items-center gap-1">
                 <AlertCircle className="w-4 h-4" />
-                {error.message}
+                <span>{getErrorMessage(error)}</span>
               </p>
             )}
           </div>
@@ -213,7 +220,7 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
             {error && (
               <p className="text-sm text-red-600 flex items-center gap-1">
                 <AlertCircle className="w-4 h-4" />
-                {error.message}
+                <span>{getErrorMessage(error)}</span>
               </p>
             )}
           </div>

@@ -37,11 +37,11 @@ export default function SubmissionSuccess({ form }: SubmissionSuccessProps) {
               <h4 className="font-medium text-blue-900">What happens next?</h4>
             </div>
             <div className="text-sm text-blue-800 space-y-2">
-              <p>• You'll receive a confirmation email shortly</p>
+              <p>• You&apos;ll receive a confirmation email shortly</p>
               <p>• Our team will review your application</p>
-              <p>• You'll be notified of the decision via email</p>
+              <p>• You&apos;ll be notified of the decision via email</p>
               {form.whatsappInviteUrl && (
-                <p>• If accepted, you'll receive a WhatsApp group invitation</p>
+                <p>• If accepted, you&apos;ll receive a WhatsApp group invitation</p>
               )}
             </div>
           </div>
@@ -51,7 +51,7 @@ export default function SubmissionSuccess({ form }: SubmissionSuccessProps) {
               <strong>Important:</strong> Please check your email (including spam folder) for updates on your application status.
             </p>
             <p className="text-xs text-gray-500">
-              If you don't hear back within a reasonable time, feel free to reach out to the community administrators.
+              If you don&apos;t hear back within a reasonable time, feel free to reach out to the community administrators.
             </p>
           </div>
 

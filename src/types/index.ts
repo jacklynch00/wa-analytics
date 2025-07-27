@@ -91,7 +91,7 @@ export interface MemberApplicationData {
   id: string;
   formId: string;
   email: string;
-  responses: Record<string, any>;
+  responses: Record<string, string | string[]>;
   status: ApplicationStatus;
   createdAt: Date;
   updatedAt: Date;

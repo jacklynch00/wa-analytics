@@ -65,7 +65,11 @@ export async function PATCH(
           const nameQuestion = form.questions.find(q => 
             q.label.toLowerCase().includes('name') && q.type === 'text'
           );
-          const applicantName = nameQuestion ? application.responses[nameQuestion.id] : undefined;
+          const applicantName = nameQuestion 
+            ? (Array.isArray(application.responses[nameQuestion.id]) 
+                ? (application.responses[nameQuestion.id] as string[])[0]
+                : application.responses[nameQuestion.id] as string)
+            : undefined;
 
           const emailData = {
             communityName: form.title,

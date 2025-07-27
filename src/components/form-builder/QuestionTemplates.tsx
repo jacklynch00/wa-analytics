@@ -196,7 +196,7 @@ export default function QuestionTemplates({ onAddQuestion, usedQuestions }: Ques
                           
                           {template.placeholder && (
                             <p className="text-xs text-gray-500 mt-1 italic">
-                              "{template.placeholder}"
+                              &quot;{template.placeholder}&quot;
                             </p>
                           )}
                         </div>
