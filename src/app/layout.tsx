@@ -27,6 +27,7 @@ export default function RootLayout({
 		<html lang='en'>
 			<head>
 				<script src='https://planemetrics.com/js/client.js' data-website-id='b1864087-ee8b-407a-9714-6b5084459ea4' defer></script>
+				<script defer data-website-id='688642f766757e5583e11bfa' data-domain='usewaly.com' src='https://datafa.st/js/script.js'></script>
 			</head>
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
 				{children}
