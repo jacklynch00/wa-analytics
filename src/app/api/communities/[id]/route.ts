@@ -52,6 +52,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<Pa
             isActive: true,
             isPublic: true,
             createdAt: true,
+            questions: true,
             _count: {
               select: {
                 applications: true,
@@ -141,6 +142,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             isActive: true,
             isPublic: true,
             createdAt: true,
+            questions: true,
             _count: {
               select: {
                 applications: true,

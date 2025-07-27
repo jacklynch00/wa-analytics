@@ -1,0 +1,11 @@
+name,email,phone,linkedin,company,position,experience,status,location,skills
+"John Doe","john.doe@email.com","555-123-4567","https://linkedin.com/in/johndoe","Tech Corp","Software Engineer","5 years","PENDING","San Francisco, CA","JavaScript, React, Node.js"
+"Jane Smith","jane.smith@email.com","555-234-5678","https://linkedin.com/in/janesmith","Design Studio","UX Designer","3 years","ACCEPTED","New York, NY","Figma, Sketch, User Research"
+"Mike Johnson","mike.johnson@email.com","555-345-6789","https://linkedin.com/in/mikejohnson","Startup Inc","Product Manager","7 years","PENDING","Austin, TX","Product Strategy, Analytics, Agile"
+"Sarah Wilson","sarah.wilson@email.com","555-456-7890","https://linkedin.com/in/sarahwilson","Marketing Agency","Marketing Director","8 years","ACCEPTED","Chicago, IL","Digital Marketing, SEO, Content Strategy"
+"David Brown","david.brown@email.com","555-567-8901","https://linkedin.com/in/davidbrown","Finance Corp","Data Analyst","4 years","PENDING","Boston, MA","Python, SQL, Tableau"
+"Lisa Chen","lisa.chen@email.com","555-678-9012","https://linkedin.com/in/lisachen","Health Tech","Nurse Practitioner","6 years","ACCEPTED","Seattle, WA","Healthcare, Patient Care, EMR Systems"
+"Robert Taylor","robert.taylor@email.com","555-789-0123","https://linkedin.com/in/roberttaylor","Consulting Group","Business Consultant","10 years","DENIED","Denver, CO","Business Strategy, Operations, Leadership"
+"Emily Davis","emily.davis@email.com","555-890-1234","https://linkedin.com/in/emilydavis","Education nonprofit","Program Coordinator","2 years","PENDING","Portland, OR","Project Management, Community Outreach"
+"Alex Kim","alex.kim@email.com","555-901-2345","https://linkedin.com/in/alexkim","Gaming Studio","Game Developer","5 years","ACCEPTED","Los Angeles, CA","Unity, C#, Game Design"
+"Maria Rodriguez","maria.rodriguez@email.com","555-012-3456","https://linkedin.com/in/mariarodriguez","Legal Firm","Attorney","12 years","PENDING","Miami, FL","Corporate Law, Contract Negotiation"
