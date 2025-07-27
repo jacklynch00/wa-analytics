@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { auth } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
@@ -30,10 +31,6 @@ export async function POST(
       return NextResponse.json({ error: 'Shared directory not found' }, { status: 404 });
     }
 
-    // Check if expired
-    if (new Date() > sharedDirectory.expiresAt) {
-      return NextResponse.json({ error: 'Shared directory has expired' }, { status: 410 });
-    }
 
     // Check if active
     if (!sharedDirectory.isActive) {
@@ -76,7 +73,6 @@ export async function POST(
       analyses: analyses,
       isPasswordProtected: !!sharedDirectory.password,
       password: sharedDirectory.password,
-      expiresAt: sharedDirectory.expiresAt,
     };
 
     return NextResponse.json(directoryData);
@@ -85,6 +81,102 @@ export async function POST(
     console.error('Shared directory access error:', error);
     return NextResponse.json(
       { error: 'Failed to access shared directory' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: shareId } = await params;
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { password } = await request.json();
+
+    // Find the shared directory and verify ownership
+    const sharedDirectory = await prisma.memberDirectory.findFirst({
+      where: { 
+        id: shareId,
+        community: {
+          userId: session.user.id
+        }
+      },
+    });
+
+    if (!sharedDirectory) {
+      return NextResponse.json({ error: 'Directory not found or access denied' }, { status: 404 });
+    }
+
+    // Update the directory password
+    const updatedDirectory = await prisma.memberDirectory.update({
+      where: { id: shareId },
+      data: {
+        password: password?.trim() || null,
+      },
+    });
+
+    return NextResponse.json({ 
+      success: true,
+      password: updatedDirectory.password,
+    });
+
+  } catch (error) {
+    console.error('Directory update error:', error);
+    return NextResponse.json(
+      { error: 'Failed to update directory' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: shareId } = await params;
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Find the shared directory and verify ownership
+    const sharedDirectory = await prisma.memberDirectory.findFirst({
+      where: { 
+        id: shareId,
+        community: {
+          userId: session.user.id
+        }
+      },
+    });
+
+    if (!sharedDirectory) {
+      return NextResponse.json({ error: 'Directory not found or access denied' }, { status: 404 });
+    }
+
+    // Delete the directory
+    await prisma.memberDirectory.delete({
+      where: { id: shareId },
+    });
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error('Directory deletion error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete directory' },
       { status: 500 }
     );
   }

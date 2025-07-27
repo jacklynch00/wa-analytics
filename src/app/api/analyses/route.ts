@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             password: true,
-            expiresAt: true,
             isActive: true,
           },
         },
@@ -49,7 +48,6 @@ export async function GET(request: NextRequest) {
         id: analysis.memberDirectories[0].id,
         shareUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/directory/${analysis.memberDirectories[0].id}`,
         password: analysis.memberDirectories[0].password,
-        expiresAt: analysis.memberDirectories[0].expiresAt,
       } : undefined,
       memberDirectories: undefined, // Remove from response
     }));

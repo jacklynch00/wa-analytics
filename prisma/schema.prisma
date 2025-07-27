@@ -81,6 +81,7 @@ model Community {
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   chatAnalyses      ChatAnalysis[]
   memberDirectories MemberDirectory[]
+  applicationForm   ApplicationForm?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -119,9 +120,58 @@ model MemberDirectory {
   isActive       Boolean      @default(true)
   accessCount    Int          @default(0)
   lastAccessed   DateTime?
-  expiresAt      DateTime
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   @@map("member_directory")
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  DENIED
+}
+
+model ApplicationForm {
+  id                String @id @default(cuid())
+  communityId       String @unique
+  community         Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  title             String
+  description       String?
+  isActive          Boolean @default(true)
+  isPublic          Boolean @default(true)
+  password          String?
+  customSlug        String @unique
+  whatsappInviteUrl String?
+  acceptanceMessage String?
+  denialMessage     String?
+  questions         Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  applications      MemberApplication[]
+
+  @@map("application_form")
+}
+
+model MemberApplication {
+  id         String @id @default(cuid())
+  formId     String
+  form       ApplicationForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  email      String
+  responses  Json
+  status     ApplicationStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  reviewedAt DateTime?
+  reviewedBy String?
+  invitedAt  DateTime?
+  
+  // Email tracking
+  confirmationEmailSent Boolean @default(false)
+  confirmationEmailSentAt DateTime?
+  statusEmailSent Boolean @default(false)
+  statusEmailSentAt DateTime?
+  emailDeliveryErrors Json?
+
+  @@map("member_application")
 }

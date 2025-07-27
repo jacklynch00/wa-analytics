@@ -56,3 +56,46 @@ export interface AIRecapData {
   activeContributors: string[];
   importantResources: string[];
 }
+
+export type QuestionType = 'text' | 'multiple_choice' | 'multiple_select';
+
+export interface FormQuestion {
+  id: string;
+  label: string;
+  type: QuestionType;
+  required: boolean;
+  placeholder?: string;
+  options?: string[];
+}
+
+export type ApplicationStatus = 'PENDING' | 'ACCEPTED' | 'DENIED';
+
+export interface ApplicationFormData {
+  id: string;
+  communityId: string;
+  title: string;
+  description?: string;
+  isActive: boolean;
+  isPublic: boolean;
+  password?: string;
+  customSlug: string;
+  whatsappInviteUrl?: string;
+  acceptanceMessage?: string;
+  denialMessage?: string;
+  questions: FormQuestion[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MemberApplicationData {
+  id: string;
+  formId: string;
+  email: string;
+  responses: Record<string, any>;
+  status: ApplicationStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  invitedAt?: Date;
+}

@@ -1,0 +1,412 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Plus, Search, Filter, Eye, Check, X, Clock, Users, Mail, FileText, MoreVertical, Send } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface FormQuestion {
+	id: string;
+	label: string;
+	type: string;
+	required: boolean;
+	placeholder?: string;
+	options?: string[];
+}
+
+interface ApplicationForm {
+	id: string;
+	title: string;
+	customSlug: string;
+	isActive: boolean;
+	isPublic: boolean;
+	questions?: FormQuestion[];
+	createdAt: string;
+	_count?: {
+		applications: number;
+	};
+}
+
+interface MemberApplication {
+	id: string;
+	email: string;
+	status: 'PENDING' | 'ACCEPTED' | 'DENIED';
+	createdAt: string;
+	reviewedAt?: string;
+	responses: Record<string, string | string[]>;
+}
+
+interface FormResponsesTabProps {
+	communityId: string;
+	applicationForm: ApplicationForm | null;
+}
+
+export default function FormResponsesTab({ communityId, applicationForm }: FormResponsesTabProps) {
+	const [applications, setApplications] = useState<MemberApplication[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [searchTerm, setSearchTerm] = useState('');
+	const [statusFilter, setStatusFilter] = useState<string>('all');
+	const [selectedApplication, setSelectedApplication] = useState<MemberApplication | null>(null);
+	const [fullFormData, setFullFormData] = useState<ApplicationForm | null>(null);
+
+	const loadApplications = useCallback(async () => {
+		if (!applicationForm) return;
+
+		setLoading(true);
+		try {
+			const params = new URLSearchParams();
+			if (searchTerm) params.append('search', searchTerm);
+			if (statusFilter !== 'all') params.append('status', statusFilter);
+
+			const response = await fetch(`/api/communities/${communityId}/applications?${params}`);
+			if (!response.ok) throw new Error('Failed to load applications');
+
+			const result = await response.json();
+			setApplications(result.applications);
+		} catch (error) {
+			console.error('Error loading applications:', error);
+			toast.error('Failed to load applications');
+		} finally {
+			setLoading(false);
+		}
+	}, [applicationForm, searchTerm, statusFilter, communityId]);
+
+	const loadFullFormData = useCallback(async () => {
+		if (!applicationForm) return;
+
+		try {
+			const response = await fetch(`/api/communities/${communityId}/form`);
+			if (!response.ok) throw new Error('Failed to load form data');
+
+			const result = await response.json();
+			setFullFormData(result.form);
+		} catch (error) {
+			console.error('Error loading form data:', error);
+		}
+	}, [applicationForm, communityId]);
+
+	const updateApplicationStatus = async (applicationId: string, newStatus: 'ACCEPTED' | 'DENIED') => {
+		try {
+			const response = await fetch(`/api/applications/${applicationId}/status`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ status: newStatus }),
+			});
+
+			if (!response.ok) throw new Error('Failed to update status');
+
+			await loadApplications();
+			toast.success(`Application ${newStatus.toLowerCase()} successfully`);
+		} catch (error) {
+			console.error('Error updating status:', error);
+			toast.error('Failed to update application status');
+		}
+	};
+
+	const resendEmail = async (applicationId: string, emailType: 'confirmation' | 'acceptance' | 'denial') => {
+		try {
+			const response = await fetch(`/api/applications/${applicationId}/resend-email`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ emailType }),
+			});
+
+			const result = await response.json();
+
+			if (!response.ok) {
+				throw new Error(result.error || 'Failed to resend email');
+			}
+
+			toast.success(result.message || 'Email sent successfully');
+		} catch (error) {
+			console.error('Error resending email:', error);
+			toast.error(error instanceof Error ? error.message : 'Failed to resend email');
+		}
+	};
+
+	const getStatusBadge = (status: string) => {
+		switch (status) {
+			case 'PENDING':
+				return (
+					<Badge variant='outline' className='text-yellow-600 border-yellow-300'>
+						<Clock className='w-3 h-3 mr-1' />
+						Pending
+					</Badge>
+				);
+			case 'ACCEPTED':
+				return (
+					<Badge variant='default' className='bg-green-600'>
+						<Check className='w-3 h-3 mr-1' />
+						Accepted
+					</Badge>
+				);
+			case 'DENIED':
+				return (
+					<Badge variant='destructive'>
+						<X className='w-3 h-3 mr-1' />
+						Denied
+					</Badge>
+				);
+			default:
+				return <Badge variant='outline'>{status}</Badge>;
+		}
+	};
+
+	useEffect(() => {
+		if (applicationForm) {
+			loadApplications();
+			loadFullFormData();
+		}
+	}, [applicationForm, loadApplications, loadFullFormData]);
+
+	if (!applicationForm) {
+		return (
+			<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
+				<CardContent className='p-6 sm:p-12 text-center'>
+					<FileText className='mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400' />
+					<h3 className='mt-4 text-base sm:text-lg font-medium text-gray-900'>No Application Form</h3>
+					<p className='mt-2 text-sm text-gray-600'>Create an application form to start receiving and managing member applications.</p>
+					<div className='mt-4 sm:mt-6'>
+						<Button onClick={() => (window.location.href = `/dashboard/community/${communityId}/form-builder`)}>
+							<Plus className='w-4 h-4 mr-2' />
+							Create Application Form
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
+	return (
+		<div className='space-y-6'>
+			{/* Filters and Search */}
+			<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
+				<CardContent className='p-4'>
+					<div className='flex flex-col sm:flex-row gap-4'>
+						<div className='flex-1'>
+							<div className='relative'>
+								<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
+								<Input placeholder='Search by email...' value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className='pl-10' />
+							</div>
+						</div>
+						<Select value={statusFilter} onValueChange={setStatusFilter}>
+							<SelectTrigger className='w-full sm:w-[180px]'>
+								<Filter className='w-4 h-4 mr-2' />
+								<SelectValue placeholder='Filter by status' />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value='all'>All Status</SelectItem>
+								<SelectItem value='PENDING'>Pending</SelectItem>
+								<SelectItem value='ACCEPTED'>Accepted</SelectItem>
+								<SelectItem value='DENIED'>Denied</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Applications Table */}
+			<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
+				<CardHeader>
+					<div className='flex justify-between items-center'>
+						<CardTitle className='text-lg'>Applications</CardTitle>
+						<Badge variant='outline'>{applications.length} total</Badge>
+					</div>
+				</CardHeader>
+				<CardContent>
+					{loading ? (
+						<div className='flex justify-center py-8'>
+							<div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+						</div>
+					) : applications.length === 0 ? (
+						<div className='text-center py-8'>
+							<Users className='mx-auto h-12 w-12 text-gray-400' />
+							<h3 className='mt-4 text-lg font-medium text-gray-900'>No Applications Yet</h3>
+							<p className='mt-2 text-sm text-gray-600'>
+								{statusFilter === 'all' ? 'No applications have been submitted yet.' : `No ${statusFilter.toLowerCase()} applications found.`}
+							</p>
+						</div>
+					) : (
+						<div className='overflow-x-auto'>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Email</TableHead>
+										<TableHead>Status</TableHead>
+										<TableHead>Submitted</TableHead>
+										<TableHead className="text-right">Actions</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{applications.map((application) => (
+										<TableRow key={application.id}>
+											<TableCell>
+												<div className='flex items-center gap-2'>
+													<Mail className='w-4 h-4 text-gray-400' />
+													<span className='font-medium'>{application.email}</span>
+												</div>
+											</TableCell>
+											<TableCell>{getStatusBadge(application.status)}</TableCell>
+											<TableCell>
+												<span className='text-sm text-gray-600'>{new Date(application.createdAt).toLocaleDateString()}</span>
+											</TableCell>
+											<TableCell className="text-right">
+												<div className='flex items-center gap-2 justify-end'>
+													<Dialog>
+														<DialogTrigger asChild>
+															<Button variant='outline' size='sm' onClick={() => setSelectedApplication(application)}>
+																<Eye className='w-4 h-4 mr-1' />
+																View
+															</Button>
+														</DialogTrigger>
+														<DialogContent className='max-w-2xl max-h-[80vh] overflow-y-auto'>
+															<DialogHeader>
+																<DialogTitle>Application Details</DialogTitle>
+																<DialogDescription>Review the application and take action</DialogDescription>
+															</DialogHeader>
+															{selectedApplication && (
+																<div className='space-y-4'>
+																	<div className='flex items-center justify-between'>
+																		<div>
+																			<p className='font-medium'>{selectedApplication.email}</p>
+																			<p className='text-sm text-gray-600'>
+																				Submitted {new Date(selectedApplication.createdAt).toLocaleDateString()}
+																			</p>
+																		</div>
+																		{getStatusBadge(selectedApplication.status)}
+																	</div>
+
+																	<div className='border rounded-lg p-4 space-y-4'>
+																		<h4 className='font-medium'>Responses</h4>
+																		{fullFormData?.questions?.map((question) => {
+																			const answer = selectedApplication.responses[question.id];
+																			if (!answer) return null;
+																			
+																			return (
+																				<div key={question.id} className='space-y-2'>
+																					<p className='text-sm font-medium text-gray-900'>{question.label}</p>
+																					<p className='text-sm text-gray-700 bg-gray-50 p-3 rounded-md'>
+																						{Array.isArray(answer) ? answer.join(', ') : answer}
+																					</p>
+																				</div>
+																			);
+																		}) || (
+																			<div className='text-sm text-gray-500'>Loading form questions...</div>
+																		)}
+																	</div>
+
+																	<div className='flex flex-col gap-4 pt-4'>
+																		{selectedApplication.status === 'PENDING' && (
+																			<div className='flex gap-2'>
+																				<Button onClick={() => updateApplicationStatus(selectedApplication.id, 'ACCEPTED')} className='flex-1'>
+																					<Check className='w-4 h-4 mr-2' />
+																					Accept
+																				</Button>
+																				<Button
+																					variant='outline'
+																					onClick={() => updateApplicationStatus(selectedApplication.id, 'DENIED')}
+																					className='flex-1'>
+																					<X className='w-4 h-4 mr-2' />
+																					Deny
+																				</Button>
+																			</div>
+																		)}
+
+																		<div className='border-t pt-4'>
+																			<h5 className='text-sm font-medium text-gray-700 mb-2'>Email Actions</h5>
+																			<div className='flex flex-wrap gap-2'>
+																				<Button 
+																					variant='outline' 
+																					size='sm'
+																					onClick={() => resendEmail(selectedApplication.id, 'confirmation')}
+																				>
+																					<Send className='w-4 h-4 mr-2' />
+																					Resend Confirmation
+																				</Button>
+																				{selectedApplication.status === 'ACCEPTED' && (
+																					<Button 
+																						variant='outline' 
+																						size='sm'
+																						onClick={() => resendEmail(selectedApplication.id, 'acceptance')}
+																					>
+																						<Send className='w-4 h-4 mr-2' />
+																						Resend Acceptance
+																					</Button>
+																				)}
+																				{selectedApplication.status === 'DENIED' && (
+																					<Button 
+																						variant='outline' 
+																						size='sm'
+																						onClick={() => resendEmail(selectedApplication.id, 'denial')}
+																					>
+																						<Send className='w-4 h-4 mr-2' />
+																						Resend Denial
+																					</Button>
+																				)}
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															)}
+														</DialogContent>
+													</Dialog>
+
+													{application.status === 'PENDING' && (
+														<>
+															<Button
+																size='sm'
+																onClick={() => updateApplicationStatus(application.id, 'ACCEPTED')}
+																className='bg-green-600 hover:bg-green-700'>
+																<Check className='w-4 h-4' />
+															</Button>
+															<Button variant='outline' size='sm' onClick={() => updateApplicationStatus(application.id, 'DENIED')}>
+																<X className='w-4 h-4' />
+															</Button>
+														</>
+													)}
+
+													<DropdownMenu>
+														<DropdownMenuTrigger asChild>
+															<Button variant='outline' size='sm'>
+																<MoreVertical className='w-4 h-4' />
+															</Button>
+														</DropdownMenuTrigger>
+														<DropdownMenuContent align='end'>
+															<DropdownMenuItem onClick={() => resendEmail(application.id, 'confirmation')}>
+																<Send className='w-4 h-4 mr-2' />
+																Resend Confirmation Email
+															</DropdownMenuItem>
+															{application.status === 'ACCEPTED' && (
+																<DropdownMenuItem onClick={() => resendEmail(application.id, 'acceptance')}>
+																	<Send className='w-4 h-4 mr-2' />
+																	Resend Acceptance Email
+																</DropdownMenuItem>
+															)}
+															{application.status === 'DENIED' && (
+																<DropdownMenuItem onClick={() => resendEmail(application.id, 'denial')}>
+																	<Send className='w-4 h-4 mr-2' />
+																	Resend Denial Email
+																</DropdownMenuItem>
+															)}
+														</DropdownMenuContent>
+													</DropdownMenu>
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</div>
+					)}
+				</CardContent>
+			</Card>
+		</div>
+	);
+}

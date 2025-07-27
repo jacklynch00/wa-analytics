@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
-    const { communityId, password, expiresInDays = 30 } = await request.json();
+    const { communityId, password } = await request.json();
 
     // Verify the community belongs to the user and check for existing share
     const community = await prisma.community.findFirst({
@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         shareId: existingShare.id,
         shareUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/directory/${existingShare.id}`,
-        expiresAt: existingShare.expiresAt,
         password: existingShare.password,
         isExisting: true,
       });
@@ -50,10 +49,6 @@ export async function POST(request: NextRequest) {
 
     // Generate a unique share ID
     const shareId = randomBytes(16).toString('hex');
-    
-    // Calculate expiration date
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
     // Create member directory share record for the community
     const sharedDirectory = await prisma.memberDirectory.create({
@@ -70,7 +65,6 @@ export async function POST(request: NextRequest) {
           }
         },
         password: password || null,
-        expiresAt,
         isActive: true,
       },
     });
@@ -78,7 +72,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       shareId: sharedDirectory.id,
       shareUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/directory/${shareId}`,
-      expiresAt: sharedDirectory.expiresAt,
       password: sharedDirectory.password,
       isExisting: false,
     });

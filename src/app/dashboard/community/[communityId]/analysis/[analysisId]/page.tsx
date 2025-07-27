@@ -132,9 +132,9 @@ function AnalysisPageContent() {
 	}
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
+		<div className='min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
 			{/* Subtle Animated Background */}
-			<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+			<div className='fixed inset-0 overflow-hidden pointer-events-none -z-10'>
 				<div className='absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse'></div>
 				<div className='absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000'></div>
 			</div>

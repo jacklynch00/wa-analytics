@@ -39,8 +39,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<Pa
           select: {
             id: true,
             password: true,
-            expiresAt: true,
             createdAt: true,
+          },
+        },
+        applicationForm: {
+          select: {
+            id: true,
+            title: true,
+            customSlug: true,
+            isActive: true,
+            isPublic: true,
+            createdAt: true,
+            _count: {
+              select: {
+                applications: true,
+              },
+            },
           },
         },
         _count: {

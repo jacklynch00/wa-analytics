@@ -31,7 +31,16 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             password: true,
-            expiresAt: true,
+            createdAt: true,
+          },
+        },
+        applicationForm: {
+          select: {
+            id: true,
+            title: true,
+            customSlug: true,
+            isActive: true,
+            isPublic: true,
             createdAt: true,
           },
         },
@@ -94,6 +103,16 @@ export async function POST(request: NextRequest) {
         },
         memberDirectories: {
           where: { isActive: true },
+        },
+        applicationForm: {
+          select: {
+            id: true,
+            title: true,
+            customSlug: true,
+            isActive: true,
+            isPublic: true,
+            createdAt: true,
+          },
         },
         _count: {
           select: {

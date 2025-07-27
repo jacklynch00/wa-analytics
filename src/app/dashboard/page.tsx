@@ -5,14 +5,11 @@ import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Users, Calendar, Trash2, Share2, Eye, EyeOff, MoreVertical, Plus, ChevronDown, ChevronRight, Lock, LockOpen, MessageCircle } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FileText, Users, Calendar, Share2, Plus, MessageCircle, ClipboardList } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { CopyButton } from '@/components/ui/copy-button';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 
 interface ChatAnalysis {
 	id: string;
@@ -31,9 +28,16 @@ interface Community {
 	memberDirectories: {
 		id: string;
 		password: string | null;
-		expiresAt: string;
 		createdAt: string;
 	}[];
+	applicationForm?: {
+		id: string;
+		title: string;
+		customSlug: string;
+		isActive: boolean;
+		isPublic: boolean;
+		createdAt: string;
+	};
 	_count: {
 		chatAnalyses: number;
 	};
@@ -43,9 +47,7 @@ export default function DashboardPage() {
 	const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 	const [communities, setCommunities] = useState<Community[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
 	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-	const [openCommunities, setOpenCommunities] = useState<{ [key: string]: boolean }>({});
 	const [newCommunity, setNewCommunity] = useState({ name: '', description: '' });
 	const [shareMessageModal, setShareMessageModal] = useState<{ open: boolean; directory: Community['memberDirectories'][0] | null; communityName: string }>({
 		open: false,
@@ -54,19 +56,7 @@ export default function DashboardPage() {
 	});
 	const router = useRouter();
 
-	const togglePasswordVisibility = (directoryId: string) => {
-		setShowPasswords((prev) => ({
-			...prev,
-			[directoryId]: !prev[directoryId],
-		}));
-	};
 
-	const toggleCommunity = (communityId: string) => {
-		setOpenCommunities((prev) => ({
-			...prev,
-			[communityId]: !prev[communityId],
-		}));
-	};
 
 	useEffect(() => {
 		const checkAuth = async () => {
@@ -145,109 +135,8 @@ export default function DashboardPage() {
 		}
 	};
 
-	const handleDeleteCommunity = async (communityId: string) => {
-		if (!confirm('Are you sure you want to delete this community? This will also delete all associated analyses. This action cannot be undone.')) {
-			return;
-		}
 
-		try {
-			const response = await fetch(`/api/communities/${communityId}`, {
-				method: 'DELETE',
-			});
 
-			if (response.ok) {
-				// Remove from local state
-				setCommunities((prev) => prev.filter((community) => community.id !== communityId));
-				toast.success('Community deleted successfully');
-			} else {
-				toast.error('Failed to delete community. Please try again.');
-			}
-		} catch (error) {
-			console.error('Error deleting community:', error);
-			toast.error('Failed to delete community. Please try again.');
-		}
-	};
-
-	const handleAddPassword = async (communityId: string, directoryId: string) => {
-		const password = prompt('Enter a password for the shared directory:');
-		if (!password || !password.trim()) {
-			return;
-		}
-
-		try {
-			const response = await fetch('/api/directory/password', {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					directoryId,
-					password: password.trim(),
-				}),
-			});
-
-			if (response.ok) {
-				// Update local state
-				setCommunities((prev) =>
-					prev.map((community) =>
-						community.id === communityId
-							? {
-									...community,
-									memberDirectories: community.memberDirectories.map((dir) => (dir.id === directoryId ? { ...dir, password: password.trim() } : dir)),
-								}
-							: community
-					)
-				);
-				toast.success('Password added successfully');
-			} else {
-				const error = await response.json();
-				toast.error(error.error || 'Failed to add password');
-			}
-		} catch (error) {
-			console.error('Error adding password:', error);
-			toast.error('Failed to add password. Please try again.');
-		}
-	};
-
-	const handleRemovePassword = async (communityId: string, directoryId: string) => {
-		if (!confirm('Are you sure you want to remove the password? This will make the directory publicly accessible.')) {
-			return;
-		}
-
-		try {
-			const response = await fetch('/api/directory/password', {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					directoryId,
-					password: null,
-				}),
-			});
-
-			if (response.ok) {
-				// Update local state
-				setCommunities((prev) =>
-					prev.map((community) =>
-						community.id === communityId
-							? {
-									...community,
-									memberDirectories: community.memberDirectories.map((dir) => (dir.id === directoryId ? { ...dir, password: null } : dir)),
-								}
-							: community
-					)
-				);
-				toast.success('Password removed successfully');
-			} else {
-				const error = await response.json();
-				toast.error(error.error || 'Failed to remove password');
-			}
-		} catch (error) {
-			console.error('Error removing password:', error);
-			toast.error('Failed to remove password. Please try again.');
-		}
-	};
 
 	const handleOpenShareMessage = (directory: Community['memberDirectories'][0], communityName: string) => {
 		setShareMessageModal({
@@ -284,78 +173,21 @@ export default function DashboardPage() {
 		}
 	};
 
-	const handleShareCommunity = async (communityId: string, existingShare?: Community['memberDirectories'][0]) => {
-		// If share already exists, show the existing link details
-		if (existingShare) {
-			await navigator.clipboard.writeText(`${window.location.origin}/directory/${existingShare.id}`);
-			toast.success('Share link copied to clipboard!', {
-				description: `${existingShare.password ? 'Password: ' + existingShare.password + ' • ' : ''}Expires: ${new Date(existingShare.expiresAt).toLocaleDateString()}`,
+
+	const handleShareApplication = async (applicationForm: Community['applicationForm']) => {
+		if (!applicationForm) return;
+		
+		const applicationUrl = `${window.location.origin}/apply/${applicationForm.customSlug}`;
+		
+		try {
+			await navigator.clipboard.writeText(applicationUrl);
+			toast.success('Application form link copied to clipboard!', {
+				description: `Status: ${applicationForm.isActive && applicationForm.isPublic ? 'Active & Public' : applicationForm.isActive ? 'Active but Private' : 'Inactive'}`,
 				duration: 5000,
 			});
-			return;
-		}
-
-		const password = prompt('Enter an optional password for the shared directory (leave empty for no password):');
-
-		try {
-			const response = await fetch('/api/directory/share', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					communityId,
-					password: password || undefined,
-					expiresInDays: 30,
-				}),
-			});
-
-			if (response.ok) {
-				const result = await response.json();
-
-				// Copy to clipboard and show success message
-				await navigator.clipboard.writeText(result.shareUrl);
-
-				if (result.isExisting) {
-					toast.success('Existing share link copied to clipboard!', {
-						description: `${result.password ? 'Password: ' + result.password + ' • ' : ''}Expires: ${new Date(result.expiresAt).toLocaleDateString()}`,
-						duration: 5000,
-					});
-				} else {
-					toast.success('Share link created and copied to clipboard!', {
-						description: `${result.password ? 'Password: ' + result.password + ' • ' : ''}Expires: ${new Date(result.expiresAt).toLocaleDateString()}`,
-						duration: 5000,
-					});
-				}
-
-				// Update the local state to include the new share link
-				setCommunities((prev) =>
-					prev.map((community) =>
-						community.id === communityId
-							? {
-									...community,
-									memberDirectories: [
-										...community.memberDirectories,
-										{
-											id: result.shareId,
-											password: result.password,
-											expiresAt: result.expiresAt,
-											createdAt: new Date().toISOString(),
-										},
-									],
-								}
-							: community
-					)
-				);
-			} else {
-				const error = await response.json();
-				toast.error('Failed to create share link', {
-					description: error.error || 'Please try again',
-				});
-			}
 		} catch (error) {
-			console.error('Error creating share link:', error);
-			toast.error('Failed to create share link. Please try again.');
+			console.error('Failed to copy application link:', error);
+			toast.error('Failed to copy application link. Please try again.');
 		}
 	};
 
@@ -375,9 +207,9 @@ export default function DashboardPage() {
 	const totalSharedDirectories = communities.reduce((sum, community) => sum + community.memberDirectories.length, 0);
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
+		<div className='min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
 			{/* Subtle Animated Background */}
-			<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+			<div className='fixed inset-0 overflow-hidden pointer-events-none -z-10'>
 				<div className='absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse'></div>
 				<div className='absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000'></div>
 			</div>
@@ -547,177 +379,57 @@ export default function DashboardPage() {
 						<div className='space-y-4'>
 							<div className='grid gap-4'>
 								{communities.map((community) => (
-									<Card key={community.id} className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200'>
-										<CardContent className='p-0'>
-											<Collapsible open={openCommunities[community.id] || false} onOpenChange={() => toggleCommunity(community.id)}>
-												<div className='p-4 sm:p-6 cursor-pointer' onClick={() => toggleCommunity(community.id)}>
-													<div className='flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0'>
-														<div className='flex-1 min-w-0 w-full sm:w-auto'>
-															<div className='flex items-center space-x-2 mb-2'>
-																<h3 className='font-semibold text-base sm:text-lg text-gray-900 truncate'>{community.name}</h3>
-																<div className='ml-2 flex-shrink-0'>
-																	{openCommunities[community.id] ? (
-																		<ChevronDown className='w-4 h-4 text-gray-400' />
-																	) : (
-																		<ChevronRight className='w-4 h-4 text-gray-400' />
-																	)}
-																</div>
-															</div>
-															{community.description && <p className='text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2'>{community.description}</p>}
-															<div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500'>
-																<div className='flex items-center gap-3 sm:gap-4'>
-																	<span className='flex items-center'>
-																		<FileText className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
-																		{community._count.chatAnalyses} analyses
-																	</span>
-																	<span className='flex items-center'>
-																		<Calendar className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
-																		<span className='hidden sm:inline'>Created </span>
-																		{new Date(community.createdAt).toLocaleDateString()}
-																	</span>
-																</div>
-																{community.memberDirectories.length > 0 && (
-																	<div className='flex items-center gap-2'>
-																		<Share2 className='w-3 h-3 sm:w-4 sm:h-4 text-blue-600' />
-																		<button
-																			onClick={(e) => {
-																				e.stopPropagation();
-																				handleOpenShareMessage(community.memberDirectories[0], community.name);
-																			}}
-																			className='text-blue-600 hover:text-blue-800 hover:underline transition-colors text-xs sm:text-sm'>
-																			Share with community
-																		</button>
-																		{community.memberDirectories[0].password && (
-																			<div className='flex items-center gap-1'>
-																				<span className='text-xs flex flex-row items-center gap-1 sm:gap-2 bg-gray-100 text-gray-700 px-1.5 sm:px-2 py-1 rounded font-mono'>
-																					{showPasswords[community.memberDirectories[0].id]
-																						? community.memberDirectories[0].password
-																						: '•'.repeat(Math.min(community.memberDirectories[0].password.length, 4))}
-																					<CopyButton
-																						text={community.memberDirectories[0].password}
-																						size='icon'
-																						className='h-3 w-3 sm:h-4 sm:w-4 p-0 border-none bg-transparent'
-																					/>
-																				</span>
-																				<button
-																					onClick={(e) => {
-																						e.stopPropagation();
-																						togglePasswordVisibility(community.memberDirectories[0].id);
-																					}}
-																					className='text-gray-500 hover:text-gray-700 transition-colors p-0.5 sm:p-1'>
-																					{showPasswords[community.memberDirectories[0].id] ? (
-																						<EyeOff className='w-3 h-3' />
-																					) : (
-																						<Eye className='w-3 h-3' />
-																					)}
-																				</button>
-																			</div>
-																		)}
-																	</div>
-																)}
-															</div>
-														</div>
-														<div className='flex flex-col sm:flex-row gap-2 sm:space-x-2 w-full sm:w-auto' onClick={(e) => e.stopPropagation()}>
-															<div className='flex gap-2 sm:gap-0 sm:space-x-2'>
-																<Button
-																	variant='outline'
-																	size='sm'
-																	onClick={() => router.push(`/dashboard/community/${community.id}`)}
-																	className='text-xs flex-1 sm:flex-initial'>
-																	<Eye className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
-																	View
-																</Button>
-																{community.memberDirectories.length > 0 ? (
-																	<Button
-																		size='sm'
-																		onClick={() => handleShareCommunity(community.id, community.memberDirectories[0])}
-																		className='text-xs flex-1 sm:flex-initial'>
-																		<Share2 className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
-																		<span className='hidden sm:inline'>Copy Directory </span>Link
-																	</Button>
-																) : (
-																	<Button size='sm' onClick={() => handleShareCommunity(community.id)} className='text-xs flex-1 sm:flex-initial'>
-																		<Share2 className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
-																		<span className='hidden sm:inline'>Create </span>Directory
-																	</Button>
-																)}
-															</div>
-															<DropdownMenu>
-																<DropdownMenuTrigger asChild>
-																	<Button variant='outline' size='sm' className='w-full sm:w-auto'>
-																		<MoreVertical className='w-3 h-3 sm:w-4 sm:h-4' />
-																		<span className='ml-1 sm:hidden text-xs'>More</span>
-																	</Button>
-																</DropdownMenuTrigger>
-																<DropdownMenuContent align='end'>
-																	{community.memberDirectories.length > 0 && (
-																		<>
-																			{community.memberDirectories[0].password ? (
-																				<DropdownMenuItem
-																					onClick={() => handleRemovePassword(community.id, community.memberDirectories[0].id)}>
-																					<LockOpen className='w-4 h-4 mr-2' />
-																					Remove Password
-																				</DropdownMenuItem>
-																			) : (
-																				<DropdownMenuItem
-																					onClick={() => handleAddPassword(community.id, community.memberDirectories[0].id)}>
-																					<Lock className='w-4 h-4 mr-2' />
-																					Add Password
-																				</DropdownMenuItem>
-																			)}
-																		</>
-																	)}
-																	<DropdownMenuItem
-																		onClick={() => handleDeleteCommunity(community.id)}
-																		className='text-red-600 focus:text-red-600'>
-																		<Trash2 className='w-4 h-4 mr-2' />
-																		Delete Community
-																	</DropdownMenuItem>
-																</DropdownMenuContent>
-															</DropdownMenu>
-														</div>
-													</div>
+									<Card 
+										key={community.id} 
+										className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer'
+										onClick={() => router.push(`/dashboard/community/${community.id}`)}
+									>
+										<CardContent className='p-4 sm:p-6'>
+											<div className='flex items-center space-x-2 mb-2'>
+												<h3 className='font-semibold text-base sm:text-lg text-gray-900 truncate'>{community.name}</h3>
+											</div>
+											{community.description && <p className='text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2'>{community.description}</p>}
+											<div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500'>
+												<div className='flex items-center gap-3 sm:gap-4'>
+													<span className='flex items-center'>
+														<FileText className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
+														{community._count.chatAnalyses} analyses
+													</span>
+													<span className='flex items-center'>
+														<Calendar className='w-3 h-3 sm:w-4 sm:h-4 mr-1' />
+														<span className='hidden sm:inline'>Created </span>
+														{new Date(community.createdAt).toLocaleDateString()}
+													</span>
 												</div>
-												<CollapsibleContent>
-													<div className='px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100'>
-														<div className='pt-3 sm:pt-4'>
-															<h4 className='text-sm font-medium text-gray-900 mb-3'>Chat Analyses ({community.chatAnalyses.length})</h4>
-															{community.chatAnalyses.length === 0 ? (
-																<div className='text-center py-6 sm:py-8 text-gray-500'>
-																	<FileText className='mx-auto h-6 w-6 sm:h-8 sm:w-8 text-gray-400 mb-2' />
-																	<p className='text-xs sm:text-sm'>No analyses yet</p>
-																	<p className='text-xs'>Upload your first WhatsApp chat export to this community</p>
-																</div>
-															) : (
-																<div className='space-y-2 sm:space-y-3'>
-																	{community.chatAnalyses.map((analysis) => (
-																		<div
-																			key={analysis.id}
-																			className='flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg gap-2 sm:gap-0'>
-																			<div className='flex-1 min-w-0'>
-																				<p className='font-medium text-xs sm:text-sm text-gray-900 truncate'>{analysis.title}</p>
-																				<div className='flex items-center space-x-2 sm:space-x-4 text-xs text-gray-500 mt-1'>
-																					<span>{analysis.totalMessages.toLocaleString()} msgs</span>
-																					<span>{analysis.totalMembers} members</span>
-																					<span className='hidden sm:inline'>{new Date(analysis.createdAt).toLocaleDateString()}</span>
-																				</div>
-																			</div>
-																			<Button
-																				variant='outline'
-																				size='sm'
-																				onClick={() => router.push(`/dashboard/community/${community.id}/analysis/${analysis.id}`)}
-																				className='text-xs w-full sm:w-auto'>
-																				<Eye className='w-3 h-3 mr-1' />
-																				View
-																			</Button>
-																		</div>
-																	))}
-																</div>
-															)}
+												<div className='flex items-center gap-4'>
+													{community.memberDirectories.length > 0 && (
+														<div className='flex items-center gap-2'>
+															<Share2 className='w-3 h-3 sm:w-4 sm:h-4 text-blue-600' />
+															<button
+																onClick={(e) => {
+																	e.stopPropagation();
+																	handleOpenShareMessage(community.memberDirectories[0], community.name);
+																}}
+																className='text-blue-600 hover:text-blue-800 hover:underline transition-colors text-xs sm:text-sm'>
+																Share directory
+															</button>
 														</div>
-													</div>
-												</CollapsibleContent>
-											</Collapsible>
+													)}
+													{community.applicationForm && (
+														<div className='flex items-center gap-2'>
+															<ClipboardList className='w-3 h-3 sm:w-4 sm:h-4 text-green-600' />
+															<button
+																onClick={(e) => {
+																	e.stopPropagation();
+																	handleShareApplication(community.applicationForm);
+																}}
+																className='text-green-600 hover:text-green-800 hover:underline transition-colors text-xs sm:text-sm'>
+																Share application
+															</button>
+														</div>
+													)}
+												</div>
+											</div>
 										</CardContent>
 									</Card>
 								))}
