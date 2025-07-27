@@ -71,7 +71,7 @@ export default function BulkImportPage() {
 	// Preview state
 	const [parsedMembers, setParsedMembers] = useState<ParsedMember[]>([]);
 	const [existingEmails, setExistingEmails] = useState<Set<string>>(new Set());
-	const [defaultStatus, setDefaultStatus] = useState<'PENDING' | 'ACCEPTED' | 'DENIED'>('PENDING');
+	const [defaultStatus] = useState<'PENDING' | 'ACCEPTED' | 'DENIED'>('PENDING');
 	
 	// Bulk actions state
 	const [selectAll, setSelectAll] = useState(true);
@@ -108,7 +108,7 @@ export default function BulkImportPage() {
 			const response = await fetch(`/api/communities/${communityId}/applications`);
 			if (response.ok) {
 				const result = await response.json();
-				const emails = new Set(result.applications.map((app: any) => app.email.toLowerCase()));
+				const emails = new Set<string>(result.applications.map((app: { email: string }) => app.email.toLowerCase()));
 				setExistingEmails(emails);
 			}
 		} catch (error) {
@@ -561,10 +561,10 @@ export default function BulkImportPage() {
 													<SelectItem value={`new:${header}`}>
 														<div className='flex items-center'>
 															<Plus className='w-3 h-3 mr-2 text-green-600' />
-															Create new field: "{header}"
+															Create new field: &quot;{header}&quot;
 														</div>
 													</SelectItem>
-													{community.applicationForm.questions?.map(q => (
+													{community.applicationForm?.questions?.map(q => (
 														<SelectItem key={q.id} value={q.id}>
 															{q.label} {q.required && <span className='text-red-500'>*</span>}
 														</SelectItem>
@@ -649,7 +649,7 @@ export default function BulkImportPage() {
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{parsedMembers?.slice(0, 10).map((member, index) => {
+										{parsedMembers?.slice(0, 10).map((member) => {
 											const emailQuestion = community?.applicationForm?.questions.find(q => 
 												q.label.toLowerCase().includes('email')
 											);

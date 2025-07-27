@@ -8,6 +8,15 @@ interface Params {
   id: string;
 }
 
+interface FormQuestion {
+  id: string;
+  label: string;
+  type: string;
+  required: boolean;
+  placeholder?: string;
+  options?: string[];
+}
+
 interface BulkMemberData {
   responses: Record<string, string>;
   status: 'PENDING' | 'ACCEPTED' | 'DENIED';
@@ -50,12 +59,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<P
     }
 
     // Get the form questions from the JSON field
-    const formQuestions = (community.applicationForm.questions as any[]) || [];
+    const formQuestions = (community.applicationForm.questions as unknown as FormQuestion[]) || [];
 
     // Validate that all required questions are answered
     const requiredQuestionIds = formQuestions
-      .filter((q: any) => q.required)
-      .map((q: any) => q.id);
+      .filter((q: FormQuestion) => q.required)
+      .map((q: FormQuestion) => q.id);
 
     const invalidMembers: number[] = [];
     const validMembers: BulkMemberData[] = [];
@@ -134,16 +143,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<P
       // Update the application form with new questions
       await prisma.applicationForm.update({
         where: { id: community.applicationForm!.id },
-        data: { questions: updatedQuestions }
+        data: { questions: updatedQuestions as unknown as never }
       });
     }
 
     // Extract emails for duplicate checking (from both existing and new fields)
-    const emailQuestion = formQuestions.find((q: any) => 
+    const emailQuestion = formQuestions.find((q: FormQuestion) => 
       q.label.toLowerCase().includes('email')
     );
 
-    const getEmailFromMember = (member: any) => {
+    const getEmailFromMember = (member: { existingResponses: Record<string, string>; dynamicFields: Record<string, string> }) => {
       // Try existing email question first
       if (emailQuestion && member.existingResponses[emailQuestion.id]) {
         return member.existingResponses[emailQuestion.id].toLowerCase();
@@ -160,7 +169,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<P
       return null;
     };
 
-    const emails = processedResponses.map(getEmailFromMember).filter(Boolean);
+    const emails = processedResponses.map(getEmailFromMember).filter((email): email is string => email !== null);
     
     // Check for existing applications with these emails
     const existingApplications = await prisma.memberApplication.findMany({
@@ -179,7 +188,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<P
 
     const existingEmailSet = new Set(existingApplications.map(app => app.email.toLowerCase()));
     const duplicates: string[] = [];
-    const membersToCreate = [];
+    const membersToCreate: { existingResponses: Record<string, string>; dynamicFields: Record<string, string>; status: 'PENDING' | 'ACCEPTED' | 'DENIED' }[] = [];
 
     processedResponses.forEach(member => {
       const email = getEmailFromMember(member);
