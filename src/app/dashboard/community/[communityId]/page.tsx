@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { FileText, Users, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Users, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/dashboard-layout';
@@ -521,30 +521,6 @@ function CommunityPageContent() {
 						<div className='text-center p-4 bg-purple-50 rounded-lg'>
 							<div className='text-2xl font-bold text-purple-600'>{memberDirectory ? 1 : 0}</div>
 							<div className='text-sm text-purple-700'>Member Directories</div>
-						</div>
-					</div>
-					<div className='mt-6 p-4 bg-gray-50 rounded-lg'>
-						<h3 className='font-medium text-gray-900 mb-2'>Quick Actions</h3>
-						<p className='text-sm text-gray-600 mb-4'>Use the sidebar navigation to access different sections of your community:</p>
-						<div className='space-y-2 text-sm text-gray-600'>
-							<div className='flex items-center gap-2'>
-								<ClipboardList className='w-4 h-4 text-blue-600' />
-								<span>
-									<strong>Form Responses:</strong> View and manage application submissions
-								</span>
-							</div>
-							<div className='flex items-center gap-2'>
-								<FileText className='w-4 h-4 text-green-600' />
-								<span>
-									<strong>Chat Analytics:</strong> Upload and analyze WhatsApp exports
-								</span>
-							</div>
-							<div className='flex items-center gap-2'>
-								<Users className='w-4 h-4 text-purple-600' />
-								<span>
-									<strong>Member Directory:</strong> Manage public member directories
-								</span>
-							</div>
 						</div>
 					</div>
 				</CardContent>
