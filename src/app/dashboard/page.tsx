@@ -3,14 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Users, Calendar, Share2, Plus, ClipboardList } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FileText, Users, Share2, Calendar, ClipboardList } from 'lucide-react';
 import { toast } from 'sonner';
-import { DashboardLayout } from '@/components/dashboard-layout';
+import { useCommunities, useCommunityStats } from '@/hooks';
 
 interface ChatAnalysis {
 	id: string;
@@ -46,16 +44,17 @@ interface Community {
 
 export default function DashboardPage() {
 	const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-	const [communities, setCommunities] = useState<Community[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-	const [newCommunity, setNewCommunity] = useState({ name: '', description: '' });
+	const [authLoading, setAuthLoading] = useState(true);
 	const [shareMessageModal, setShareMessageModal] = useState<{ open: boolean; directory: Community['memberDirectories'][0] | null; communityName: string }>({
 		open: false,
 		directory: null,
 		communityName: '',
 	});
 	const router = useRouter();
+
+	// Use new hooks for data fetching
+	const { data: communities = [], isLoading: communitiesLoading } = useCommunities();
+	const { totalCommunities, totalAnalyses, totalSharedDirectories } = useCommunityStats();
 
 	useEffect(() => {
 		const checkAuth = async () => {
@@ -66,68 +65,17 @@ export default function DashboardPage() {
 					return;
 				}
 				setUser(session.data.user);
-
-				// Fetch user's communities from database
-				const response = await fetch('/api/communities');
-				if (response.ok) {
-					const result = await response.json();
-					setCommunities(result.communities);
-				}
 			} catch (error) {
 				console.error('Auth check failed:', error);
 				router.push('/sign-in');
 			} finally {
-				setIsLoading(false);
+				setAuthLoading(false);
 			}
 		};
 
 		checkAuth();
 	}, [router]);
 
-	const handleCreateCommunity = async () => {
-		if (!newCommunity.name.trim()) {
-			toast.error('Community name is required');
-			return;
-		}
-
-		// Check if user has reached the limit
-		if (communities.length >= 10) {
-			toast.error('Maximum number of communities reached (10)');
-			return;
-		}
-
-		try {
-			const response = await fetch('/api/communities', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					name: newCommunity.name,
-					description: newCommunity.description,
-				}),
-			});
-
-			const result = await response.json();
-
-			if (!response.ok) {
-				throw new Error(result.error || 'Failed to create community');
-			}
-
-			// Add to communities list
-			setCommunities((prev) => [result.community, ...prev]);
-			setNewCommunity({ name: '', description: '' });
-			setIsCreateModalOpen(false);
-			toast.success('Community created successfully');
-		} catch (error) {
-			console.error('Error creating community:', error);
-			if (error instanceof Error) {
-				toast.error(`Error: ${error.message}`);
-			} else {
-				toast.error('Error creating community. Please try again.');
-			}
-		}
-	};
 
 	const handleOpenShareMessage = (directory: Community['memberDirectories'][0], communityName: string) => {
 		setShareMessageModal({
@@ -181,6 +129,8 @@ export default function DashboardPage() {
 		}
 	};
 
+	const isLoading = authLoading || communitiesLoading;
+
 	if (isLoading) {
 		return (
 			<div className='min-h-screen flex items-center justify-center'>
@@ -193,12 +143,8 @@ export default function DashboardPage() {
 		return null;
 	}
 
-	const totalAnalyses = communities.reduce((sum, community) => sum + community._count.chatAnalyses, 0);
-	const totalSharedDirectories = communities.reduce((sum, community) => sum + community.memberDirectories.length, 0);
-
 	return (
-		<DashboardLayout>
-			<div className='space-y-6'>
+		<div className='space-y-6'>
 				<div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8'>
 					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200'>
 						<CardContent className='p-3 md:p-6'>
@@ -206,7 +152,7 @@ export default function DashboardPage() {
 								<Users className='h-6 w-6 md:h-8 md:w-8 text-blue-600 mb-2 md:mb-0' />
 								<div className='md:ml-4 text-center md:text-left'>
 									<p className='text-xs md:text-sm font-medium text-gray-600'>Communities</p>
-									<p className='text-lg md:text-2xl font-bold text-gray-900'>{communities.length}</p>
+									<p className='text-lg md:text-2xl font-bold text-gray-900'>{totalCommunities}</p>
 								</div>
 							</div>
 						</CardContent>
@@ -240,52 +186,6 @@ export default function DashboardPage() {
 				<div className='space-y-4 sm:space-y-6'>
 					<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0'>
 						<h2 className='text-lg sm:text-xl font-semibold text-gray-900'>Your Communities</h2>
-						{communities.length >= 10 ? (
-							<Button disabled variant='outline' size='sm' className='cursor-not-allowed text-xs sm:text-sm'>
-								<Plus className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
-								<span className='hidden sm:inline'>Community </span>Limit Reached
-							</Button>
-						) : (
-							<Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-								<DialogTrigger asChild>
-									<Button size='sm' className='text-xs sm:text-sm'>
-										<Plus className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
-										<span className='hidden sm:inline'>Create </span>Community
-									</Button>
-								</DialogTrigger>
-								<DialogContent className='sm:max-w-lg'>
-									<DialogHeader>
-										<DialogTitle>Create New Community</DialogTitle>
-										<DialogDescription>Create a community to organize your WhatsApp chat analyses and share insights with others.</DialogDescription>
-									</DialogHeader>
-									<div className='space-y-4 py-4'>
-										<div>
-											<label className='text-sm font-medium text-gray-700 mb-2 block'>Community Name *</label>
-											<Input
-												value={newCommunity.name}
-												onChange={(e) => setNewCommunity((prev) => ({ ...prev, name: e.target.value }))}
-												placeholder='Enter community name'
-											/>
-										</div>
-										<div>
-											<label className='text-sm font-medium text-gray-700 mb-2 block'>Description (optional)</label>
-											<Textarea
-												value={newCommunity.description}
-												onChange={(e) => setNewCommunity((prev) => ({ ...prev, description: e.target.value }))}
-												placeholder='Describe your community'
-												rows={3}
-											/>
-										</div>
-									</div>
-									<DialogFooter>
-										<Button variant='outline' onClick={() => setIsCreateModalOpen(false)}>
-											Cancel
-										</Button>
-										<Button onClick={handleCreateCommunity}>Create Community</Button>
-									</DialogFooter>
-								</DialogContent>
-							</Dialog>
-						)}
 					</div>
 
 					{communities.length === 0 ? (
@@ -293,48 +193,9 @@ export default function DashboardPage() {
 							<CardContent className='p-6 sm:p-12 text-center'>
 								<Users className='mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400' />
 								<h3 className='mt-4 text-base sm:text-lg font-medium text-gray-900'>No communities yet</h3>
-								<p className='mt-2 text-sm text-gray-600'>Create your first community to start organizing your WhatsApp chat analyses.</p>
-								<div className='mt-4 sm:mt-6'>
-									<Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-										<DialogTrigger asChild>
-											<Button size='sm' className='text-xs sm:text-sm'>
-												<Plus className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
-												Create Your First Community
-											</Button>
-										</DialogTrigger>
-										<DialogContent className='sm:max-w-lg'>
-											<DialogHeader>
-												<DialogTitle>Create New Community</DialogTitle>
-												<DialogDescription>Create a community to organize your WhatsApp chat analyses and share insights with others.</DialogDescription>
-											</DialogHeader>
-											<div className='space-y-4 py-4'>
-												<div>
-													<label className='text-sm font-medium text-gray-700 mb-2 block'>Community Name *</label>
-													<Input
-														value={newCommunity.name}
-														onChange={(e) => setNewCommunity((prev) => ({ ...prev, name: e.target.value }))}
-														placeholder='Enter community name'
-													/>
-												</div>
-												<div>
-													<label className='text-sm font-medium text-gray-700 mb-2 block'>Description (optional)</label>
-													<Textarea
-														value={newCommunity.description}
-														onChange={(e) => setNewCommunity((prev) => ({ ...prev, description: e.target.value }))}
-														placeholder='Describe your community'
-														rows={3}
-													/>
-												</div>
-											</div>
-											<DialogFooter>
-												<Button variant='outline' onClick={() => setIsCreateModalOpen(false)}>
-													Cancel
-												</Button>
-												<Button onClick={handleCreateCommunity}>Create Community</Button>
-											</DialogFooter>
-										</DialogContent>
-									</Dialog>
-								</div>
+								<p className='mt-2 text-sm text-gray-600'>
+									Create your first community using the <strong>+ button</strong> in the sidebar to start organizing your WhatsApp chat analyses.
+								</p>
 							</CardContent>
 						</Card>
 					) : (
@@ -363,13 +224,13 @@ export default function DashboardPage() {
 													</span>
 												</div>
 												<div className='flex items-center gap-4'>
-													{community.memberDirectories.length > 0 && (
+													{community.memberDirectories && community.memberDirectories.length > 0 && (
 														<div className='flex items-center gap-2'>
 															<Share2 className='w-3 h-3 sm:w-4 sm:h-4 text-blue-600' />
 															<button
 																onClick={(e) => {
 																	e.stopPropagation();
-																	handleOpenShareMessage(community.memberDirectories[0], community.name);
+																	handleOpenShareMessage(community.memberDirectories![0], community.name);
 																}}
 																className='text-blue-600 hover:text-blue-800 hover:underline transition-colors text-xs sm:text-sm'>
 																Share directory
@@ -419,7 +280,6 @@ export default function DashboardPage() {
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
-			</div>
-		</DashboardLayout>
+		</div>
 	);
 }

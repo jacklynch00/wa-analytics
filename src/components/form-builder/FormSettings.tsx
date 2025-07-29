@@ -103,32 +103,6 @@ export default function FormSettings({ form, onUpdate }: FormSettingsProps) {
         )}
       </div>
 
-      {/* Email Messages */}
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="acceptanceMessage">Custom Acceptance Message (Optional)</Label>
-          <Textarea
-            id="acceptanceMessage"
-            value={form.acceptanceMessage || ''}
-            onChange={(e) => onUpdate({ acceptanceMessage: e.target.value })}
-            placeholder="Welcome to our community! We're excited to have you..."
-            className="mt-1"
-            rows={3}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="denialMessage">Custom Denial Message (Optional)</Label>
-          <Textarea
-            id="denialMessage"
-            value={form.denialMessage || ''}
-            onChange={(e) => onUpdate({ denialMessage: e.target.value })}
-            placeholder="Thank you for your interest. Unfortunately..."
-            className="mt-1"
-            rows={3}
-          />
-        </div>
-      </div>
     </div>
   );
 }

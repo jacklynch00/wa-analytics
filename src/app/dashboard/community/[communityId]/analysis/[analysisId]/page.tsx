@@ -14,7 +14,6 @@ import ResourceHub from '@/components/dashboard/ResourceHub';
 import Analytics from '@/components/dashboard/Analytics';
 import { Edit2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { DashboardLayout } from '@/components/dashboard-layout';
 
 function AnalysisPageContent() {
 	const [analysis, setAnalysis] = useState<ChatAnalysis | null>(null);
@@ -105,32 +104,27 @@ function AnalysisPageContent() {
 
 	if (loading) {
 		return (
-			<DashboardLayout>
-				<div className='flex items-center justify-center py-8'>
-					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
-				</div>
-			</DashboardLayout>
+			<div className='flex items-center justify-center py-8'>
+				<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+			</div>
 		);
 	}
 
 	if (!analysis) {
 		return (
-			<DashboardLayout>
-				<div className='flex items-center justify-center py-8'>
-					<Card className='w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
-						<CardContent className='p-6 text-center'>
-							<h2 className='text-lg font-semibold mb-4'>Analysis Not Found</h2>
-							<p className='text-sm text-gray-600 mb-4'>The requested analysis could not be found.</p>
-						</CardContent>
-					</Card>
-				</div>
-			</DashboardLayout>
+			<div className='flex items-center justify-center py-8'>
+				<Card className='w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
+					<CardContent className='p-6 text-center'>
+						<h2 className='text-lg font-semibold mb-4'>Analysis Not Found</h2>
+						<p className='text-sm text-gray-600 mb-4'>The requested analysis could not be found.</p>
+					</CardContent>
+				</Card>
+			</div>
 		);
 	}
 
 	return (
-		<DashboardLayout>
-			<div className='space-y-6'>
+		<div className='space-y-6'>
 				{/* Title editing section - moved to content area */}
 				<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3'>
 					<div className='flex-1'>
@@ -211,8 +205,7 @@ function AnalysisPageContent() {
 						<ResourceHub resources={analysis.resources} />
 					</TabsContent>
 				</Tabs>
-			</div>
-		</DashboardLayout>
+		</div>
 	);
 }
 
@@ -220,11 +213,9 @@ export default function AnalysisPage() {
 	return (
 		<Suspense
 			fallback={
-				<DashboardLayout>
-					<div className='flex items-center justify-center py-8'>
-						<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
-					</div>
-				</DashboardLayout>
+				<div className='flex items-center justify-center py-8'>
+					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+				</div>
 			}>
 			<AnalysisPageContent />
 		</Suspense>

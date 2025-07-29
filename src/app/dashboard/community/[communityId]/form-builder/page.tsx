@@ -11,7 +11,6 @@ import FormSettings from '@/components/form-builder/FormSettings';
 import FormUrlSettings from '@/components/form-builder/FormUrlSettings';
 import QuestionBuilder from '@/components/form-builder/QuestionBuilder';
 import FormPreviewModal from '@/components/form-builder/FormPreviewModal';
-import { DashboardLayout } from '@/components/dashboard-layout';
 
 interface Community {
   id: string;
@@ -60,8 +59,6 @@ function FormBuilderPageContent() {
               password: '',
               customSlug: '',
               whatsappInviteUrl: '',
-              acceptanceMessage: '',
-              denialMessage: '',
               questions: [
                 {
                   id: 'email',
@@ -92,8 +89,6 @@ function FormBuilderPageContent() {
             password: '',
             customSlug: '',
             whatsappInviteUrl: '',
-            acceptanceMessage: '',
-            denialMessage: '',
             questions: [
               {
                 id: 'email',
@@ -163,32 +158,27 @@ function FormBuilderPageContent() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
     );
   }
 
   if (!community || !form) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center py-8">
-          <Card className="w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg">
-            <CardContent className="p-6 text-center">
-              <h2 className="text-lg font-semibold mb-4">Error Loading Form Builder</h2>
-              <p className="text-sm text-gray-600 mb-4">Could not load the form builder.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center py-8">
+        <Card className="w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-lg font-semibold mb-4">Error Loading Form Builder</h2>
+            <p className="text-sm text-gray-600 mb-4">Could not load the form builder.</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Action Buttons */}
         <div className="mb-6 flex flex-col sm:flex-row gap-3 justify-end">
           <Button 
@@ -210,30 +200,8 @@ function FormBuilderPageContent() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Form Settings */}
-          <div className="lg:col-span-1">
-            <Card className="bg-white/70 backdrop-blur-sm border-white/60 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">Form Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FormSettings form={form} onUpdate={updateForm} />
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Question Builder */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Custom URL Section */}
-            <Card className="bg-blue-50/50 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-lg">Form URL</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FormUrlSettings form={form} onUpdate={updateForm} />
-              </CardContent>
-            </Card>
-
+          <div className="lg:col-span-2">
             {/* Questions Section */}
             <Card className="bg-white/70 backdrop-blur-sm border-white/60 shadow-lg">
               <CardHeader>
@@ -252,6 +220,28 @@ function FormBuilderPageContent() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Form Settings */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Custom URL Section */}
+            <Card className="bg-blue-50/50 border-blue-200">
+              <CardHeader>
+                <CardTitle className="text-lg">Form URL</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormUrlSettings form={form} onUpdate={updateForm} />
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/70 backdrop-blur-sm border-white/60 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg">Form Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormSettings form={form} onUpdate={updateForm} />
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Preview Modal */}
@@ -262,8 +252,7 @@ function FormBuilderPageContent() {
             form={form}
           />
         )}
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }
 
@@ -271,11 +260,9 @@ export default function FormBuilderPage() {
   return (
     <Suspense
       fallback={
-        <DashboardLayout>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        </DashboardLayout>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
       }
     >
       <FormBuilderPageContent />

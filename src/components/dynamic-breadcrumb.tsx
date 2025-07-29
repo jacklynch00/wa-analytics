@@ -9,6 +9,11 @@ interface Community {
 	name: string;
 }
 
+interface Analysis {
+	id: string;
+	title: string;
+}
+
 export function DynamicBreadcrumb() {
 	const pathname = usePathname();
 
@@ -21,6 +26,24 @@ export function DynamicBreadcrumb() {
 			const data = await response.json();
 			return data.communities || [];
 		},
+		staleTime: 5 * 60 * 1000,
+		gcTime: 10 * 60 * 1000,
+	});
+
+	// Extract analysis ID from pathname if present
+	const analysisMatch = pathname.match(/\/dashboard\/community\/[^\/]+\/analysis\/([^\/]+)/);
+	const analysisId = analysisMatch?.[1];
+
+	// Fetch analysis data if viewing an analysis page
+	const { data: analysis, isLoading: analysisLoading } = useQuery({
+		queryKey: ['analysis', analysisId],
+		queryFn: async (): Promise<Analysis> => {
+			const response = await fetch(`/api/analysis/${analysisId}`);
+			if (!response.ok) throw new Error('Failed to fetch analysis');
+			const data = await response.json();
+			return data.analysis;
+		},
+		enabled: !!analysisId,
 		staleTime: 5 * 60 * 1000,
 		gcTime: 10 * 60 * 1000,
 	});
@@ -129,8 +152,17 @@ export function DynamicBreadcrumb() {
 				const analysisIndex = segments.indexOf('analysis') + 1;
 				const analysisId = segments[analysisIndex];
 				if (analysisId) {
+					// Add Chat Analytics breadcrumb first
 					breadcrumbs.push({
-						label: 'Analysis Results',
+						label: 'Chat Analytics',
+						href: `/dashboard/community/${communityId}/analytics`,
+						isCurrentPage: false,
+					});
+					
+					// Add analysis title
+					const analysisTitle = analysisLoading ? 'Loading...' : analysis?.title || 'Analysis';
+					breadcrumbs.push({
+						label: analysisTitle,
 						href: `/dashboard/community/${communityId}/analysis/${analysisId}`,
 						isCurrentPage: pathname === `/dashboard/community/${communityId}/analysis/${analysisId}`,
 					});

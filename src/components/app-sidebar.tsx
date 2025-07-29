@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
-import { BarChart3, HelpCircle, LayoutDashboard, MessageCircle, Settings, Send, Upload } from 'lucide-react';
+import { HelpCircle, LayoutDashboard, MessageCircle, Settings, Send } from 'lucide-react';
 
 import { NavMain } from '@/components/nav-main';
 import { NavCommunities } from '@/components/nav-communities';
@@ -15,14 +15,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const pathname = usePathname();
 	const { data: organization } = useOrganization();
 
-	// Check if we're in a specific community context
-	const communityMatch = pathname.match(/\/dashboard\/community\/([^\/]+)/);
-	const currentCommunityId = communityMatch?.[1];
-
-	// Check if we're viewing a specific analysis
-	const analysisMatch = pathname.match(/\/dashboard\/community\/([^\/]+)\/analysis\/([^\/]+)/);
-	const currentAnalysisId = analysisMatch?.[2];
-
 	const navMain = [
 		{
 			title: 'Dashboard',
@@ -30,73 +22,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			icon: LayoutDashboard,
 			isActive: pathname === '/dashboard',
 		},
-		{
-			title: 'Analytics',
-			url: '/analytics',
-			icon: BarChart3,
-			isActive: pathname.startsWith('/analytics'),
-			items: [
-				{
-					title: 'Overview',
-					url: '/analytics',
-				},
-				{
-					title: 'Reports',
-					url: '/analytics/reports',
-				},
-				{
-					title: 'Insights',
-					url: '/analytics/insights',
-				},
-			],
-		},
 	];
-
-	// Community-specific navigation when viewing a specific community
-	const communityNavItems = currentCommunityId
-		? [
-				{
-					title: 'Community Details',
-					url: `/dashboard/community/${currentCommunityId}`,
-					icon: MessageCircle,
-					isActive:
-						pathname === `/dashboard/community/${currentCommunityId}` ||
-						pathname.includes(`/dashboard/community/${currentCommunityId}/responses`) ||
-						pathname.includes(`/dashboard/community/${currentCommunityId}/analytics`) ||
-						pathname.includes(`/dashboard/community/${currentCommunityId}/form-builder`) ||
-						pathname.includes(`/dashboard/community/${currentCommunityId}/analysis`),
-					items: [
-						{
-							title: 'Form Applications',
-							url: `/dashboard/community/${currentCommunityId}/responses`,
-						},
-						{
-							title: 'Chat Analytics',
-							url: `/dashboard/community/${currentCommunityId}/analytics`,
-						},
-						{
-							title: 'Form Builder',
-							url: `/dashboard/community/${currentCommunityId}/form-builder`,
-						},
-						// Add Analysis Results when viewing a specific analysis
-						...(currentAnalysisId
-							? [
-									{
-										title: 'Analysis Results',
-										url: `/dashboard/community/${currentCommunityId}/analysis/${currentAnalysisId}`,
-									},
-								]
-							: []),
-					],
-				},
-				{
-					title: 'Bulk Import',
-					url: `/dashboard/community/${currentCommunityId}/bulk-import`,
-					icon: Upload,
-					isActive: pathname.includes('/bulk-import'),
-				},
-			]
-		: [];
 
 	const navSecondary = [
 		{
@@ -152,7 +78,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarContent>
 				<NavMain items={navMain} />
 				<NavCommunities />
-				{communityNavItems.length > 0 && <NavMain items={communityNavItems} title='Community Tools' />}
 				<NavSecondary items={navSecondary} className='mt-auto' />
 			</SidebarContent>
 			<SidebarFooter>

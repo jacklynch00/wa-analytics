@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { DashboardLayout } from '@/components/dashboard-layout';
 import FormResponsesTab from '@/components/community/FormResponsesTab';
 import { useEffect, useState } from 'react';
 import { ApplicationForm } from '@prisma/client';
@@ -35,19 +34,15 @@ export default function CommunityResponsesPage() {
 
 	if (loading) {
 		return (
-			<DashboardLayout>
-				<div className='flex items-center justify-center py-8'>
-					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
-				</div>
-			</DashboardLayout>
+			<div className='flex items-center justify-center py-8'>
+				<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+			</div>
 		);
 	}
 
 	return (
-		<DashboardLayout>
-			<div className='space-y-6'>
-				<FormResponsesTab communityId={communityId} applicationForm={applicationForm} />
-			</div>
-		</DashboardLayout>
+		<div className='space-y-6'>
+			<FormResponsesTab communityId={communityId} applicationForm={applicationForm} />
+		</div>
 	);
 }

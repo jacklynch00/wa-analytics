@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { DashboardLayout } from '@/components/dashboard-layout';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -109,11 +108,9 @@ export default function CommunityAnalyticsPage() {
 
 	if (loading) {
 		return (
-			<DashboardLayout>
-				<div className='flex items-center justify-center py-8'>
-					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
-				</div>
-			</DashboardLayout>
+			<div className='flex items-center justify-center py-8'>
+				<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+			</div>
 		);
 	}
 
@@ -122,8 +119,7 @@ export default function CommunityAnalyticsPage() {
 	}
 
 	return (
-		<DashboardLayout>
-			<div className='space-y-6'>
+		<div className='space-y-6'>
 				<div className='flex flex-col sm:flex-row justify-end items-start sm:items-center gap-3 sm:gap-0'>
 					<Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
 						<DialogTrigger asChild>
@@ -220,7 +216,6 @@ export default function CommunityAnalyticsPage() {
 						</div>
 					</div>
 				)}
-			</div>
-		</DashboardLayout>
+		</div>
 	);
 }

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Download, Upload, FileText, Users, AlertTriangle, Check, X, Clock, Plus } from 'lucide-react';
+import { Download, Upload, FileText, Users, AlertTriangle, Check, X, Clock, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FormQuestion {
@@ -59,20 +59,20 @@ export default function BulkImportPage() {
 	const [community, setCommunity] = useState<Community | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [currentStep, setCurrentStep] = useState<ImportStep>('upload');
-	
+
 	// CSV Upload state
 	const [csvFile, setCsvFile] = useState<File | null>(null);
 	const [csvData, setCsvData] = useState<CSVRow[]>([]);
 	const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
-	
+
 	// Field mapping state
 	const [fieldMapping, setFieldMapping] = useState<FieldMapping>({});
-	
+
 	// Preview state
 	const [parsedMembers, setParsedMembers] = useState<ParsedMember[]>([]);
 	const [existingEmails, setExistingEmails] = useState<Set<string>>(new Set());
 	const [defaultStatus] = useState<'PENDING' | 'ACCEPTED' | 'DENIED'>('PENDING');
-	
+
 	// Bulk actions state
 	const [selectAll, setSelectAll] = useState(true);
 	const [bulkStatus, setBulkStatus] = useState<'PENDING' | 'ACCEPTED' | 'DENIED'>('PENDING');
@@ -81,17 +81,17 @@ export default function BulkImportPage() {
 		try {
 			const response = await fetch(`/api/communities/${communityId}`);
 			if (!response.ok) throw new Error('Failed to load community');
-			
+
 			const result = await response.json();
 			console.log('Loaded community:', result.community);
 			setCommunity(result.community);
-			
+
 			if (!result.community.applicationForm) {
 				toast.error('This community does not have an application form. Please create one first.');
 				router.push(`/dashboard/community/${communityId}`);
 				return;
 			}
-			
+
 			console.log('Application form:', result.community.applicationForm);
 			console.log('Form questions:', result.community.applicationForm.questions);
 		} catch (error) {
@@ -126,16 +126,16 @@ export default function BulkImportPage() {
 
 		const headers = ['name', 'email', 'phone', 'linkedin', 'status'];
 		// Add form-specific questions
-		community.applicationForm.questions.forEach(q => {
+		community.applicationForm.questions.forEach((q) => {
 			if (!headers.includes(q.label.toLowerCase())) {
 				headers.push(q.label);
 			}
 		});
 
 		const csvContent = [
-			headers.map(h => `"${h}"`).join(','),
+			headers.map((h) => `"${h}"`).join(','),
 			// Sample data row
-			'"John Doe","john@example.com","555-123-4567","https://linkedin.com/in/johndoe","PENDING"'
+			'"John Doe","john@example.com","555-123-4567","https://linkedin.com/in/johndoe","PENDING"',
 		].join('\n');
 
 		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -152,8 +152,8 @@ export default function BulkImportPage() {
 		toast.success('Template downloaded successfully');
 	};
 
-	const parseCSV = (text: string): { headers: string[], data: CSVRow[] } => {
-		const lines = text.split('\n').filter(line => line.trim());
+	const parseCSV = (text: string): { headers: string[]; data: CSVRow[] } => {
+		const lines = text.split('\n').filter((line) => line.trim());
 		if (lines.length < 2) throw new Error('CSV must have at least a header row and one data row');
 
 		// More robust CSV parsing that handles quoted fields with commas
@@ -203,7 +203,7 @@ export default function BulkImportPage() {
 			const values = parseCSVLine(lines[i]);
 			console.log(`Row ${i}:`, values);
 
-			if (values.length > 0 && values.some(v => v.trim())) {
+			if (values.length > 0 && values.some((v) => v.trim())) {
 				const row: CSVRow = {};
 				headers.forEach((header, index) => {
 					row[header] = values[index] || '';
@@ -224,22 +224,24 @@ export default function BulkImportPage() {
 
 		const mapping: FieldMapping = {};
 		const questions = community.applicationForm.questions;
-		
+
 		console.log('Available questions:', questions);
 		console.log('CSV headers to map:', headers);
 
-		headers.forEach(header => {
+		headers.forEach((header) => {
 			const lowerHeader = header.toLowerCase();
-			
+
 			// Find matching question
-			const matchingQuestion = questions.find(q => {
+			const matchingQuestion = questions.find((q) => {
 				const lowerLabel = q.label.toLowerCase();
-				return lowerLabel.includes(lowerHeader) || 
-					   lowerHeader.includes(lowerLabel) ||
-					   (lowerHeader === 'email' && lowerLabel.includes('email')) ||
-					   (lowerHeader === 'name' && lowerLabel.includes('name')) ||
-					   (lowerHeader === 'phone' && lowerLabel.includes('phone')) ||
-					   (lowerHeader === 'linkedin' && lowerLabel.includes('linkedin'));
+				return (
+					lowerLabel.includes(lowerHeader) ||
+					lowerHeader.includes(lowerLabel) ||
+					(lowerHeader === 'email' && lowerLabel.includes('email')) ||
+					(lowerHeader === 'name' && lowerLabel.includes('name')) ||
+					(lowerHeader === 'phone' && lowerLabel.includes('phone')) ||
+					(lowerHeader === 'linkedin' && lowerLabel.includes('linkedin'))
+				);
 			});
 
 			if (matchingQuestion) {
@@ -269,14 +271,14 @@ export default function BulkImportPage() {
 		try {
 			const text = await file.text();
 			const { headers, data } = parseCSV(text);
-			
+
 			setCsvHeaders(headers);
 			setCsvData(data);
-			
+
 			// Auto-detect field mapping
 			const detectedMapping = autoDetectMapping(headers);
 			setFieldMapping(detectedMapping);
-			
+
 			setCurrentStep('mapping');
 			toast.success(`CSV parsed successfully: ${data.length} rows found`);
 		} catch (error) {
@@ -290,7 +292,7 @@ export default function BulkImportPage() {
 
 		const members: ParsedMember[] = csvData.map((row, index) => {
 			const data: { [questionId: string]: string } = {};
-			
+
 			// Map CSV data to form questions (existing and new fields)
 			Object.entries(fieldMapping).forEach(([csvColumn, questionId]) => {
 				if (questionId && row[csvColumn]) {
@@ -299,21 +301,17 @@ export default function BulkImportPage() {
 			});
 
 			// Get email for duplicate detection (check both existing questions and new fields)
-			const emailQuestion = community.applicationForm!.questions.find(q => 
-				q.label.toLowerCase().includes('email')
-			);
+			const emailQuestion = community.applicationForm!.questions.find((q) => q.label.toLowerCase().includes('email'));
 			let email = emailQuestion ? data[emailQuestion.id] : '';
-			
+
 			// Also check if email is mapped as a new field
 			if (!email) {
-				const emailMapping = Object.entries(fieldMapping).find(([csvCol, mapping]) => 
-					csvCol.toLowerCase().includes('email') && mapping.startsWith('new:')
-				);
+				const emailMapping = Object.entries(fieldMapping).find(([csvCol, mapping]) => csvCol.toLowerCase().includes('email') && mapping.startsWith('new:'));
 				if (emailMapping) {
 					email = data[emailMapping[1]] || '';
 				}
 			}
-			
+
 			// Check for status in CSV data
 			let status: 'PENDING' | 'ACCEPTED' | 'DENIED' = defaultStatus;
 			if (row.status) {
@@ -329,7 +327,7 @@ export default function BulkImportPage() {
 				status,
 				isDuplicate: email ? existingEmails.has(email.toLowerCase()) : false,
 				isSelected: true,
-				duplicateEmail: email || undefined
+				duplicateEmail: email || undefined,
 			};
 		});
 
@@ -338,37 +336,50 @@ export default function BulkImportPage() {
 	};
 
 	const handleBulkStatusChange = (status: 'PENDING' | 'ACCEPTED' | 'DENIED') => {
-		setParsedMembers(prev => prev?.map(member => 
-			member.isSelected ? { ...member, status } : member
-		) || []);
+		setParsedMembers((prev) => prev?.map((member) => (member.isSelected ? { ...member, status } : member)) || []);
 		setBulkStatus(status);
 	};
 
 	const handleSelectAll = (checked: boolean) => {
 		setSelectAll(checked);
-		setParsedMembers(prev => prev?.map(member => ({ ...member, isSelected: checked })) || []);
+		setParsedMembers((prev) => prev?.map((member) => ({ ...member, isSelected: checked })) || []);
 	};
 
 	const removeSelected = () => {
-		setParsedMembers(prev => prev?.filter(member => !member.isSelected) || []);
+		setParsedMembers((prev) => prev?.filter((member) => !member.isSelected) || []);
 		setSelectAll(false);
 	};
 
 	const getStatusBadge = (status: string) => {
 		switch (status) {
 			case 'PENDING':
-				return <Badge variant='outline' className='text-yellow-600 border-yellow-300'><Clock className='w-3 h-3 mr-1' />Pending</Badge>;
+				return (
+					<Badge variant='outline' className='text-yellow-600 border-yellow-300'>
+						<Clock className='w-3 h-3 mr-1' />
+						Pending
+					</Badge>
+				);
 			case 'ACCEPTED':
-				return <Badge variant='default' className='bg-green-600'><Check className='w-3 h-3 mr-1' />Accepted</Badge>;
+				return (
+					<Badge variant='default' className='bg-green-600'>
+						<Check className='w-3 h-3 mr-1' />
+						Accepted
+					</Badge>
+				);
 			case 'DENIED':
-				return <Badge variant='destructive'><X className='w-3 h-3 mr-1' />Denied</Badge>;
+				return (
+					<Badge variant='destructive'>
+						<X className='w-3 h-3 mr-1' />
+						Denied
+					</Badge>
+				);
 			default:
 				return <Badge variant='outline'>{status}</Badge>;
 		}
 	};
 
 	const submitImport = async () => {
-		const selectedMembers = parsedMembers?.filter(m => m.isSelected) || [];
+		const selectedMembers = parsedMembers?.filter((m) => m.isSelected) || [];
 		if (selectedMembers.length === 0) {
 			toast.error('Please select at least one member to import');
 			return;
@@ -381,11 +392,11 @@ export default function BulkImportPage() {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					members: selectedMembers.map(m => ({
+					members: selectedMembers.map((m) => ({
 						responses: m.data,
-						status: m.status
-					}))
-				})
+						status: m.status,
+					})),
+				}),
 			});
 
 			if (!response.ok) {
@@ -414,23 +425,6 @@ export default function BulkImportPage() {
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
 			<div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-				{/* Header */}
-				<div className='flex items-center justify-between mb-8'>
-					<div className='flex items-center space-x-4'>
-						<Button 
-							variant='outline' 
-							onClick={() => router.push(`/dashboard/community/${communityId}`)}
-						>
-							<ArrowLeft className='w-4 h-4 mr-2' />
-							Back to Community
-						</Button>
-						<div>
-							<h1 className='text-2xl font-bold text-gray-900'>Bulk Member Import</h1>
-							<p className='text-gray-600'>{community?.name}</p>
-						</div>
-					</div>
-				</div>
-
 				{/* Step Indicator */}
 				<div className='mb-8'>
 					<div className='flex items-center justify-center space-x-4'>
@@ -442,21 +436,16 @@ export default function BulkImportPage() {
 							const StepIcon = step.icon;
 							const isActive = currentStep === step.key;
 							const isCompleted = ['upload', 'mapping', 'preview'].indexOf(currentStep) > index;
-							
+
 							return (
 								<div key={step.key} className='flex items-center'>
-									<div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-										isActive ? 'bg-blue-600 text-white' : 
-										isCompleted ? 'bg-green-600 text-white' : 
-										'bg-gray-200 text-gray-600'
-									}`}>
+									<div
+										className={`flex items-center justify-center w-10 h-10 rounded-full ${
+											isActive ? 'bg-blue-600 text-white' : isCompleted ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
+										}`}>
 										<StepIcon className='w-5 h-5' />
 									</div>
-									<span className={`ml-2 text-sm font-medium ${
-										isActive ? 'text-blue-600' : 
-										isCompleted ? 'text-green-600' : 
-										'text-gray-500'
-									}`}>
+									<span className={`ml-2 text-sm font-medium ${isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
 										{step.label}
 									</span>
 									{index < 2 && <div className='w-8 h-px bg-gray-300 mx-4' />}
@@ -471,9 +460,7 @@ export default function BulkImportPage() {
 					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
 						<CardHeader>
 							<CardTitle>Upload Member Data</CardTitle>
-							<p className='text-sm text-gray-600'>
-								Upload a CSV file with your member information, or download our template to get started.
-							</p>
+							<p className='text-sm text-gray-600'>Upload a CSV file with your member information, or download our template to get started.</p>
 						</CardHeader>
 						<CardContent className='space-y-6'>
 							<div className='flex gap-4'>
@@ -482,45 +469,33 @@ export default function BulkImportPage() {
 									Download Template
 								</Button>
 							</div>
-							
-							<div className='border-2 border-dashed border-gray-300 rounded-lg p-8 text-center'>
+
+							<div className='border-2 border-dashed flex flex-col items-center justify-center border-gray-300 rounded-lg p-8 text-center'>
 								<Upload className='mx-auto h-12 w-12 text-gray-400 mb-4' />
 								<div className='space-y-2'>
 									<Label htmlFor='csv-upload' className='text-base font-medium cursor-pointer'>
 										Upload your CSV file
 									</Label>
-									<p className='text-sm text-gray-500'>
-										CSV files only. Maximum file size: 10MB
-									</p>
+									<p className='text-sm text-gray-500'>CSV files only. Maximum file size: 10MB</p>
 								</div>
-								<Input
-									id='csv-upload'
-									type='file'
-									accept='.csv'
-									onChange={handleFileUpload}
-									className='mt-4 max-w-xs'
-								/>
+								<Input id='csv-upload' type='file' accept='.csv' onChange={handleFileUpload} className='mt-4 max-w-xs' />
 							</div>
 
 							{csvFile && (
 								<div className='bg-green-50 p-4 rounded-lg'>
 									<div className='flex items-center'>
 										<Check className='w-5 h-5 text-green-600 mr-2' />
-										<span className='text-green-800 font-medium'>
-											{csvFile.name} uploaded successfully
-										</span>
+										<span className='text-green-800 font-medium'>{csvFile.name} uploaded successfully</span>
 									</div>
-									<p className='text-sm text-green-700 mt-1'>
-										{csvData.length} rows found. Ready to proceed to field mapping.
-									</p>
+									<p className='text-sm text-green-700 mt-1'>{csvData.length} rows found. Ready to proceed to field mapping.</p>
 								</div>
 							)}
 						</CardContent>
 					</Card>
 				)}
 
-				{currentStep === 'mapping' && (
-					!community?.applicationForm?.questions ? (
+				{currentStep === 'mapping' &&
+					(!community?.applicationForm?.questions ? (
 						<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
 							<CardContent className='p-12 text-center'>
 								<div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4'></div>
@@ -528,66 +503,60 @@ export default function BulkImportPage() {
 							</CardContent>
 						</Card>
 					) : (
-					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
-						<CardHeader>
-							<CardTitle>Map CSV Fields to Application Questions</CardTitle>
-							<p className='text-sm text-gray-600'>
-								Match your CSV columns to the corresponding application form questions.
-							</p>
-						</CardHeader>
-						<CardContent className='space-y-6'>
-							<div className='grid gap-4'>
-								{csvHeaders?.map(header => (
-									<div key={header} className='flex items-center justify-between p-4 border rounded-lg'>
-										<div className='flex-1'>
-											<div className='font-medium'>{header}</div>
-											<div className='text-sm text-gray-500'>
-												Sample: {csvData[0]?.[header] || 'No data'}
+						<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
+							<CardHeader>
+								<CardTitle>Map CSV Fields to Application Questions</CardTitle>
+								<p className='text-sm text-gray-600'>Match your CSV columns to the corresponding application form questions.</p>
+							</CardHeader>
+							<CardContent className='space-y-6'>
+								<div className='grid gap-4'>
+									{csvHeaders?.map((header) => (
+										<div key={header} className='flex items-center justify-between p-4 border rounded-lg'>
+											<div className='flex-1'>
+												<div className='font-medium'>{header}</div>
+												<div className='text-sm text-gray-500'>Sample: {csvData[0]?.[header] || 'No data'}</div>
+											</div>
+											<div className='flex-1 max-w-xs'>
+												<Select
+													value={fieldMapping[header] || 'skip'}
+													onValueChange={(value) =>
+														setFieldMapping((prev) => ({
+															...prev,
+															[header]: value === 'skip' ? '' : value,
+														}))
+													}>
+													<SelectTrigger>
+														<SelectValue placeholder='Select question' />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value='skip'>Skip this field</SelectItem>
+														<SelectItem value={`new:${header}`}>
+															<div className='flex items-center'>
+																<Plus className='w-3 h-3 mr-2 text-green-600' />
+																Create new field: &quot;{header}&quot;
+															</div>
+														</SelectItem>
+														{community.applicationForm?.questions?.map((q) => (
+															<SelectItem key={q.id} value={q.id}>
+																{q.label} {q.required && <span className='text-red-500'>*</span>}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
 											</div>
 										</div>
-										<div className='flex-1 max-w-xs'>
-											<Select 
-												value={fieldMapping[header] || 'skip'} 
-												onValueChange={(value) => setFieldMapping(prev => ({ 
-													...prev, 
-													[header]: value === 'skip' ? '' : value 
-												}))}
-											>
-												<SelectTrigger>
-													<SelectValue placeholder='Select question' />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value='skip'>Skip this field</SelectItem>
-													<SelectItem value={`new:${header}`}>
-														<div className='flex items-center'>
-															<Plus className='w-3 h-3 mr-2 text-green-600' />
-															Create new field: &quot;{header}&quot;
-														</div>
-													</SelectItem>
-													{community.applicationForm?.questions?.map(q => (
-														<SelectItem key={q.id} value={q.id}>
-															{q.label} {q.required && <span className='text-red-500'>*</span>}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										</div>
-									</div>
-								))}
-							</div>
+									))}
+								</div>
 
-							<div className='flex justify-between'>
-								<Button variant='outline' onClick={() => setCurrentStep('upload')}>
-									Back
-								</Button>
-								<Button onClick={proceedToPreview}>
-									Continue to Preview
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
-					)
-				)}
+								<div className='flex justify-between'>
+									<Button variant='outline' onClick={() => setCurrentStep('upload')}>
+										Back
+									</Button>
+									<Button onClick={proceedToPreview}>Continue to Preview</Button>
+								</div>
+							</CardContent>
+						</Card>
+					))}
 
 				{currentStep === 'preview' && (
 					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
@@ -595,7 +564,7 @@ export default function BulkImportPage() {
 							<CardTitle className='flex items-center justify-between'>
 								<span>Preview & Configure Import</span>
 								<Badge variant='outline'>
-									{parsedMembers?.filter(m => m.isSelected).length || 0} of {parsedMembers?.length || 0} selected
+									{parsedMembers?.filter((m) => m.isSelected).length || 0} of {parsedMembers?.length || 0} selected
 								</Badge>
 							</CardTitle>
 						</CardHeader>
@@ -603,13 +572,10 @@ export default function BulkImportPage() {
 							{/* Bulk Actions */}
 							<div className='flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg'>
 								<div className='flex items-center space-x-2'>
-									<Checkbox 
-										checked={selectAll}
-										onCheckedChange={handleSelectAll}
-									/>
+									<Checkbox checked={selectAll} onCheckedChange={handleSelectAll} />
 									<Label>Select All</Label>
 								</div>
-								
+
 								<Select value={bulkStatus} onValueChange={handleBulkStatusChange}>
 									<SelectTrigger className='w-40'>
 										<SelectValue />
@@ -627,7 +593,7 @@ export default function BulkImportPage() {
 
 								<div className='text-sm text-gray-600 flex items-center'>
 									<AlertTriangle className='w-4 h-4 mr-1 text-amber-500' />
-									{parsedMembers?.filter(m => m.isDuplicate).length || 0} duplicate emails found
+									{parsedMembers?.filter((m) => m.isDuplicate).length || 0} duplicate emails found
 								</div>
 							</div>
 
@@ -637,10 +603,7 @@ export default function BulkImportPage() {
 									<TableHeader>
 										<TableRow>
 											<TableHead className='w-12'>
-												<Checkbox 
-													checked={selectAll}
-													onCheckedChange={handleSelectAll}
-												/>
+												<Checkbox checked={selectAll} onCheckedChange={handleSelectAll} />
 											</TableHead>
 											<TableHead>Email</TableHead>
 											<TableHead>Status</TableHead>
@@ -650,57 +613,44 @@ export default function BulkImportPage() {
 									</TableHeader>
 									<TableBody>
 										{parsedMembers?.slice(0, 10).map((member) => {
-											const emailQuestion = community?.applicationForm?.questions.find(q => 
-												q.label.toLowerCase().includes('email')
-											);
+											const emailQuestion = community?.applicationForm?.questions.find((q) => q.label.toLowerCase().includes('email'));
 											const email = emailQuestion ? member.data[emailQuestion.id] : 'No email';
-											
+
 											return (
 												<TableRow key={member.id} className={member.isDuplicate ? 'bg-amber-50' : ''}>
 													<TableCell>
-														<Checkbox 
+														<Checkbox
 															checked={member.isSelected}
 															onCheckedChange={(checked) => {
-																setParsedMembers(prev => prev?.map(m => 
-																	m.id === member.id ? { ...m, isSelected: !!checked } : m
-																) || []);
+																setParsedMembers((prev) => prev?.map((m) => (m.id === member.id ? { ...m, isSelected: !!checked } : m)) || []);
 															}}
 														/>
 													</TableCell>
 													<TableCell>
 														<div className='flex items-center'>
 															{email}
-															{member.isDuplicate && (
-																<AlertTriangle className='w-4 h-4 ml-2 text-amber-500' />
-															)}
+															{member.isDuplicate && <AlertTriangle className='w-4 h-4 ml-2 text-amber-500' />}
 														</div>
 													</TableCell>
-													<TableCell>
-														{getStatusBadge(member.status)}
-													</TableCell>
+													<TableCell>{getStatusBadge(member.status)}</TableCell>
 													<TableCell className='text-sm text-gray-600'>
 														<div>
 															{Object.keys(member.data).length} fields mapped
-															{Object.keys(member.data).some(key => key.startsWith('new:')) && (
+															{Object.keys(member.data).some((key) => key.startsWith('new:')) && (
 																<div className='text-green-600 text-xs flex items-center mt-1'>
 																	<Plus className='w-3 h-3 mr-1' />
-																	{Object.keys(member.data).filter(key => key.startsWith('new:')).length} new fields
+																	{Object.keys(member.data).filter((key) => key.startsWith('new:')).length} new fields
 																</div>
 															)}
 														</div>
-														{member.isDuplicate && (
-															<div className='text-amber-600 text-xs mt-1'>Duplicate email detected</div>
-														)}
+														{member.isDuplicate && <div className='text-amber-600 text-xs mt-1'>Duplicate email detected</div>}
 													</TableCell>
 													<TableCell>
-														<Select 
-															value={member.status} 
+														<Select
+															value={member.status}
 															onValueChange={(status: 'PENDING' | 'ACCEPTED' | 'DENIED') => {
-																setParsedMembers(prev => prev?.map(m => 
-																	m.id === member.id ? { ...m, status } : m
-																) || []);
-															}}
-														>
+																setParsedMembers((prev) => prev?.map((m) => (m.id === member.id ? { ...m, status } : m)) || []);
+															}}>
 															<SelectTrigger className='w-32'>
 																<SelectValue />
 															</SelectTrigger>
@@ -717,9 +667,7 @@ export default function BulkImportPage() {
 									</TableBody>
 								</Table>
 								{(parsedMembers?.length || 0) > 10 && (
-									<div className='p-4 text-center text-sm text-gray-600 border-t'>
-										Showing first 10 of {parsedMembers?.length || 0} members
-									</div>
+									<div className='p-4 text-center text-sm text-gray-600 border-t'>Showing first 10 of {parsedMembers?.length || 0} members</div>
 								)}
 							</div>
 
@@ -727,9 +675,7 @@ export default function BulkImportPage() {
 								<Button variant='outline' onClick={() => setCurrentStep('mapping')}>
 									Back to Mapping
 								</Button>
-								<Button onClick={submitImport}>
-									Import {parsedMembers?.filter(m => m.isSelected).length || 0} Members
-								</Button>
+								<Button onClick={submitImport}>Import {parsedMembers?.filter((m) => m.isSelected).length || 0} Members</Button>
 							</div>
 						</CardContent>
 					</Card>
@@ -752,17 +698,17 @@ export default function BulkImportPage() {
 							<h3 className='text-lg font-medium text-gray-900 mb-2'>Import Complete!</h3>
 							<p className='text-gray-600 mb-6'>Your members have been successfully imported.</p>
 							<div className='flex gap-4 justify-center'>
-								<Button onClick={() => router.push(`/dashboard/community/${communityId}`)}>
-									Back to Community
-								</Button>
-								<Button variant='outline' onClick={() => {
-									setCurrentStep('upload');
-									setCsvFile(null);
-									setCsvData([]);
-									setCsvHeaders([]);
-									setFieldMapping({});
-									setParsedMembers([]);
-								}}>
+								<Button onClick={() => router.push(`/dashboard/community/${communityId}`)}>Back to Community</Button>
+								<Button
+									variant='outline'
+									onClick={() => {
+										setCurrentStep('upload');
+										setCsvFile(null);
+										setCsvData([]);
+										setCsvHeaders([]);
+										setFieldMapping({});
+										setParsedMembers([]);
+									}}>
 									Import More Members
 								</Button>
 							</div>

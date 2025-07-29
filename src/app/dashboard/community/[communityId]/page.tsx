@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Users, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { DashboardLayout } from '@/components/dashboard-layout';
 
 interface ChatAnalysis {
 	id: string;
@@ -628,15 +627,13 @@ function CommunityPageContent() {
 
 export default function CommunityPage() {
 	return (
-		<DashboardLayout>
-			<Suspense
-				fallback={
-					<div className='flex items-center justify-center py-8'>
-						<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
-					</div>
-				}>
-				<CommunityPageContent />
-			</Suspense>
-		</DashboardLayout>
+		<Suspense
+			fallback={
+				<div className='flex items-center justify-center py-8'>
+					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+				</div>
+			}>
+			<CommunityPageContent />
+		</Suspense>
 	);
 }

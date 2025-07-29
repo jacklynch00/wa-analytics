@@ -80,8 +80,6 @@ export interface ApplicationFormData {
   password?: string;
   customSlug: string;
   whatsappInviteUrl?: string;
-  acceptanceMessage?: string;
-  denialMessage?: string;
   questions: FormQuestion[];
   createdAt: Date;
   updatedAt: Date;
