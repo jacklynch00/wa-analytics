@@ -26,7 +26,7 @@ export async function PATCH(request: NextRequest) {
       where: {
         id: directoryId,
         community: {
-          userId: session.user.id,
+          createdBy: session.user.id,
         },
       },
     });

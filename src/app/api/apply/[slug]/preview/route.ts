@@ -30,7 +30,7 @@ export async function GET(
     const community = await prisma.community.findFirst({
       where: { 
         id: form.communityId,
-        userId: session.user.id,
+        createdBy: session.user.id,
       },
     });
 

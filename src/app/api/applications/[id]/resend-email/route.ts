@@ -39,7 +39,7 @@ export async function POST(
         applicationForm: {
           id: application.formId
         },
-        userId: session.user.id,
+        createdBy: session.user.id,
       },
     });
 

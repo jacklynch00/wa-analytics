@@ -165,7 +165,7 @@ export async function PATCH(
       where: { 
         id: shareId,
         community: {
-          userId: session.user.id
+          createdBy: session.user.id
         }
       },
     });
@@ -226,7 +226,7 @@ export async function DELETE(
       where: { 
         id: shareId,
         community: {
-          userId: session.user.id
+          createdBy: session.user.id
         }
       },
     });

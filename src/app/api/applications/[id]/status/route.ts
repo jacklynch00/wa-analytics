@@ -39,7 +39,7 @@ export async function PATCH(
         applicationForm: {
           id: application.formId
         },
-        userId: session.user.id,
+        createdBy: session.user.id,
       },
     });
 

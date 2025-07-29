@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
+import type { Community, ApplicationForm } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -43,12 +44,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<P
     const community = await prisma.community.findFirst({
       where: {
         id: communityId,
-        userId: session.user.id,
+        createdBy: session.user.id,
       },
       include: {
         applicationForm: true,
       },
-    });
+    }) as (Community & { applicationForm: ApplicationForm | null }) | null;
 
     if (!community) {
       return NextResponse.json({ error: 'Community not found' }, { status: 404 });
