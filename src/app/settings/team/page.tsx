@@ -102,7 +102,8 @@ export default function TeamPage() {
 
 			if (response.ok) {
 				toast.success(`${member.user.name} has been removed from the organization`);
-				// React Query will automatically refetch
+				// Invalidate React Query cache to refetch members
+				queryClient.invalidateQueries({ queryKey: organizationKeys.members() });
 			} else {
 				const error = await response.json();
 				toast.error(error.error || 'Failed to remove member');
