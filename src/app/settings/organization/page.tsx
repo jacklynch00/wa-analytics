@@ -17,6 +17,7 @@ import {
 	useOrganizationMembers,
 	useUpdateOrganizationName
 } from '@/hooks/useOrganization';
+import { DashboardLayout } from '@/components/dashboard-layout';
 
 export default function OrganizationSettingsPage() {
 	const router = useRouter();
@@ -71,29 +72,8 @@ export default function OrganizationSettingsPage() {
 	}
 
 	return (
-		<div className='container mx-auto px-4 py-8 space-y-8'>
-			{/* Header */}
-			<div className='flex items-center justify-between'>
-				<div className='flex items-center gap-4'>
-					<Button 
-						variant='ghost' 
-						size='sm' 
-						onClick={() => router.push('/dashboard')} 
-						className='flex items-center gap-2 text-gray-600 hover:text-gray-900'
-					>
-						<ArrowLeft className='w-4 h-4' />
-						Back to Dashboard
-					</Button>
-					<div className='border-l border-gray-300 h-8'></div>
-					<div>
-						<h1 className='text-3xl font-bold text-gray-900 flex items-center gap-2'>
-							<Settings className='w-8 h-8' />
-							Organization Settings
-						</h1>
-						<p className='text-gray-600 mt-1'>Manage your organization preferences and configuration</p>
-					</div>
-				</div>
-			</div>
+		<DashboardLayout>
+			<div className='space-y-8'>
 
 			{/* Admin Only Notice */}
 			<AdminOnly
@@ -272,6 +252,7 @@ export default function OrganizationSettingsPage() {
 					</CardContent>
 				</Card>
 			</AdminOnly>
-		</div>
+			</div>
+		</DashboardLayout>
 	);
 }

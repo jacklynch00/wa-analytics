@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { DashboardLayout } from '@/components/dashboard-layout';
 
 interface ChatAnalysis {
 	id: string;
@@ -201,44 +202,8 @@ export default function DashboardPage() {
 	const totalSharedDirectories = communities.reduce((sum, community) => sum + community.memberDirectories.length, 0);
 
 	return (
-		<div className='min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
-			{/* Subtle Animated Background */}
-			<div className='fixed inset-0 overflow-hidden pointer-events-none -z-10'>
-				<div className='absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse'></div>
-				<div className='absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000'></div>
-			</div>
-
-			<div className='relative z-10 bg-white/80 backdrop-blur-sm border-b border-white/50'>
-				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-					<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-3 sm:gap-0'>
-						<div className='flex items-center space-x-3'>
-							<div className='w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-lg flex items-center justify-center'>
-								<MessageCircle className='w-5 h-5 text-white' />
-							</div>
-							<div>
-								<h1 className='text-xl sm:text-2xl font-bold text-gray-900'>Dashboard</h1>
-								<p className='text-sm text-gray-600'>Welcome back, {user.name}</p>
-							</div>
-						</div>
-						<div className='flex space-x-2'>
-							<Button 
-								onClick={() => router.push('/settings/team')} 
-								variant='outline' 
-								size='sm' 
-								className='sm:size-default flex items-center gap-1 sm:gap-2'
-							>
-								<Users className='w-3 h-3 sm:w-4 sm:h-4' />
-								<span className='hidden sm:inline'>Team</span>
-							</Button>
-							<Button onClick={handleSignOut} variant='outline' size='sm' className='sm:size-default'>
-								Sign Out
-							</Button>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+		<DashboardLayout>
+			<div className='space-y-6'>
 				<div className='grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8'>
 					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200'>
 						<CardContent className='p-3 md:p-6'>
@@ -438,28 +403,28 @@ export default function DashboardPage() {
 						</div>
 					)}
 				</div>
-			</div>
 
-			{/* Share Message Modal */}
-			<Dialog open={shareMessageModal.open} onOpenChange={(open) => setShareMessageModal({ open, directory: null, communityName: '' })}>
-				<DialogContent className='sm:max-w-lg max-w-[95vw] w-full mx-4 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200'>
-					<DialogHeader>
-						<DialogTitle>Share Directory Message</DialogTitle>
-						<DialogDescription>Copy this message to share the &quot;{shareMessageModal.communityName}&quot; member directory with others.</DialogDescription>
-					</DialogHeader>
-					<div className='py-4'>
-						<div className='bg-gray-50 rounded-lg border'>
-							<p className='text-sm p-1 text-gray-900 leading-relaxed'>{generateShareMessage()}</p>
+				{/* Share Message Modal */}
+				<Dialog open={shareMessageModal.open} onOpenChange={(open) => setShareMessageModal({ open, directory: null, communityName: '' })}>
+					<DialogContent className='sm:max-w-lg max-w-[95vw] w-full mx-4'>
+						<DialogHeader>
+							<DialogTitle>Share Directory Message</DialogTitle>
+							<DialogDescription>Copy this message to share the &quot;{shareMessageModal.communityName}&quot; member directory with others.</DialogDescription>
+						</DialogHeader>
+						<div className='py-4'>
+							<div className='bg-gray-50 rounded-lg border'>
+								<p className='text-sm p-1 text-gray-900 leading-relaxed'>{generateShareMessage()}</p>
+							</div>
 						</div>
-					</div>
-					<DialogFooter>
-						<Button variant='outline' onClick={() => setShareMessageModal({ open: false, directory: null, communityName: '' })}>
-							Cancel
-						</Button>
-						<Button onClick={handleCopyShareMessage}>Copy Message</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</div>
+						<DialogFooter>
+							<Button variant='outline' onClick={() => setShareMessageModal({ open: false, directory: null, communityName: '' })}>
+								Cancel
+							</Button>
+							<Button onClick={handleCopyShareMessage}>Copy Message</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
+			</div>
+		</DashboardLayout>
 	);
 }

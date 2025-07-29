@@ -1,0 +1,64 @@
+'use client';
+
+import { useParams } from 'next/navigation';
+import { DashboardLayout } from '@/components/dashboard-layout';
+import FormResponsesTab from '@/components/community/FormResponsesTab';
+import { useEffect, useState } from 'react';
+
+interface ApplicationForm {
+	id: string;
+	title: string;
+	customSlug: string;
+	isActive: boolean;
+	isPublic: boolean;
+	createdAt: string;
+	questions?: any[];
+	_count?: {
+		applications: number;
+	};
+}
+
+export default function CommunityResponsesPage() {
+	const params = useParams();
+	const communityId = params.communityId as string;
+	const [applicationForm, setApplicationForm] = useState<ApplicationForm | null>(null);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const loadData = async () => {
+			try {
+				const communityResponse = await fetch(`/api/communities/${communityId}`);
+				if (communityResponse.ok) {
+					const result = await communityResponse.json();
+					if (result.community.applicationForm) {
+						setApplicationForm(result.community.applicationForm);
+					}
+				}
+			} catch (error) {
+				console.error('Error loading community data:', error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadData();
+	}, [communityId]);
+
+	if (loading) {
+		return (
+			<DashboardLayout>
+				<div className='flex items-center justify-center py-8'>
+					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+				</div>
+			</DashboardLayout>
+		);
+	}
+
+	return (
+		<DashboardLayout>
+			<div className='space-y-6'>
+				<FormResponsesTab communityId={communityId} applicationForm={applicationForm} />
+			</div>
+		</DashboardLayout>
+	);
+}

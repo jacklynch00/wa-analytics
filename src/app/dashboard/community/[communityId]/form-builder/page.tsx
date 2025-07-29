@@ -4,13 +4,14 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Eye } from 'lucide-react';
+import { Save, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApplicationFormData, FormQuestion } from '@/types';
 import FormSettings from '@/components/form-builder/FormSettings';
 import FormUrlSettings from '@/components/form-builder/FormUrlSettings';
 import QuestionBuilder from '@/components/form-builder/QuestionBuilder';
 import FormPreviewModal from '@/components/form-builder/FormPreviewModal';
+import { DashboardLayout } from '@/components/dashboard-layout';
 
 interface Community {
   id: string;
@@ -162,56 +163,32 @@ function FormBuilderPageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (!community || !form) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <Card className="w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg">
-          <CardContent className="p-6 sm:p-8 text-center">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">Error Loading Form Builder</h2>
-            <p className="text-sm sm:text-base text-gray-600 mb-4">Could not load the form builder.</p>
-            <Button onClick={() => router.push(`/dashboard/community/${communityId}`)} size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Community
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center py-8">
+          <Card className="w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg">
+            <CardContent className="p-6 text-center">
+              <h2 className="text-lg font-semibold mb-4">Error Loading Form Builder</h2>
+              <p className="text-sm text-gray-600 mb-4">Could not load the form builder.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="relative z-10 bg-white/80 backdrop-blur-sm border-b border-white/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-3 sm:gap-0">
-            <div className="flex items-center space-x-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => router.push(`/dashboard/community/${communityId}`)}
-                className="text-xs sm:text-sm"
-              >
-                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Back to </span>Community
-              </Button>
-            </div>
-            <div className="text-left sm:text-right w-full sm:w-auto">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Form Builder</h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">{community.name}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <DashboardLayout>
+      <div className="space-y-6">
         {/* Action Buttons */}
         <div className="mb-6 flex flex-col sm:flex-row gap-3 justify-end">
           <Button 
@@ -286,7 +263,7 @@ function FormBuilderPageContent() {
           />
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 
@@ -294,9 +271,11 @@ export default function FormBuilderPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
+        <DashboardLayout>
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </DashboardLayout>
       }
     >
       <FormBuilderPageContent />

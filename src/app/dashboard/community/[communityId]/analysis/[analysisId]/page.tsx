@@ -14,6 +14,7 @@ import ResourceHub from '@/components/dashboard/ResourceHub';
 import Analytics from '@/components/dashboard/Analytics';
 import { ArrowLeft, Edit2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { DashboardLayout } from '@/components/dashboard-layout';
 
 function AnalysisPageContent() {
 	const [analysis, setAnalysis] = useState<ChatAnalysis | null>(null);
@@ -108,87 +109,71 @@ function AnalysisPageContent() {
 
 	if (loading) {
 		return (
-			<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center'>
-				<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
-			</div>
+			<DashboardLayout>
+				<div className='flex items-center justify-center py-8'>
+					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+				</div>
+			</DashboardLayout>
 		);
 	}
 
 	if (!analysis) {
 		return (
-			<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center px-4'>
-				<Card className='w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
-					<CardContent className='p-6 sm:p-8 text-center'>
-						<h2 className='text-lg sm:text-xl font-semibold mb-4'>Analysis Not Found</h2>
-						<p className='text-sm sm:text-base text-gray-600 mb-4'>The requested analysis could not be found.</p>
-						<Button onClick={handleBackToCommunity} size='sm' className='text-xs sm:text-sm'>
-							<ArrowLeft className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
-							Back to Community
-						</Button>
-					</CardContent>
-				</Card>
-			</div>
+			<DashboardLayout>
+				<div className='flex items-center justify-center py-8'>
+					<Card className='w-full max-w-md bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
+						<CardContent className='p-6 text-center'>
+							<h2 className='text-lg font-semibold mb-4'>Analysis Not Found</h2>
+							<p className='text-sm text-gray-600 mb-4'>The requested analysis could not be found.</p>
+						</CardContent>
+					</Card>
+				</div>
+			</DashboardLayout>
 		);
 	}
 
 	return (
-		<div className='min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
-			{/* Subtle Animated Background */}
-			<div className='fixed inset-0 overflow-hidden pointer-events-none -z-10'>
-				<div className='absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse'></div>
-				<div className='absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000'></div>
-			</div>
-
-			<div className='relative z-10 bg-white/80 backdrop-blur-sm border-b border-white/50'>
-				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-					<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-3 sm:gap-0'>
-						<Button variant='outline' size='sm' onClick={handleBackToCommunity} className='text-xs sm:text-sm'>
-							<ArrowLeft className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
-							<span className='hidden sm:inline'>Back to </span>Community
-						</Button>
-						<div className='text-left sm:text-right w-full sm:w-auto'>
-							{isEditingTitle ? (
-								<div className='flex flex-col sm:flex-row items-start sm:items-center sm:justify-end gap-2 mb-2'>
-									<Input
-										value={editTitle}
-										onChange={(e) => setEditTitle(e.target.value)}
-										className='text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 text-left sm:text-right h-auto py-1 px-2 w-full sm:w-auto'
-										onKeyDown={(e) => {
-											if (e.key === 'Enter') handleSaveTitle();
-											if (e.key === 'Escape') handleCancelEditTitle();
-										}}
-										autoFocus
-									/>
-									<div className='flex gap-2 w-full sm:w-auto'>
-										<Button size='sm' variant='outline' onClick={handleSaveTitle} className='flex-1 sm:flex-initial'>
-											<Check className='w-3 h-3 sm:w-4 sm:h-4' />
-										</Button>
-										<Button size='sm' variant='outline' onClick={handleCancelEditTitle} className='flex-1 sm:flex-initial'>
-											<X className='w-3 h-3 sm:w-4 sm:h-4' />
-										</Button>
-									</div>
-								</div>
-							) : (
-								<div className='flex items-center justify-start sm:justify-end gap-2 mb-2'>
-									<h1 className='text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate flex-1 sm:flex-initial'>{analysis.title}</h1>
-									<Button size='sm' variant='ghost' onClick={handleStartEditTitle} className='flex-shrink-0'>
-										<Edit2 className='w-3 h-3 sm:w-4 sm:h-4' />
-									</Button>
-								</div>
-							)}
-							<div className='text-xs sm:text-sm text-gray-600 flex flex-wrap items-center gap-1 sm:gap-2'>
-								<span>{analysis.totalMessages.toLocaleString()} messages</span>
-								<span>•</span>
-								<span>{analysis.members.length} members</span>
-								<span>•</span>
-								<span>{Math.ceil((analysis.dateRange.end.getTime() - analysis.dateRange.start.getTime()) / (1000 * 60 * 60 * 24))} days</span>
+		<DashboardLayout>
+			<div className='space-y-6'>
+				{/* Title editing section - moved to content area */}
+				<div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3'>
+					<div className='flex-1'>
+						{isEditingTitle ? (
+							<div className='flex items-center gap-2'>
+								<Input
+									value={editTitle}
+									onChange={(e) => setEditTitle(e.target.value)}
+									className='text-lg font-bold text-gray-900 h-auto py-1 px-2'
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') handleSaveTitle();
+										if (e.key === 'Escape') handleCancelEditTitle();
+									}}
+									autoFocus
+								/>
+								<Button size='sm' variant='outline' onClick={handleSaveTitle}>
+									<Check className='w-4 h-4' />
+								</Button>
+								<Button size='sm' variant='outline' onClick={handleCancelEditTitle}>
+									<X className='w-4 h-4' />
+								</Button>
 							</div>
-						</div>
+						) : (
+							<div className='flex items-center gap-2'>
+								<h1 className='text-lg font-bold text-gray-900'>{analysis.title}</h1>
+								<Button size='sm' variant='ghost' onClick={handleStartEditTitle}>
+									<Edit2 className='w-4 h-4' />
+								</Button>
+							</div>
+						)}
+						<div className='text-sm text-gray-600 mt-1 flex items-center gap-2'>
+							<span>{analysis.totalMessages.toLocaleString()} messages</span>
+							<span>•</span>
+							<span>{analysis.members.length} members</span>
+							<span>•</span>
+							<span>{Math.ceil((analysis.dateRange.end.getTime() - analysis.dateRange.start.getTime()) / (1000 * 60 * 60 * 24))} days</span>
+						</div>			
 					</div>
 				</div>
-			</div>
-
-			<div className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
 				<Tabs defaultValue='ai-recap' className='space-y-4 sm:space-y-6'>
 					<div className='w-full overflow-x-auto'>
 						<TabsList className='inline-flex w-auto min-w-full justify-start'>
@@ -231,7 +216,7 @@ function AnalysisPageContent() {
 					</TabsContent>
 				</Tabs>
 			</div>
-		</div>
+		</DashboardLayout>
 	);
 }
 
@@ -239,9 +224,11 @@ export default function AnalysisPage() {
 	return (
 		<Suspense
 			fallback={
-				<div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center'>
-					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
-				</div>
+				<DashboardLayout>
+					<div className='flex items-center justify-center py-8'>
+						<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+					</div>
+				</DashboardLayout>
 			}>
 			<AnalysisPageContent />
 		</Suspense>
