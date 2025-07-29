@@ -3,35 +3,35 @@ import { Resend } from 'resend';
 let resend: Resend | null = null;
 
 function getResendClient(): Resend {
-  if (!resend) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      throw new Error('RESEND_API_KEY environment variable is not set. Email functionality will be disabled.');
-    }
-    resend = new Resend(apiKey);
-  }
-  return resend;
+	if (!resend) {
+		const apiKey = process.env.RESEND_API_KEY;
+		if (!apiKey) {
+			throw new Error('RESEND_API_KEY environment variable is not set. Email functionality will be disabled.');
+		}
+		resend = new Resend(apiKey);
+	}
+	return resend;
 }
 
 export interface EmailTemplateData {
-  communityName: string;
-  applicantName?: string;
-  applicantEmail: string;
-  whatsappInviteUrl?: string;
-  customAcceptanceMessage?: string;
-  customDenialMessage?: string;
-  formTitle: string;
+	communityName: string;
+	applicantName?: string;
+	applicantEmail: string;
+	whatsappInviteUrl?: string;
+	customAcceptanceMessage?: string;
+	customDenialMessage?: string;
+	formTitle: string;
 }
 
 export class EmailService {
-  private static readonly FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@your-domain.com';
-  private static readonly DEFAULT_FROM_NAME = 'Community Applications';
+	private static readonly DEFAULT_FROM_NAME = 'Waly Community';
+	private static readonly FROM_EMAIL = process.env.FROM_EMAIL;
 
-  // Email Templates
-  private static getConfirmationTemplate(data: EmailTemplateData): { subject: string; html: string; text: string } {
-    const subject = `Application Received - ${data.communityName}`;
-    
-    const html = `
+	// Email Templates
+	private static getConfirmationTemplate(data: EmailTemplateData): { subject: string; html: string; text: string } {
+		const subject = `Application Received - ${data.communityName}`;
+
+		const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -62,7 +62,7 @@ export class EmailService {
                 <ul style="margin: 10px 0 0 0; padding-left: 20px;">
                   <li>We've received your application and will review it shortly</li>
                   <li>You'll receive an email notification with our decision</li>
-                  ${data.whatsappInviteUrl ? '<li>If accepted, you\'ll receive a WhatsApp group invitation</li>' : ''}
+                  ${data.whatsappInviteUrl ? "<li>If accepted, you'll receive a WhatsApp group invitation</li>" : ''}
                 </ul>
               </div>
               
@@ -79,7 +79,7 @@ export class EmailService {
       </html>
     `;
 
-    const text = `
+		const text = `
 Application Received - ${data.communityName}
 
 Hi there,
@@ -88,7 +88,7 @@ Thank you for applying to join ${data.communityName}.
 
 We've received your application and will review it shortly. You'll hear back from us with our decision soon.
 
-${data.whatsappInviteUrl ? 'If accepted, you\'ll receive a WhatsApp group invitation.' : ''}
+${data.whatsappInviteUrl ? "If accepted, you'll receive a WhatsApp group invitation." : ''}
 
 Best regards,
 ${data.communityName} Team
@@ -97,13 +97,13 @@ ${data.communityName} Team
 This is an automated message. Please do not reply to this email.
     `;
 
-    return { subject, html, text };
-  }
+		return { subject, html, text };
+	}
 
-  private static getAcceptanceTemplate(data: EmailTemplateData): { subject: string; html: string; text: string } {
-    const subject = `Welcome to ${data.communityName}! 🎉`;
-    
-    const html = `
+	private static getAcceptanceTemplate(data: EmailTemplateData): { subject: string; html: string; text: string } {
+		const subject = `Welcome to ${data.communityName}! 🎉`;
+
+		const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -134,13 +134,19 @@ This is an automated message. Please do not reply to this email.
                 <p style="margin: 0; font-size: 18px; font-weight: bold;">Great news! Your application to join ${data.communityName} has been accepted.</p>
               </div>
               
-              ${data.customAcceptanceMessage ? `
+              ${
+					data.customAcceptanceMessage
+						? `
                 <div class="custom-message">
                   <p style="margin: 0;">${data.customAcceptanceMessage}</p>
                 </div>
-              ` : ''}
+              `
+						: ''
+				}
               
-              ${data.whatsappInviteUrl ? `
+              ${
+					data.whatsappInviteUrl
+						? `
                 <p><strong>Next Step:</strong> Join our WhatsApp community to connect with other members:</p>
                 <div style="text-align: center;">
                   <a href="${data.whatsappInviteUrl}" class="whatsapp-button" target="_blank">
@@ -148,7 +154,9 @@ This is an automated message. Please do not reply to this email.
                   </a>
                 </div>
                 <p style="font-size: 14px; color: #666;"><em>If the button doesn't work, copy and paste this link: ${data.whatsappInviteUrl}</em></p>
-              ` : ''}
+              `
+						: ''
+				}
               
               <p>Welcome aboard! We're excited to have you as part of our community.</p>
               
@@ -163,7 +171,7 @@ This is an automated message. Please do not reply to this email.
       </html>
     `;
 
-    const text = `
+		const text = `
 Welcome to ${data.communityName}! 🎉
 
 Hi ${data.applicantName || 'there'},
@@ -180,13 +188,13 @@ Best regards,
 ${data.communityName} Team
     `;
 
-    return { subject, html, text };
-  }
+		return { subject, html, text };
+	}
 
-  private static getDenialTemplate(data: EmailTemplateData): { subject: string; html: string; text: string } {
-    const subject = `${data.communityName} Application Update`;
-    
-    const html = `
+	private static getDenialTemplate(data: EmailTemplateData): { subject: string; html: string; text: string } {
+		const subject = `${data.communityName} Application Update`;
+
+		const html = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -212,13 +220,17 @@ ${data.communityName} Team
               
               <p>Thank you for your interest in joining <strong>${data.communityName}</strong>.</p>
               
-              ${data.customDenialMessage ? `
+              ${
+					data.customDenialMessage
+						? `
                 <div class="message-box">
                   <p style="margin: 0;">${data.customDenialMessage}</p>
                 </div>
-              ` : `
+              `
+						: `
                 <p>After careful consideration, we've decided not to move forward with your application at this time.</p>
-              `}
+              `
+				}
               
               <p>We appreciate the time you took to apply and wish you the best in your endeavors.</p>
               
@@ -233,14 +245,14 @@ ${data.communityName} Team
       </html>
     `;
 
-    const text = `
+		const text = `
 ${data.communityName} Application Update
 
 Hi ${data.applicantName || 'there'},
 
 Thank you for your interest in joining ${data.communityName}.
 
-${data.customDenialMessage || 'After careful consideration, we\'ve decided not to move forward with your application at this time.'}
+${data.customDenialMessage || "After careful consideration, we've decided not to move forward with your application at this time."}
 
 We appreciate the time you took to apply and wish you the best.
 
@@ -248,78 +260,78 @@ Best regards,
 ${data.communityName} Team
     `;
 
-    return { subject, html, text };
-  }
+		return { subject, html, text };
+	}
 
-  // Send confirmation email
-  static async sendConfirmationEmail(data: EmailTemplateData): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    try {
-      const client = getResendClient();
-      const template = this.getConfirmationTemplate(data);
-      
-      const result = await client.emails.send({
-        from: `${this.DEFAULT_FROM_NAME} <${this.FROM_EMAIL}>`,
-        to: [data.applicantEmail],
-        subject: template.subject,
-        html: template.html,
-        text: template.text,
-      });
+	// Send confirmation email
+	static async sendConfirmationEmail(data: EmailTemplateData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+		try {
+			const client = getResendClient();
+			const template = this.getConfirmationTemplate(data);
 
-      return { success: true, messageId: result.data?.id };
-    } catch (error) {
-      console.error('Error sending confirmation email:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to send email' 
-      };
-    }
-  }
+			const result = await client.emails.send({
+				from: `${this.DEFAULT_FROM_NAME} <${this.FROM_EMAIL}>`,
+				to: [data.applicantEmail],
+				subject: template.subject,
+				html: template.html,
+				text: template.text,
+			});
 
-  // Send acceptance email
-  static async sendAcceptanceEmail(data: EmailTemplateData): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    try {
-      const client = getResendClient();
-      const template = this.getAcceptanceTemplate(data);
-      
-      const result = await client.emails.send({
-        from: `${this.DEFAULT_FROM_NAME} <${this.FROM_EMAIL}>`,
-        to: [data.applicantEmail],
-        subject: template.subject,
-        html: template.html,
-        text: template.text,
-      });
+			return { success: true, messageId: result.data?.id };
+		} catch (error) {
+			console.error('Error sending confirmation email:', error);
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : 'Failed to send email',
+			};
+		}
+	}
 
-      return { success: true, messageId: result.data?.id };
-    } catch (error) {
-      console.error('Error sending acceptance email:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to send email' 
-      };
-    }
-  }
+	// Send acceptance email
+	static async sendAcceptanceEmail(data: EmailTemplateData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+		try {
+			const client = getResendClient();
+			const template = this.getAcceptanceTemplate(data);
 
-  // Send denial email
-  static async sendDenialEmail(data: EmailTemplateData): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    try {
-      const client = getResendClient();
-      const template = this.getDenialTemplate(data);
-      
-      const result = await client.emails.send({
-        from: `${this.DEFAULT_FROM_NAME} <${this.FROM_EMAIL}>`,
-        to: [data.applicantEmail],
-        subject: template.subject,
-        html: template.html,
-        text: template.text,
-      });
+			const result = await client.emails.send({
+				from: `${this.DEFAULT_FROM_NAME} <${this.FROM_EMAIL}>`,
+				to: [data.applicantEmail],
+				subject: template.subject,
+				html: template.html,
+				text: template.text,
+			});
 
-      return { success: true, messageId: result.data?.id };
-    } catch (error) {
-      console.error('Error sending denial email:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to send email' 
-      };
-    }
-  }
+			return { success: true, messageId: result.data?.id };
+		} catch (error) {
+			console.error('Error sending acceptance email:', error);
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : 'Failed to send email',
+			};
+		}
+	}
+
+	// Send denial email
+	static async sendDenialEmail(data: EmailTemplateData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+		try {
+			const client = getResendClient();
+			const template = this.getDenialTemplate(data);
+
+			const result = await client.emails.send({
+				from: `${this.DEFAULT_FROM_NAME} <${this.FROM_EMAIL}>`,
+				to: [data.applicantEmail],
+				subject: template.subject,
+				html: template.html,
+				text: template.text,
+			});
+
+			return { success: true, messageId: result.data?.id };
+		} catch (error) {
+			console.error('Error sending denial email:', error);
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : 'Failed to send email',
+			};
+		}
+	}
 }

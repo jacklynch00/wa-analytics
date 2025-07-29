@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,16 @@ export default function SignUpPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState('');
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const redirectUrl = searchParams.get('redirect');
+	const prefilledEmail = searchParams.get('email');
+	
+	// Pre-fill email if provided in URL
+	useEffect(() => {
+		if (prefilledEmail && !email) {
+			setEmail(prefilledEmail);
+		}
+	}, [prefilledEmail, email]);
 
 	const handleSignUp = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -50,8 +60,9 @@ export default function SignUpPage() {
 				console.error('Sign up error:', result.error);
 				setError(result.error.message || 'Failed to create account');
 			} else {
-				console.log('Sign up successful, redirecting to dashboard');
-				router.push('/dashboard');
+				console.log('Sign up successful, redirecting to:', redirectUrl || '/dashboard');
+				// If there's a redirect URL (like from invitation), use it. Otherwise go to dashboard
+				router.push(redirectUrl || '/dashboard');
 			}
 		} catch (error) {
 			console.error('Sign up exception:', error);
@@ -91,7 +102,12 @@ export default function SignUpPage() {
 						<div className='w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center mx-auto mb-6'>
 							<Star className='w-8 h-8 text-white' />
 						</div>
-						<h1 className='text-3xl md:text-4xl font-black text-white mb-4'>Join Waly</h1>
+						<h1 className='text-3xl md:text-4xl font-black text-white mb-4'>
+							{redirectUrl ? 'Complete Your Invitation' : 'Join Waly'}
+						</h1>
+						{redirectUrl && (
+							<p className='text-purple-100 text-lg'>Create your account to join the team</p>
+						)}
 					</div>
 
 					{/* Sign Up Card */}

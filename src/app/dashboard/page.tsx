@@ -56,8 +56,6 @@ export default function DashboardPage() {
 	});
 	const router = useRouter();
 
-
-
 	useEffect(() => {
 		const checkAuth = async () => {
 			try {
@@ -135,9 +133,6 @@ export default function DashboardPage() {
 		}
 	};
 
-
-
-
 	const handleOpenShareMessage = (directory: Community['memberDirectories'][0], communityName: string) => {
 		setShareMessageModal({
 			open: true,
@@ -173,12 +168,11 @@ export default function DashboardPage() {
 		}
 	};
 
-
 	const handleShareApplication = async (applicationForm: Community['applicationForm']) => {
 		if (!applicationForm) return;
-		
+
 		const applicationUrl = `${window.location.origin}/apply/${applicationForm.customSlug}`;
-		
+
 		try {
 			await navigator.clipboard.writeText(applicationUrl);
 			toast.success('Application form link copied to clipboard!', {
@@ -227,6 +221,15 @@ export default function DashboardPage() {
 							</div>
 						</div>
 						<div className='flex space-x-2'>
+							<Button 
+								onClick={() => router.push('/settings/team')} 
+								variant='outline' 
+								size='sm' 
+								className='sm:size-default flex items-center gap-1 sm:gap-2'
+							>
+								<Users className='w-3 h-3 sm:w-4 sm:h-4' />
+								<span className='hidden sm:inline'>Team</span>
+							</Button>
 							<Button onClick={handleSignOut} variant='outline' size='sm' className='sm:size-default'>
 								Sign Out
 							</Button>
@@ -256,7 +259,6 @@ export default function DashboardPage() {
 								<div className='md:ml-4 text-center md:text-left'>
 									<p className='text-xs md:text-sm font-medium text-gray-600'>Analyses</p>
 									<p className='text-lg md:text-2xl font-bold text-gray-900'>{totalAnalyses}</p>
-									<p className='text-xs text-gray-500 mt-1 hidden md:block'>{totalAnalyses < 3 ? `${3 - totalAnalyses} remaining` : 'Limit reached'}</p>
 								</div>
 							</div>
 						</CardContent>
@@ -379,11 +381,10 @@ export default function DashboardPage() {
 						<div className='space-y-4'>
 							<div className='grid gap-4'>
 								{communities.map((community) => (
-									<Card 
-										key={community.id} 
+									<Card
+										key={community.id}
 										className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer'
-										onClick={() => router.push(`/dashboard/community/${community.id}`)}
-									>
+										onClick={() => router.push(`/dashboard/community/${community.id}`)}>
 										<CardContent className='p-4 sm:p-6'>
 											<div className='flex items-center space-x-2 mb-2'>
 												<h3 className='font-semibold text-base sm:text-lg text-gray-900 truncate'>{community.name}</h3>

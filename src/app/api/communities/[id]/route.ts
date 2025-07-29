@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
+import { OrganizationService } from '@/lib/services/organization';
 
 const prisma = new PrismaClient();
 
@@ -18,10 +19,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<Pa
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get user's organization
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
     const community = await prisma.community.findFirst({
       where: { 
         id,
-        userId: session.user.id,
+        organizationId: organization.id,
       },
       include: {
         chatAnalyses: {
@@ -95,10 +102,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'Community name is required' }, { status: 400 });
     }
 
+    // Get user's organization
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
     const community = await prisma.community.updateMany({
       where: { 
         id,
-        userId: session.user.id,
+        organizationId: organization.id,
       },
       data: {
         name: name.trim(),
@@ -112,7 +125,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     // Fetch updated community
     const updatedCommunity = await prisma.community.findFirst({
-      where: { id, userId: session.user.id },
+      where: { id, organizationId: organization.id },
       include: {
         chatAnalyses: {
           orderBy: { createdAt: 'desc' },
@@ -175,10 +188,16 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get user's organization
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
     const community = await prisma.community.deleteMany({
       where: { 
         id,
-        userId: session.user.id,
+        organizationId: organization.id,
       },
     });
 

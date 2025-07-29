@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,16 @@ export default function SignInPage() {
 	const [error, setError] = useState('');
 	// const [magicLinkSent, setMagicLinkSent] = useState(false);
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const redirectUrl = searchParams.get('redirect');
+	const prefilledEmail = searchParams.get('email');
+	
+	// Pre-fill email if provided in URL
+	useEffect(() => {
+		if (prefilledEmail && !email) {
+			setEmail(prefilledEmail);
+		}
+	}, [prefilledEmail, email]);
 
 	const handleSignIn = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -32,7 +42,8 @@ export default function SignInPage() {
 			if (result.error) {
 				setError(result.error.message || 'Failed to sign in');
 			} else {
-				router.push('/dashboard');
+				// If there's a redirect URL (like from invitation), use it. Otherwise go to dashboard
+				router.push(redirectUrl || '/dashboard');
 			}
 		} catch {
 			setError('An unexpected error occurred');
@@ -121,7 +132,7 @@ export default function SignInPage() {
 
 							<div className='mt-8 text-center'>
 								<span className='text-white/80'>Don&apos;t have an account? </span>
-								<Link href='/sign-up' className='text-yellow-300 hover:text-yellow-200 font-semibold hover:underline transition-colors'>
+								<Link href={`/sign-up${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`} className='text-yellow-300 hover:text-yellow-200 font-semibold hover:underline transition-colors'>
 									Sign up
 								</Link>
 							</div>

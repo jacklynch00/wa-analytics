@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { applicationFormService } from '@/lib/application-forms';
 import { auth } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
+import { OrganizationService } from '@/lib/services/organization';
 
 const prisma = new PrismaClient();
 
@@ -19,11 +20,16 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user owns the community
+    // Check if user can access the community
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
     const community = await prisma.community.findFirst({
       where: { 
         id: communityId,
-        userId: session.user.id,
+        organizationId: organization.id,
       },
     });
 
@@ -60,11 +66,16 @@ export async function POST(
 
     const formData = await request.json();
 
-    // Check if user owns the community
+    // Check if user can access the community
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
     const community = await prisma.community.findFirst({
       where: { 
         id: communityId,
-        userId: session.user.id,
+        organizationId: organization.id,
       },
     });
 
@@ -151,11 +162,16 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user owns the community
+    // Check if user can access the community
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
     const community = await prisma.community.findFirst({
       where: { 
         id: communityId,
-        userId: session.user.id,
+        organizationId: organization.id,
       },
     });
 

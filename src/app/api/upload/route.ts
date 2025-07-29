@@ -6,6 +6,7 @@ import { parseWhatsAppExport } from '@/lib/parsers/whatsapp';
 import { analyzeMemberActivity } from '@/lib/analyzers/members';
 import { extractResources } from '@/lib/analyzers/resources';
 import { generateDailyStats, generateHourlyDistribution, getActiveMembersInPeriod } from '@/lib/analyzers/timeseries';
+import { OrganizationService } from '@/lib/services/organization';
 
 const prisma = new PrismaClient();
 
@@ -31,11 +32,16 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: 'Community ID is required' }, { status: 400 });
 		}
 
-		// Verify the community belongs to the user
+		// Verify the community belongs to user's organization
+		const organization = await OrganizationService.getUserOrganization(userId);
+		if (!organization) {
+			return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+		}
+
 		const community = await prisma.community.findFirst({
 			where: {
 				id: communityId,
-				userId,
+				organizationId: organization.id,
 			},
 		});
 
@@ -43,14 +49,6 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: 'Community not found' }, { status: 404 });
 		}
 
-		// Check upload limit
-		const existingAnalyses = await prisma.chatAnalysis.count({
-			where: { userId },
-		});
-
-		if (existingAnalyses >= 3) {
-			return NextResponse.json({ error: 'Upload limit reached. You can only have 3 analyses per account.' }, { status: 403 });
-		}
 
 		if (!file) {
 			return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });

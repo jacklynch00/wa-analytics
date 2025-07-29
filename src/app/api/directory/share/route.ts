@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
+import { OrganizationService } from '@/lib/services/organization';
 import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
@@ -19,11 +20,16 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
     const { communityId, password } = await request.json();
 
-    // Verify the community belongs to the user and check for existing share
+    // Verify the community belongs to user's organization and check for existing share
+    const organization = await OrganizationService.getUserOrganization(userId);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
     const community = await prisma.community.findFirst({
       where: {
         id: communityId,
-        userId,
+        organizationId: organization.id,
       },
       include: {
         memberDirectories: {

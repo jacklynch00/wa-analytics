@@ -168,7 +168,7 @@ function CommunityPageContent() {
 
 			if (error instanceof Error) {
 				if (error.message.includes('limit')) {
-					toast.error('Upload limit reached. You can only have 3 analyses per account. Please delete an existing analysis to upload a new one.');
+					toast.error('Upload failed due to server limits. Please try again.');
 				} else {
 					toast.error(`Error: ${error.message}`);
 				}
@@ -414,7 +414,7 @@ function CommunityPageContent() {
 
 			<div className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'>
 				{/* Public Links Section */}
-				{(applicationForm || memberDirectory || (!applicationForm && !memberDirectory && community && community.chatAnalyses.length > 0)) && (
+				{(applicationForm || memberDirectory || (!applicationForm && !memberDirectory && community)) && (
 					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg mb-6'>
 						<CardContent className='p-4 sm:p-6'>
 							<div className='flex items-center justify-between mb-4'>
@@ -516,7 +516,7 @@ function CommunityPageContent() {
 										</div>
 									</div>
 								)}
-								{!memberDirectory && community && community.chatAnalyses.length > 0 && (
+								{!memberDirectory && community && (
 									<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
 										<div className='flex items-center space-x-3'>
 											<div className='w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center'>
