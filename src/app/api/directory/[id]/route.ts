@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { auth } from '@/lib/auth';
+import { OrganizationService } from '@/lib/services/organization';
 
 const prisma = new PrismaClient();
 
@@ -160,12 +161,24 @@ export async function PATCH(
 
     const { password, visibleFields } = await request.json();
 
-    // Find the shared directory and verify ownership
+    // Get user's organization to ensure they can only access directories from their org
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
+    // Check if user is admin
+    const isAdmin = await OrganizationService.isAdmin(session.user.id, organization.id);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
+
+    // Find the shared directory and verify it belongs to user's organization
     const sharedDirectory = await prisma.memberDirectory.findFirst({
       where: { 
         id: shareId,
         community: {
-          createdBy: session.user.id
+          organizationId: organization.id
         }
       },
     });
@@ -221,12 +234,24 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Find the shared directory and verify ownership
+    // Get user's organization to ensure they can only access directories from their org
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
+    // Check if user is admin
+    const isAdmin = await OrganizationService.isAdmin(session.user.id, organization.id);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
+
+    // Find the shared directory and verify it belongs to user's organization
     const sharedDirectory = await prisma.memberDirectory.findFirst({
       where: { 
         id: shareId,
         community: {
-          createdBy: session.user.id
+          organizationId: organization.id
         }
       },
     });

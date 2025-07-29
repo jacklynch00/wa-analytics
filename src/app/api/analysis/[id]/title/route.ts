@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
+import { OrganizationService } from '@/lib/services/organization';
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
     const { id: analysisId } = await params;
     const { title } = await request.json();
 
@@ -26,11 +26,19 @@ export async function PATCH(
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
-    // Verify the analysis belongs to the user
+    // Get user's organization to ensure they can only access analyses from their org
+    const organization = await OrganizationService.getUserOrganization(session.user.id);
+    if (!organization) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 });
+    }
+
+    // Verify the analysis belongs to the user's organization
     const analysis = await prisma.chatAnalysis.findFirst({
       where: {
         id: analysisId,
-        userId,
+        community: {
+          organizationId: organization.id
+        }
       },
     });
 

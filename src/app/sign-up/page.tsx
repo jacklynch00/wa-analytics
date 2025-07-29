@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth-client';
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MessageCircle, ArrowLeft, Star, CheckCircle } from 'lucide-react';
 
-export default function SignUpPage() {
+function SignUpForm() {
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -212,5 +212,17 @@ export default function SignUpPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function SignUpPage() {
+	return (
+		<Suspense fallback={
+			<div className='min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center'>
+				<div className='animate-pulse text-white text-lg'>Loading...</div>
+			</div>
+		}>
+			<SignUpForm />
+		</Suspense>
 	);
 }

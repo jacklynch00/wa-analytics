@@ -9,10 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Users, UserPlus, Trash2, Mail, Crown, User, ArrowLeft, Edit2, Check, X, RefreshCw } from 'lucide-react';
+import { Users, UserPlus, Trash2, Mail, Crown, User, ArrowLeft, Edit2, Check, X, RefreshCw, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminOnly, useUserRole } from '@/components/auth/RoleGuard';
 import { RoleToggle } from '@/components/ui/role-toggle';
+import { BulkMemberManagement } from '@/components/organization/BulkMemberManagement';
 import {
 	useOrganization,
 	useOrganizationMembers,
@@ -232,46 +233,59 @@ export default function TeamPage() {
 					</div>
 				</div>
 
-				<AdminOnly>
-					<Dialog open={inviteModalOpen} onOpenChange={setInviteModalOpen}>
-						<DialogTrigger asChild>
-							<Button className='flex items-center gap-2'>
-								<UserPlus className='w-4 h-4' />
-								Invite Member
-							</Button>
-						</DialogTrigger>
-						<DialogContent className='sm:max-w-md'>
-							<DialogHeader>
-								<DialogTitle>Invite Team Member</DialogTitle>
-							</DialogHeader>
-							<div className='space-y-4'>
-								<div>
-									<Label htmlFor='email'>Email Address</Label>
-									<Input id='email' type='email' placeholder='teammate@example.com' value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+				<div className='flex items-center gap-2'>
+					<AdminOnly>
+						<BulkMemberManagement members={members} />
+					</AdminOnly>
+
+					<AdminOnly>
+						<Button variant='outline' size='sm' onClick={() => router.push('/settings/organization')} className='flex items-center gap-2'>
+							<Settings className='w-4 h-4' />
+							Organization Settings
+						</Button>
+					</AdminOnly>
+
+					<AdminOnly>
+						<Dialog open={inviteModalOpen} onOpenChange={setInviteModalOpen}>
+							<DialogTrigger asChild>
+								<Button className='flex items-center gap-2'>
+									<UserPlus className='w-4 h-4' />
+									Invite Member
+								</Button>
+							</DialogTrigger>
+							<DialogContent className='sm:max-w-md'>
+								<DialogHeader>
+									<DialogTitle>Invite Team Member</DialogTitle>
+								</DialogHeader>
+								<div className='space-y-4'>
+									<div>
+										<Label htmlFor='email'>Email Address</Label>
+										<Input id='email' type='email' placeholder='teammate@example.com' value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+									</div>
+									<div>
+										<Label htmlFor='role'>Role</Label>
+										<select
+											id='role'
+											value={inviteRole}
+											onChange={(e) => setInviteRole(e.target.value)}
+											className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'>
+											<option value='member'>Member</option>
+											<option value='admin'>Admin</option>
+										</select>
+									</div>
+									<div className='flex gap-2'>
+										<Button onClick={handleInviteMember} disabled={inviteMemberMutation.isPending} className='flex-1'>
+											{inviteMemberMutation.isPending ? 'Sending...' : 'Send Invitation'}
+										</Button>
+										<Button variant='outline' onClick={() => setInviteModalOpen(false)} disabled={inviteMemberMutation.isPending}>
+											Cancel
+										</Button>
+									</div>
 								</div>
-								<div>
-									<Label htmlFor='role'>Role</Label>
-									<select
-										id='role'
-										value={inviteRole}
-										onChange={(e) => setInviteRole(e.target.value)}
-										className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'>
-										<option value='member'>Member</option>
-										<option value='admin'>Admin</option>
-									</select>
-								</div>
-								<div className='flex gap-2'>
-									<Button onClick={handleInviteMember} disabled={inviteMemberMutation.isPending} className='flex-1'>
-										{inviteMemberMutation.isPending ? 'Sending...' : 'Send Invitation'}
-									</Button>
-									<Button variant='outline' onClick={() => setInviteModalOpen(false)} disabled={inviteMemberMutation.isPending}>
-										Cancel
-									</Button>
-								</div>
-							</div>
-						</DialogContent>
-					</Dialog>
-				</AdminOnly>
+							</DialogContent>
+						</Dialog>
+					</AdminOnly>
+				</div>
 			</div>
 
 			{/* Organization Info */}
