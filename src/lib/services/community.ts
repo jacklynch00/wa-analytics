@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client"
+import { OrganizationService } from "./organization"
 
 const prisma = new PrismaClient()
 
@@ -24,15 +25,12 @@ export class CommunityService {
   
   // Get communities user can access (through their organization)
   static async getUserCommunities(userId: string) {
-    const member = await prisma.member.findFirst({
-      where: { userId },
-      select: { organizationId: true }
-    })
-    
-    if (!member) return []
+    // Ensure user has an organization (creates one if needed)
+    const organization = await OrganizationService.getUserOrganization(userId)
+    if (!organization) return []
     
     return prisma.community.findMany({
-      where: { organizationId: member.organizationId },
+      where: { organizationId: organization.id },
       include: {
         chatAnalyses: {
           orderBy: { createdAt: 'desc' },
@@ -74,17 +72,14 @@ export class CommunityService {
 
   // Get specific community if user has access
   static async getCommunityWithAccess(userId: string, communityId: string) {
-    const member = await prisma.member.findFirst({
-      where: { userId },
-      select: { organizationId: true }
-    })
-    
-    if (!member) return null
+    // Ensure user has an organization (creates one if needed)
+    const organization = await OrganizationService.getUserOrganization(userId)
+    if (!organization) return null
     
     return prisma.community.findFirst({
       where: { 
         id: communityId,
-        organizationId: member.organizationId 
+        organizationId: organization.id 
       },
       include: {
         chatAnalyses: {
@@ -134,17 +129,23 @@ export class CommunityService {
 
   // Create community (admin only)
   static async createCommunity(userId: string, data: { name: string, description?: string }) {
+    // Ensure user has an organization (creates one if needed)
+    const organization = await OrganizationService.getUserOrganization(userId)
+    if (!organization) throw new Error('No organization found')
+    
+    // Check if user is admin
     const member = await prisma.member.findFirst({
-      where: { userId },
-      include: { organization: true }
+      where: { 
+        userId,
+        organizationId: organization.id
+      }
     })
     
-    if (!member) throw new Error('No organization found')
-    if (member.role !== 'admin') throw new Error('Only admins can create communities')
+    if (!member || member.role !== 'admin') throw new Error('Only admins can create communities')
     
     // Check community limit
     const existingCount = await prisma.community.count({
-      where: { organizationId: member.organizationId }
+      where: { organizationId: organization.id }
     })
     
     if (existingCount >= 10) {
@@ -155,7 +156,7 @@ export class CommunityService {
       data: {
         name: data.name.trim(),
         description: data.description?.trim() || null,
-        organizationId: member.organizationId,
+        organizationId: organization.id,
         createdBy: userId,
       },
       include: {
@@ -193,18 +194,24 @@ export class CommunityService {
 
   // Update community (admin only)
   static async updateCommunity(userId: string, communityId: string, data: { name: string, description?: string }) {
+    // Ensure user has an organization (creates one if needed)
+    const organization = await OrganizationService.getUserOrganization(userId)
+    if (!organization) throw new Error('No organization found')
+    
+    // Check if user is admin
     const member = await prisma.member.findFirst({
-      where: { userId },
-      select: { organizationId: true, role: true }
+      where: { 
+        userId,
+        organizationId: organization.id
+      }
     })
     
-    if (!member) throw new Error('No organization found')
-    if (member.role !== 'admin') throw new Error('Only admins can update communities')
+    if (!member || member.role !== 'admin') throw new Error('Only admins can update communities')
     
     const community = await prisma.community.findFirst({
       where: { 
         id: communityId,
-        organizationId: member.organizationId 
+        organizationId: organization.id 
       }
     })
     
@@ -221,18 +228,24 @@ export class CommunityService {
 
   // Delete community (admin only)
   static async deleteCommunity(userId: string, communityId: string) {
+    // Ensure user has an organization (creates one if needed)
+    const organization = await OrganizationService.getUserOrganization(userId)
+    if (!organization) throw new Error('No organization found')
+    
+    // Check if user is admin
     const member = await prisma.member.findFirst({
-      where: { userId },
-      select: { organizationId: true, role: true }
+      where: { 
+        userId,
+        organizationId: organization.id
+      }
     })
     
-    if (!member) throw new Error('No organization found')
-    if (member.role !== 'admin') throw new Error('Only admins can delete communities')
+    if (!member || member.role !== 'admin') throw new Error('Only admins can delete communities')
     
     const community = await prisma.community.findFirst({
       where: { 
         id: communityId,
-        organizationId: member.organizationId 
+        organizationId: organization.id 
       }
     })
     
