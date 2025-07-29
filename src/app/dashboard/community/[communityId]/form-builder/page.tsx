@@ -59,6 +59,8 @@ function FormBuilderPageContent() {
               password: '',
               customSlug: '',
               whatsappInviteUrl: '',
+              acceptanceMessage: '',
+              denialMessage: '',
               questions: [
                 {
                   id: 'email',
@@ -89,6 +91,8 @@ function FormBuilderPageContent() {
             password: '',
             customSlug: '',
             whatsappInviteUrl: '',
+            acceptanceMessage: '',
+            denialMessage: '',
             questions: [
               {
                 id: 'email',
