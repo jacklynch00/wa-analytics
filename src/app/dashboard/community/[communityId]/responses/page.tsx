@@ -4,24 +4,13 @@ import { useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import FormResponsesTab from '@/components/community/FormResponsesTab';
 import { useEffect, useState } from 'react';
-
-interface ApplicationForm {
-	id: string;
-	title: string;
-	customSlug: string;
-	isActive: boolean;
-	isPublic: boolean;
-	createdAt: string;
-	questions?: any[];
-	_count?: {
-		applications: number;
-	};
-}
+import { ApplicationForm } from '@prisma/client';
+import { FormQuestion } from '@/types';
 
 export default function CommunityResponsesPage() {
 	const params = useParams();
 	const communityId = params.communityId as string;
-	const [applicationForm, setApplicationForm] = useState<ApplicationForm | null>(null);
+	const [applicationForm, setApplicationForm] = useState<(ApplicationForm & { questions: FormQuestion[]; _count: { applications: number } }) | null>(null);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {

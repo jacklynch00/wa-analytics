@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Upload, FileText, Users, Calendar, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { FileText, Users, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/dashboard-layout';
@@ -121,7 +121,6 @@ function CommunityPageContent() {
 	const handleBackToDashboard = () => {
 		router.push('/dashboard');
 	};
-
 
 	const handleCreateDirectory = async () => {
 		setIsCreatingDirectory(true);
@@ -241,7 +240,7 @@ function CommunityPageContent() {
 	const handleEditDirectory = () => {
 		if (memberDirectory) {
 			setEditDirectoryPassword(memberDirectory.password || '');
-			const currentVisibility = memberDirectory.visibleFields as Record<string, boolean> || {
+			const currentVisibility = (memberDirectory.visibleFields as Record<string, boolean>) || {
 				name: true,
 				email: true,
 				linkedin: false,
@@ -304,351 +303,349 @@ function CommunityPageContent() {
 		);
 	}
 
-
 	return (
 		<div className='space-y-6'>
-				{/* Public Links Section */}
-				{(applicationForm || memberDirectory || (!applicationForm && !memberDirectory && community)) && (
-					<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg mb-6'>
-						<CardContent className='p-4 sm:p-6'>
-							<div className='flex items-center justify-between mb-4'>
-								<h2 className='text-lg font-semibold text-gray-900'>Public Links</h2>
-								<Badge variant='secondary' className='text-xs'>
-									Share these with your community
-								</Badge>
-							</div>
-							<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-								{applicationForm && (
-									<div className='p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors'>
-										<div className='flex items-center justify-between mb-3'>
-											<div className='flex items-center space-x-3'>
-												<div
-													className={`w-10 h-10 rounded-full flex items-center justify-center ${
-														applicationForm.isActive && applicationForm.isPublic ? 'bg-blue-100' : 'bg-gray-200'
-													}`}>
-													<ClipboardList
-														className={`w-5 h-5 ${applicationForm.isActive && applicationForm.isPublic ? 'text-blue-600' : 'text-gray-500'}`}
-													/>
-												</div>
-												<div>
-													<div className='flex items-center gap-2'>
-														<h3 className='font-medium text-gray-900'>Application Form</h3>
-														{(!applicationForm.isActive || !applicationForm.isPublic) && (
-															<Badge variant='secondary' className='text-xs'>
-																{!applicationForm.isActive ? 'Inactive' : 'Private'}
-															</Badge>
-														)}
-													</div>
-													<p className='text-sm text-gray-600'>
-														{applicationForm.isActive && applicationForm.isPublic ? 'Public application form' : 'Form currently unavailable to public'}
-													</p>
-												</div>
-											</div>
-										</div>
-										<div className='flex gap-2 flex-wrap'>
-											<Button
-												variant='outline'
-												size='sm'
-												onClick={() => window.open(`/apply/${applicationForm.customSlug}`, '_blank')}
-												className='flex items-center gap-2'>
-												<ExternalLink className='w-4 h-4' />
-												<span className='hidden sm:inline'>Open</span>
-											</Button>
-											<Button
-												variant='outline'
-												size='sm'
-												onClick={() => router.push(`/dashboard/community/${communityId}/form-builder`)}
-												className='flex items-center gap-2'>
-												<Edit className='w-4 h-4' />
-												<span className='hidden sm:inline'>Settings</span>
-											</Button>
-											<Button
-												variant='outline'
-												size='sm'
-												onClick={handleDeleteApplicationForm}
-												className='flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300'>
-												<Trash2 className='w-4 h-4' />
-												<span className='hidden sm:inline'>Delete</span>
-											</Button>
-										</div>
-									</div>
-								)}
-								{memberDirectory && (
-									<div className='p-4 bg-white rounded-lg border border-gray-200 hover:border-green-300 transition-colors'>
-										<div className='flex items-center justify-between mb-3'>
-											<div className='flex items-center space-x-3'>
-												<div className='w-10 h-10 bg-green-100 rounded-full flex items-center justify-center'>
-													<Users className='w-5 h-5 text-green-600' />
-												</div>
-												<div>
-													<h3 className='font-medium text-gray-900'>Member Directory</h3>
-													<p className='text-sm text-gray-600'>{memberDirectory.password ? 'Password protected' : 'Public access'}</p>
-												</div>
-											</div>
-										</div>
-										<div className='flex gap-2 flex-wrap'>
-											<Button
-												variant='outline'
-												size='sm'
-												onClick={() => window.open(`/directory/${memberDirectory.id}`, '_blank')}
-												className='flex items-center gap-2'>
-												<ExternalLink className='w-4 h-4' />
-												<span className='hidden sm:inline'>Open</span>
-											</Button>
-											<Button variant='outline' size='sm' onClick={handleEditDirectory} className='flex items-center gap-2'>
-												<Edit className='w-4 h-4' />
-												<span className='hidden sm:inline'>Settings</span>
-											</Button>
-											<Button
-												variant='outline'
-												size='sm'
-												onClick={handleDeleteDirectory}
-												className='flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300'>
-												<Trash2 className='w-4 h-4' />
-												<span className='hidden sm:inline'>Delete</span>
-											</Button>
-										</div>
-									</div>
-								)}
-								{!memberDirectory && community && (
-									<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
+			{/* Public Links Section */}
+			{(applicationForm || memberDirectory || (!applicationForm && !memberDirectory && community)) && (
+				<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg mb-6'>
+					<CardContent className='p-4 sm:p-6'>
+						<div className='flex items-center justify-between mb-4'>
+							<h2 className='text-lg font-semibold text-gray-900'>Public Links</h2>
+							<Badge variant='secondary' className='text-xs'>
+								Share these with your community
+							</Badge>
+						</div>
+						<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+							{applicationForm && (
+								<div className='p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors'>
+									<div className='flex items-center justify-between mb-3'>
 										<div className='flex items-center space-x-3'>
-											<div className='w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center'>
-												<Users className='w-5 h-5 text-gray-600' />
+											<div
+												className={`w-10 h-10 rounded-full flex items-center justify-center ${
+													applicationForm.isActive && applicationForm.isPublic ? 'bg-blue-100' : 'bg-gray-200'
+												}`}>
+												<ClipboardList className={`w-5 h-5 ${applicationForm.isActive && applicationForm.isPublic ? 'text-blue-600' : 'text-gray-500'}`} />
 											</div>
 											<div>
-												<h3 className='font-medium text-gray-700'>Member Directory</h3>
-												<p className='text-sm text-gray-500'>Create shareable member directory</p>
+												<div className='flex items-center gap-2'>
+													<h3 className='font-medium text-gray-900'>Application Form</h3>
+													{(!applicationForm.isActive || !applicationForm.isPublic) && (
+														<Badge variant='secondary' className='text-xs'>
+															{!applicationForm.isActive ? 'Inactive' : 'Private'}
+														</Badge>
+													)}
+												</div>
+												<p className='text-sm text-gray-600'>
+													{applicationForm.isActive && applicationForm.isPublic ? 'Public application form' : 'Form currently unavailable to public'}
+												</p>
 											</div>
 										</div>
-										<Dialog open={isCreateDirectoryModalOpen} onOpenChange={setIsCreateDirectoryModalOpen}>
-											<DialogTrigger asChild>
-												<Button variant='outline' size='sm' className='flex items-center gap-2'>
-													<Plus className='w-4 h-4' />
-													<span className='hidden sm:inline'>Create</span>
-												</Button>
-											</DialogTrigger>
-											<DialogContent className='sm:max-w-lg'>
-												<DialogHeader>
-													<DialogTitle>Create Member Directory</DialogTitle>
-													<DialogDescription>
-														Create a shareable public link for your community member directory. This will show members from your chat analyses.
-													</DialogDescription>
-												</DialogHeader>
-												<div className='space-y-4 py-4'>
-													<div className='space-y-2'>
-														<label htmlFor='directory-password' className='text-sm font-medium'>
-															Password (Optional)
-														</label>
-														<Input
-															id='directory-password'
-															type='password'
-															placeholder='Leave empty for no password protection'
-															value={directoryPassword}
-															onChange={(e) => setDirectoryPassword(e.target.value)}
-														/>
-														<p className='text-xs text-gray-500'>Add a password to restrict access to your member directory</p>
-													</div>
-													<div className='bg-blue-50 p-3 rounded-lg'>
-														<p className='text-sm text-blue-800'>
-															<strong>What&apos;s included:</strong> Member names, message counts, and activity data from your uploaded chat analyses
-														</p>
-													</div>
-												</div>
-												<div className='flex justify-end gap-2'>
-													<Button
-														variant='outline'
-														onClick={() => {
-															setIsCreateDirectoryModalOpen(false);
-															setDirectoryPassword('');
-														}}
-														disabled={isCreatingDirectory}>
-														Cancel
-													</Button>
-													<Button onClick={handleCreateDirectory} disabled={isCreatingDirectory}>
-														{isCreatingDirectory ? (
-															<>
-																<div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
-																Creating...
-															</>
-														) : (
-															<>
-																<Users className='w-4 h-4 mr-2' />
-																Create Directory
-															</>
-														)}
-													</Button>
-												</div>
-											</DialogContent>
-										</Dialog>
 									</div>
-								)}
-								{!applicationForm && (
-									<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
-										<div className='flex items-center space-x-3'>
-											<div className='w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center'>
-												<ClipboardList className='w-5 h-5 text-gray-600' />
-											</div>
-											<div>
-												<h3 className='font-medium text-gray-700'>Application Form</h3>
-												<p className='text-sm text-gray-500'>Create member application form</p>
-											</div>
-										</div>
+									<div className='flex gap-2 flex-wrap'>
+										<Button
+											variant='outline'
+											size='sm'
+											onClick={() => window.open(`/apply/${applicationForm.customSlug}`, '_blank')}
+											className='flex items-center gap-2'>
+											<ExternalLink className='w-4 h-4' />
+											<span className='hidden sm:inline'>Open</span>
+										</Button>
 										<Button
 											variant='outline'
 											size='sm'
 											onClick={() => router.push(`/dashboard/community/${communityId}/form-builder`)}
 											className='flex items-center gap-2'>
-											<Plus className='w-4 h-4' />
-											<span className='hidden sm:inline'>Create</span>
+											<Edit className='w-4 h-4' />
+											<span className='hidden sm:inline'>Settings</span>
+										</Button>
+										<Button
+											variant='outline'
+											size='sm'
+											onClick={handleDeleteApplicationForm}
+											className='flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300'>
+											<Trash2 className='w-4 h-4' />
+											<span className='hidden sm:inline'>Delete</span>
 										</Button>
 									</div>
-								)}
-							</div>
-						</CardContent>
-					</Card>
-				)}
-
-				{/* Community Overview */}
-				<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
-					<CardContent className='p-6'>
-						<h2 className='text-xl font-semibold text-gray-900 mb-4'>Community Overview</h2>
-						<div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-							<div className='text-center p-4 bg-blue-50 rounded-lg'>
-								<div className='text-2xl font-bold text-blue-600'>{community._count.chatAnalyses}</div>
-								<div className='text-sm text-blue-700'>Chat Analyses</div>
-							</div>
-							<div className='text-center p-4 bg-green-50 rounded-lg'>
-								<div className='text-2xl font-bold text-green-600'>{applicationForm?._count?.applications || 0}</div>
-								<div className='text-sm text-green-700'>Form Applications</div>
-							</div>
-							<div className='text-center p-4 bg-purple-50 rounded-lg'>
-								<div className='text-2xl font-bold text-purple-600'>{memberDirectory ? 1 : 0}</div>
-								<div className='text-sm text-purple-700'>Member Directories</div>
-							</div>
-						</div>
-						<div className='mt-6 p-4 bg-gray-50 rounded-lg'>
-							<h3 className='font-medium text-gray-900 mb-2'>Quick Actions</h3>
-							<p className='text-sm text-gray-600 mb-4'>Use the sidebar navigation to access different sections of your community:</p>
-							<div className='space-y-2 text-sm text-gray-600'>
-								<div className='flex items-center gap-2'>
-									<ClipboardList className='w-4 h-4 text-blue-600' />
-									<span><strong>Form Responses:</strong> View and manage application submissions</span>
 								</div>
-								<div className='flex items-center gap-2'>
-									<FileText className='w-4 h-4 text-green-600' />
-									<span><strong>Chat Analytics:</strong> Upload and analyze WhatsApp exports</span>
+							)}
+							{memberDirectory && (
+								<div className='p-4 bg-white rounded-lg border border-gray-200 hover:border-green-300 transition-colors'>
+									<div className='flex items-center justify-between mb-3'>
+										<div className='flex items-center space-x-3'>
+											<div className='w-10 h-10 bg-green-100 rounded-full flex items-center justify-center'>
+												<Users className='w-5 h-5 text-green-600' />
+											</div>
+											<div>
+												<h3 className='font-medium text-gray-900'>Member Directory</h3>
+												<p className='text-sm text-gray-600'>{memberDirectory.password ? 'Password protected' : 'Public access'}</p>
+											</div>
+										</div>
+									</div>
+									<div className='flex gap-2 flex-wrap'>
+										<Button
+											variant='outline'
+											size='sm'
+											onClick={() => window.open(`/directory/${memberDirectory.id}`, '_blank')}
+											className='flex items-center gap-2'>
+											<ExternalLink className='w-4 h-4' />
+											<span className='hidden sm:inline'>Open</span>
+										</Button>
+										<Button variant='outline' size='sm' onClick={handleEditDirectory} className='flex items-center gap-2'>
+											<Edit className='w-4 h-4' />
+											<span className='hidden sm:inline'>Settings</span>
+										</Button>
+										<Button
+											variant='outline'
+											size='sm'
+											onClick={handleDeleteDirectory}
+											className='flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300'>
+											<Trash2 className='w-4 h-4' />
+											<span className='hidden sm:inline'>Delete</span>
+										</Button>
+									</div>
 								</div>
-								<div className='flex items-center gap-2'>
-									<Users className='w-4 h-4 text-purple-600' />
-									<span><strong>Member Directory:</strong> Manage public member directories</span>
-								</div>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-
-				{/* Edit Directory Modal */}
-				<Dialog open={isEditDirectoryModalOpen} onOpenChange={setIsEditDirectoryModalOpen}>
-					<DialogContent className='sm:max-w-lg'>
-						<DialogHeader>
-							<DialogTitle>Edit Directory Settings</DialogTitle>
-							<DialogDescription>Update the password and field visibility settings for your member directory.</DialogDescription>
-						</DialogHeader>
-						<div className='space-y-4 py-4'>
-							<div className='space-y-2'>
-								<label htmlFor='edit-directory-password' className='text-sm font-medium'>
-									Password
-								</label>
-								<Input
-									id='edit-directory-password'
-									type='password'
-									placeholder='Leave empty to remove password protection'
-									value={editDirectoryPassword}
-									onChange={(e) => setEditDirectoryPassword(e.target.value)}
-								/>
-								<p className='text-xs text-gray-500'>
-									{editDirectoryPassword.trim()
-										? 'Visitors will need this password to view the directory'
-										: 'Directory will be publicly accessible without a password'}
-								</p>
-							</div>
-
-							{/* Field Visibility Settings */}
-							<div className='space-y-3'>
-								<div className='space-y-2'>
-									<label className='text-sm font-medium'>Member Information Visibility</label>
-									<p className='text-xs text-gray-500'>Choose which member information to display in the public directory</p>
-								</div>
-								<div className='space-y-3'>
-									{[
-										{ key: 'name', label: 'Name', description: 'Display member names' },
-										{ key: 'email', label: 'Email', description: 'Display email addresses' },
-										{ key: 'linkedin', label: 'LinkedIn', description: 'Display LinkedIn profiles' },
-										{ key: 'phone', label: 'Phone', description: 'Display phone numbers' },
-									].map((field) => (
-										<div key={field.key} className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'>
-											<div className='flex items-center space-x-3'>
-												{fieldVisibility[field.key] ? (
-													<Eye className='w-4 h-4 text-green-600' />
-												) : (
-													<EyeOff className='w-4 h-4 text-gray-400' />
-												)}
-												<div>
-													<p className='text-sm font-medium text-gray-900'>{field.label}</p>
-													<p className='text-xs text-gray-500'>{field.description}</p>
+							)}
+							{!memberDirectory && community && (
+								<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
+									<div className='flex items-center space-x-3'>
+										<div className='w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center'>
+											<Users className='w-5 h-5 text-gray-600' />
+										</div>
+										<div>
+											<h3 className='font-medium text-gray-700'>Member Directory</h3>
+											<p className='text-sm text-gray-500'>Create shareable member directory</p>
+										</div>
+									</div>
+									<Dialog open={isCreateDirectoryModalOpen} onOpenChange={setIsCreateDirectoryModalOpen}>
+										<DialogTrigger asChild>
+											<Button variant='outline' size='sm' className='flex items-center gap-2'>
+												<Plus className='w-4 h-4' />
+												<span className='hidden sm:inline'>Create</span>
+											</Button>
+										</DialogTrigger>
+										<DialogContent className='sm:max-w-lg'>
+											<DialogHeader>
+												<DialogTitle>Create Member Directory</DialogTitle>
+												<DialogDescription>
+													Create a shareable public link for your community member directory. This will show members from your chat analyses.
+												</DialogDescription>
+											</DialogHeader>
+											<div className='space-y-4 py-4'>
+												<div className='space-y-2'>
+													<label htmlFor='directory-password' className='text-sm font-medium'>
+														Password (Optional)
+													</label>
+													<Input
+														id='directory-password'
+														type='password'
+														placeholder='Leave empty for no password protection'
+														value={directoryPassword}
+														onChange={(e) => setDirectoryPassword(e.target.value)}
+													/>
+													<p className='text-xs text-gray-500'>Add a password to restrict access to your member directory</p>
+												</div>
+												<div className='bg-blue-50 p-3 rounded-lg'>
+													<p className='text-sm text-blue-800'>
+														<strong>What&apos;s included:</strong> Member names, message counts, and activity data from your uploaded chat analyses
+													</p>
 												</div>
 											</div>
-											<Button
-												variant={fieldVisibility[field.key] ? 'default' : 'outline'}
-												size='sm'
-												onClick={() =>
-													setFieldVisibility(prev => ({
-														...prev,
-														[field.key]: !prev[field.key]
-													}))
-												}
-											>
-												{fieldVisibility[field.key] ? 'Visible' : 'Hidden'}
-											</Button>
-										</div>
-									))}
+											<div className='flex justify-end gap-2'>
+												<Button
+													variant='outline'
+													onClick={() => {
+														setIsCreateDirectoryModalOpen(false);
+														setDirectoryPassword('');
+													}}
+													disabled={isCreatingDirectory}>
+													Cancel
+												</Button>
+												<Button onClick={handleCreateDirectory} disabled={isCreatingDirectory}>
+													{isCreatingDirectory ? (
+														<>
+															<div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
+															Creating...
+														</>
+													) : (
+														<>
+															<Users className='w-4 h-4 mr-2' />
+															Create Directory
+														</>
+													)}
+												</Button>
+											</div>
+										</DialogContent>
+									</Dialog>
 								</div>
-							</div>
-							{memberDirectory && (
-								<div className='bg-blue-50 p-3 rounded-lg'>
-									<p className='text-sm text-blue-800'>
-										<strong>Current status:</strong> {memberDirectory.password ? 'Password protected' : 'Public access'}
-									</p>
+							)}
+							{!applicationForm && (
+								<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
+									<div className='flex items-center space-x-3'>
+										<div className='w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center'>
+											<ClipboardList className='w-5 h-5 text-gray-600' />
+										</div>
+										<div>
+											<h3 className='font-medium text-gray-700'>Application Form</h3>
+											<p className='text-sm text-gray-500'>Create member application form</p>
+										</div>
+									</div>
+									<Button
+										variant='outline'
+										size='sm'
+										onClick={() => router.push(`/dashboard/community/${communityId}/form-builder`)}
+										className='flex items-center gap-2'>
+										<Plus className='w-4 h-4' />
+										<span className='hidden sm:inline'>Create</span>
+									</Button>
 								</div>
 							)}
 						</div>
-						<div className='flex justify-end gap-2'>
-							<Button
-								variant='outline'
-								onClick={() => {
-									setIsEditDirectoryModalOpen(false);
-									setEditDirectoryPassword('');
-								}}
-								disabled={isUpdatingDirectory}>
-								Cancel
-							</Button>
-							<Button onClick={handleUpdateDirectory} disabled={isUpdatingDirectory}>
-								{isUpdatingDirectory ? (
-									<>
-										<div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
-										Updating...
-									</>
-								) : (
-									<>
-										<Settings className='w-4 h-4 mr-2' />
-										Update Settings
-									</>
-								)}
-							</Button>
+					</CardContent>
+				</Card>
+			)}
+
+			{/* Community Overview */}
+			<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
+				<CardContent className='p-6'>
+					<h2 className='text-xl font-semibold text-gray-900 mb-4'>Community Overview</h2>
+					<div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+						<div className='text-center p-4 bg-blue-50 rounded-lg'>
+							<div className='text-2xl font-bold text-blue-600'>{community._count.chatAnalyses}</div>
+							<div className='text-sm text-blue-700'>Chat Analyses</div>
 						</div>
-					</DialogContent>
-				</Dialog>
+						<div className='text-center p-4 bg-green-50 rounded-lg'>
+							<div className='text-2xl font-bold text-green-600'>{applicationForm?._count?.applications || 0}</div>
+							<div className='text-sm text-green-700'>Form Applications</div>
+						</div>
+						<div className='text-center p-4 bg-purple-50 rounded-lg'>
+							<div className='text-2xl font-bold text-purple-600'>{memberDirectory ? 1 : 0}</div>
+							<div className='text-sm text-purple-700'>Member Directories</div>
+						</div>
+					</div>
+					<div className='mt-6 p-4 bg-gray-50 rounded-lg'>
+						<h3 className='font-medium text-gray-900 mb-2'>Quick Actions</h3>
+						<p className='text-sm text-gray-600 mb-4'>Use the sidebar navigation to access different sections of your community:</p>
+						<div className='space-y-2 text-sm text-gray-600'>
+							<div className='flex items-center gap-2'>
+								<ClipboardList className='w-4 h-4 text-blue-600' />
+								<span>
+									<strong>Form Responses:</strong> View and manage application submissions
+								</span>
+							</div>
+							<div className='flex items-center gap-2'>
+								<FileText className='w-4 h-4 text-green-600' />
+								<span>
+									<strong>Chat Analytics:</strong> Upload and analyze WhatsApp exports
+								</span>
+							</div>
+							<div className='flex items-center gap-2'>
+								<Users className='w-4 h-4 text-purple-600' />
+								<span>
+									<strong>Member Directory:</strong> Manage public member directories
+								</span>
+							</div>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Edit Directory Modal */}
+			<Dialog open={isEditDirectoryModalOpen} onOpenChange={setIsEditDirectoryModalOpen}>
+				<DialogContent className='sm:max-w-lg'>
+					<DialogHeader>
+						<DialogTitle>Edit Directory Settings</DialogTitle>
+						<DialogDescription>Update the password and field visibility settings for your member directory.</DialogDescription>
+					</DialogHeader>
+					<div className='space-y-4 py-4'>
+						<div className='space-y-2'>
+							<label htmlFor='edit-directory-password' className='text-sm font-medium'>
+								Password
+							</label>
+							<Input
+								id='edit-directory-password'
+								type='password'
+								placeholder='Leave empty to remove password protection'
+								value={editDirectoryPassword}
+								onChange={(e) => setEditDirectoryPassword(e.target.value)}
+							/>
+							<p className='text-xs text-gray-500'>
+								{editDirectoryPassword.trim()
+									? 'Visitors will need this password to view the directory'
+									: 'Directory will be publicly accessible without a password'}
+							</p>
+						</div>
+
+						{/* Field Visibility Settings */}
+						<div className='space-y-3'>
+							<div className='space-y-2'>
+								<label className='text-sm font-medium'>Member Information Visibility</label>
+								<p className='text-xs text-gray-500'>Choose which member information to display in the public directory</p>
+							</div>
+							<div className='space-y-3'>
+								{[
+									{ key: 'name', label: 'Name', description: 'Display member names' },
+									{ key: 'email', label: 'Email', description: 'Display email addresses' },
+									{ key: 'linkedin', label: 'LinkedIn', description: 'Display LinkedIn profiles' },
+									{ key: 'phone', label: 'Phone', description: 'Display phone numbers' },
+								].map((field) => (
+									<div key={field.key} className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'>
+										<div className='flex items-center space-x-3'>
+											{fieldVisibility[field.key] ? <Eye className='w-4 h-4 text-green-600' /> : <EyeOff className='w-4 h-4 text-gray-400' />}
+											<div>
+												<p className='text-sm font-medium text-gray-900'>{field.label}</p>
+												<p className='text-xs text-gray-500'>{field.description}</p>
+											</div>
+										</div>
+										<Button
+											variant={fieldVisibility[field.key] ? 'default' : 'outline'}
+											size='sm'
+											onClick={() =>
+												setFieldVisibility((prev) => ({
+													...prev,
+													[field.key]: !prev[field.key],
+												}))
+											}>
+											{fieldVisibility[field.key] ? 'Visible' : 'Hidden'}
+										</Button>
+									</div>
+								))}
+							</div>
+						</div>
+						{memberDirectory && (
+							<div className='bg-blue-50 p-3 rounded-lg'>
+								<p className='text-sm text-blue-800'>
+									<strong>Current status:</strong> {memberDirectory.password ? 'Password protected' : 'Public access'}
+								</p>
+							</div>
+						)}
+					</div>
+					<div className='flex justify-end gap-2'>
+						<Button
+							variant='outline'
+							onClick={() => {
+								setIsEditDirectoryModalOpen(false);
+								setEditDirectoryPassword('');
+							}}
+							disabled={isUpdatingDirectory}>
+							Cancel
+						</Button>
+						<Button onClick={handleUpdateDirectory} disabled={isUpdatingDirectory}>
+							{isUpdatingDirectory ? (
+								<>
+									<div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
+									Updating...
+								</>
+							) : (
+								<>
+									<Settings className='w-4 h-4 mr-2' />
+									Update Settings
+								</>
+							)}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

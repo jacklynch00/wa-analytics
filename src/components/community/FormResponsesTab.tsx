@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Plus, Search, Filter, Eye, Check, X, Clock, Users, Mail, FileText, MoreVertical, Send, Download, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { ApplicationForm, MemberApplication } from '@prisma/client';
 
 interface FormQuestion {
 	id: string;
@@ -21,31 +22,9 @@ interface FormQuestion {
 	options?: string[];
 }
 
-interface ApplicationForm {
-	id: string;
-	title: string;
-	customSlug: string;
-	isActive: boolean;
-	isPublic: boolean;
-	questions?: FormQuestion[];
-	createdAt: string;
-	_count?: {
-		applications: number;
-	};
-}
-
-interface MemberApplication {
-	id: string;
-	email: string;
-	status: 'PENDING' | 'ACCEPTED' | 'DENIED';
-	createdAt: string;
-	reviewedAt?: string;
-	responses: Record<string, string | string[]>;
-}
-
 interface FormResponsesTabProps {
 	communityId: string;
-	applicationForm: ApplicationForm | null;
+	applicationForm: (ApplicationForm & { questions: FormQuestion[] }) | null;
 }
 
 export default function FormResponsesTab({ communityId, applicationForm }: FormResponsesTabProps) {
@@ -57,7 +36,7 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 	const [searchTerm, setSearchTerm] = useState('');
 	const [statusFilter, setStatusFilter] = useState<string>('all');
 	const [selectedApplication, setSelectedApplication] = useState<MemberApplication | null>(null);
-	const [fullFormData, setFullFormData] = useState<ApplicationForm | null>(null);
+	const [fullFormData, setFullFormData] = useState<(ApplicationForm & { questions: FormQuestion[] }) | null>(null);
 	const [updatingApplications, setUpdatingApplications] = useState<Set<string>>(new Set());
 	const [resendingEmails, setResendingEmails] = useState<Set<string>>(new Set());
 
@@ -99,22 +78,33 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 
 	const updateApplicationStatus = async (applicationId: string, newStatus: 'ACCEPTED' | 'DENIED') => {
 		// Add to updating set
-		setUpdatingApplications(prev => new Set(prev).add(applicationId));
+		setUpdatingApplications((prev) => new Set(prev).add(applicationId));
 
 		// Optimistic update for applications list
-		setApplications(prev => prev.map(app => 
-			app.id === applicationId 
-				? { ...app, status: newStatus, reviewedAt: new Date().toISOString() }
-				: app
-		));
+		setApplications((prev) =>
+			prev.map((app) =>
+				app.id === applicationId
+					? {
+							...app,
+							status: newStatus,
+							// reviewedAt should remain a Date, not a string
+							reviewedAt: new Date(),
+						}
+					: app
+			)
+		);
 
 		// Optimistic update for selected application in dialog
 		if (selectedApplication?.id === applicationId) {
-			setSelectedApplication(prev => prev ? {
-				...prev,
-				status: newStatus,
-				reviewedAt: new Date().toISOString()
-			} : null);
+			setSelectedApplication((prev) =>
+				prev
+					? {
+							...prev,
+							status: newStatus,
+							reviewedAt: new Date(),
+						}
+					: null
+			);
 		}
 
 		try {
@@ -134,14 +124,14 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 			await loadApplications();
 			// Also reload the selected application if it's the one that failed
 			if (selectedApplication?.id === applicationId) {
-				const originalApp = applications.find(app => app.id === applicationId);
+				const originalApp = applications.find((app) => app.id === applicationId);
 				if (originalApp) {
 					setSelectedApplication(originalApp);
 				}
 			}
 		} finally {
 			// Remove from updating set
-			setUpdatingApplications(prev => {
+			setUpdatingApplications((prev) => {
 				const newSet = new Set(prev);
 				newSet.delete(applicationId);
 				return newSet;
@@ -151,7 +141,7 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 
 	const resendEmail = async (applicationId: string, emailType: 'confirmation' | 'acceptance' | 'denial') => {
 		const emailKey = `${applicationId}-${emailType}`;
-		setResendingEmails(prev => new Set(prev).add(emailKey));
+		setResendingEmails((prev) => new Set(prev).add(emailKey));
 
 		try {
 			const response = await fetch(`/api/applications/${applicationId}/resend-email`, {
@@ -171,7 +161,7 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 			console.error('Error resending email:', error);
 			toast.error(error instanceof Error ? error.message : 'Failed to resend email');
 		} finally {
-			setResendingEmails(prev => {
+			setResendingEmails((prev) => {
 				const newSet = new Set(prev);
 				newSet.delete(emailKey);
 				return newSet;
@@ -215,37 +205,36 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 
 		// Create CSV headers
 		const headers = ['Email', 'Status', 'Submitted Date', 'Reviewed Date'];
-		fullFormData.questions?.forEach(question => {
+		fullFormData.questions?.forEach((question) => {
 			headers.push(question.label);
 		});
 
 		// Create CSV rows
-		const rows = applications.map(application => {
+		const rows = applications.map((application) => {
 			const row = [
 				application.email,
 				application.status,
 				new Date(application.createdAt).toLocaleDateString(),
-				application.reviewedAt ? new Date(application.reviewedAt).toLocaleDateString() : 'Not reviewed'
+				application.reviewedAt ? new Date(application.reviewedAt).toLocaleDateString() : 'Not reviewed',
 			];
-			
+
 			// Add responses for each question
-			fullFormData.questions?.forEach(question => {
-				const response = application.responses[question.id];
+			fullFormData.questions?.forEach((question) => {
+				const response = (application.responses as Record<string, unknown>)?.[question.id];
 				if (Array.isArray(response)) {
 					row.push(response.join('; '));
 				} else {
-					row.push(response || '');
+					row.push(String(response || ''));
 				}
 			});
-			
+
 			return row;
 		});
 
 		// Convert to CSV format
-		const csvContent = [
-			headers.map(header => `"${header}"`).join(','),
-			...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-		].join('\n');
+		const csvContent = [headers.map((header) => `"${header}"`).join(','), ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))].join(
+			'\n'
+		);
 
 		// Create and download file
 		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -321,21 +310,11 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 					<div className='flex justify-between items-center'>
 						<CardTitle className='text-lg'>Applications</CardTitle>
 						<div className='flex items-center gap-2'>
-							<Button 
-								variant='outline' 
-								size='sm' 
-								onClick={handleBulkImport}
-								disabled={!applicationForm}
-							>
+							<Button variant='outline' size='sm' onClick={handleBulkImport} disabled={!applicationForm}>
 								<Upload className='w-4 h-4 mr-2' />
 								Bulk Import
 							</Button>
-							<Button 
-								variant='outline' 
-								size='sm' 
-								onClick={exportToCSV}
-								disabled={applications.length === 0}
-							>
+							<Button variant='outline' size='sm' onClick={exportToCSV} disabled={applications.length === 0}>
 								<Download className='w-4 h-4 mr-2' />
 								Export CSV
 							</Button>
@@ -364,7 +343,7 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 										<TableHead>Email</TableHead>
 										<TableHead>Status</TableHead>
 										<TableHead>Submitted</TableHead>
-										<TableHead className="text-right">Actions</TableHead>
+										<TableHead className='text-right'>Actions</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -380,7 +359,7 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 											<TableCell>
 												<span className='text-sm text-gray-600'>{new Date(application.createdAt).toLocaleDateString()}</span>
 											</TableCell>
-											<TableCell className="text-right">
+											<TableCell className='text-right'>
 												<div className='flex items-center gap-2 justify-end'>
 													<Dialog>
 														<DialogTrigger asChild>
@@ -409,30 +388,27 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 																	<div className='border rounded-lg p-4 space-y-4'>
 																		<h4 className='font-medium'>Responses</h4>
 																		{fullFormData?.questions?.map((question) => {
-																			const answer = selectedApplication.responses[question.id];
+																			const answer = (selectedApplication.responses as Record<string, unknown>)?.[question.id];
 																			if (!answer) return null;
-																			
+
 																			return (
 																				<div key={question.id} className='space-y-2'>
 																					<p className='text-sm font-medium text-gray-900'>{question.label}</p>
 																					<p className='text-sm text-gray-700 bg-gray-50 p-3 rounded-md'>
-																						{Array.isArray(answer) ? answer.join(', ') : answer}
+																						{Array.isArray(answer) ? answer.join(', ') : String(answer)}
 																					</p>
 																				</div>
 																			);
-																		}) || (
-																			<div className='text-sm text-gray-500'>Loading form questions...</div>
-																		)}
+																		}) || <div className='text-sm text-gray-500'>Loading form questions...</div>}
 																	</div>
 
 																	<div className='flex flex-col gap-4 pt-4'>
 																		{selectedApplication.status === 'PENDING' && (
 																			<div className='flex gap-2'>
-																				<Button 
-																					onClick={() => updateApplicationStatus(selectedApplication.id, 'ACCEPTED')} 
+																				<Button
+																					onClick={() => updateApplicationStatus(selectedApplication.id, 'ACCEPTED')}
 																					className='flex-1 bg-green-600 hover:bg-green-700'
-																					disabled={updatingApplications.has(selectedApplication.id)}
-																				>
+																					disabled={updatingApplications.has(selectedApplication.id)}>
 																					{updatingApplications.has(selectedApplication.id) ? (
 																						<div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
 																					) : (
@@ -444,8 +420,7 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 																					variant='outline'
 																					onClick={() => updateApplicationStatus(selectedApplication.id, 'DENIED')}
 																					className='flex-1'
-																					disabled={updatingApplications.has(selectedApplication.id)}
-																				>
+																					disabled={updatingApplications.has(selectedApplication.id)}>
 																					{updatingApplications.has(selectedApplication.id) ? (
 																						<div className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2' />
 																					) : (
@@ -459,12 +434,11 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 																		<div className='border-t pt-4'>
 																			<h5 className='text-sm font-medium text-gray-700 mb-2'>Email Actions</h5>
 																			<div className='flex flex-wrap gap-2'>
-																				<Button 
-																					variant='outline' 
+																				<Button
+																					variant='outline'
 																					size='sm'
 																					onClick={() => resendEmail(selectedApplication.id, 'confirmation')}
-																					disabled={resendingEmails.has(`${selectedApplication.id}-confirmation`)}
-																				>
+																					disabled={resendingEmails.has(`${selectedApplication.id}-confirmation`)}>
 																					{resendingEmails.has(`${selectedApplication.id}-confirmation`) ? (
 																						<div className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2' />
 																					) : (
@@ -473,12 +447,11 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 																					Resend Confirmation
 																				</Button>
 																				{selectedApplication.status === 'ACCEPTED' && (
-																					<Button 
-																						variant='outline' 
+																					<Button
+																						variant='outline'
 																						size='sm'
 																						onClick={() => resendEmail(selectedApplication.id, 'acceptance')}
-																						disabled={resendingEmails.has(`${selectedApplication.id}-acceptance`)}
-																					>
+																						disabled={resendingEmails.has(`${selectedApplication.id}-acceptance`)}>
 																						{resendingEmails.has(`${selectedApplication.id}-acceptance`) ? (
 																							<div className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2' />
 																						) : (
@@ -488,12 +461,11 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 																					</Button>
 																				)}
 																				{selectedApplication.status === 'DENIED' && (
-																					<Button 
-																						variant='outline' 
+																					<Button
+																						variant='outline'
 																						size='sm'
 																						onClick={() => resendEmail(selectedApplication.id, 'denial')}
-																						disabled={resendingEmails.has(`${selectedApplication.id}-denial`)}
-																					>
+																						disabled={resendingEmails.has(`${selectedApplication.id}-denial`)}>
 																						{resendingEmails.has(`${selectedApplication.id}-denial`) ? (
 																							<div className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2' />
 																						) : (
@@ -523,9 +495,9 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 																	<Check className='w-4 h-4' />
 																)}
 															</Button>
-															<Button 
-																variant='outline' 
-																size='sm' 
+															<Button
+																variant='outline'
+																size='sm'
 																onClick={() => updateApplicationStatus(application.id, 'DENIED')}
 																disabled={updatingApplications.has(application.id)}>
 																{updatingApplications.has(application.id) ? (
@@ -544,10 +516,9 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 															</Button>
 														</DropdownMenuTrigger>
 														<DropdownMenuContent align='end'>
-															<DropdownMenuItem 
+															<DropdownMenuItem
 																onClick={() => resendEmail(application.id, 'confirmation')}
-																disabled={resendingEmails.has(`${application.id}-confirmation`)}
-															>
+																disabled={resendingEmails.has(`${application.id}-confirmation`)}>
 																{resendingEmails.has(`${application.id}-confirmation`) ? (
 																	<div className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2' />
 																) : (
@@ -556,10 +527,9 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 																Resend Confirmation Email
 															</DropdownMenuItem>
 															{application.status === 'ACCEPTED' && (
-																<DropdownMenuItem 
+																<DropdownMenuItem
 																	onClick={() => resendEmail(application.id, 'acceptance')}
-																	disabled={resendingEmails.has(`${application.id}-acceptance`)}
-																>
+																	disabled={resendingEmails.has(`${application.id}-acceptance`)}>
 																	{resendingEmails.has(`${application.id}-acceptance`) ? (
 																		<div className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2' />
 																	) : (
@@ -569,10 +539,9 @@ export default function FormResponsesTab({ communityId, applicationForm }: FormR
 																</DropdownMenuItem>
 															)}
 															{application.status === 'DENIED' && (
-																<DropdownMenuItem 
+																<DropdownMenuItem
 																	onClick={() => resendEmail(application.id, 'denial')}
-																	disabled={resendingEmails.has(`${application.id}-denial`)}
-																>
+																	disabled={resendingEmails.has(`${application.id}-denial`)}>
 																	{resendingEmails.has(`${application.id}-denial`) ? (
 																		<div className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2' />
 																	) : (

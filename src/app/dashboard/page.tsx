@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Users, Calendar, Share2, Plus, MessageCircle, ClipboardList } from 'lucide-react';
+import { FileText, Users, Calendar, Share2, Plus, ClipboardList } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -83,11 +83,6 @@ export default function DashboardPage() {
 
 		checkAuth();
 	}, [router]);
-
-	const handleSignOut = async () => {
-		await authClient.signOut();
-		router.push('/');
-	};
 
 	const handleCreateCommunity = async () => {
 		if (!newCommunity.name.trim()) {

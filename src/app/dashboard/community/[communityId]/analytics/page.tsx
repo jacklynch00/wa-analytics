@@ -136,8 +136,8 @@ export default function CommunityAnalyticsPage() {
 							<DialogHeader>
 								<DialogTitle>Upload WhatsApp Chat Export</DialogTitle>
 								<DialogDescription>
-									Upload your WhatsApp chat export file to create a new analysis for this community. We'll process your data and provide
-									comprehensive insights about your group dynamics.
+									Upload your WhatsApp chat export file to create a new analysis for this community. We&apos;ll process your data and provide comprehensive
+									insights about your group dynamics.
 								</DialogDescription>
 							</DialogHeader>
 							<div className='py-4'>

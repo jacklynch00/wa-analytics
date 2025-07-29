@@ -12,7 +12,7 @@ import MemberManagement from '@/components/dashboard/MemberManagement';
 import AIRecap from '@/components/dashboard/AIRecap';
 import ResourceHub from '@/components/dashboard/ResourceHub';
 import Analytics from '@/components/dashboard/Analytics';
-import { ArrowLeft, Edit2, Check, X } from 'lucide-react';
+import { Edit2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/dashboard-layout';
 
@@ -55,10 +55,6 @@ function AnalysisPageContent() {
 
 		loadAnalysis();
 	}, [router, analysisId, communityId]);
-
-	const handleBackToCommunity = () => {
-		router.push(`/dashboard/community/${communityId}`);
-	};
 
 	const handleRecapRegenerated = (newRecaps: { [key: string]: AIRecapData }) => {
 		if (analysis) {
@@ -171,7 +167,7 @@ function AnalysisPageContent() {
 							<span>{analysis.members.length} members</span>
 							<span>•</span>
 							<span>{Math.ceil((analysis.dateRange.end.getTime() - analysis.dateRange.start.getTime()) / (1000 * 60 * 60 * 24))} days</span>
-						</div>			
+						</div>
 					</div>
 				</div>
 				<Tabs defaultValue='ai-recap' className='space-y-4 sm:space-y-6'>
