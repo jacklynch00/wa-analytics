@@ -9,25 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Users, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
-interface ChatAnalysis {
-	id: string;
-	title: string;
-	totalMessages: number;
-	totalMembers: number;
-	createdAt: string;
-}
-
-interface Community {
-	id: string;
-	name: string;
-	description: string | null;
-	createdAt: string;
-	chatAnalyses: ChatAnalysis[];
-	_count: {
-		chatAnalyses: number;
-	};
-}
+import { useUpdateCommunity } from '@/hooks/communities/useCommunity';
+import { useDeleteCommunity, type Community } from '@/hooks/communities/useCommunities';
 
 interface FormQuestion {
 	id: string;
@@ -75,9 +58,18 @@ function CommunityPageContent() {
 		linkedin: false,
 		phone: false,
 	});
+	// Community settings state
+	const [isRenameCommunityModalOpen, setIsRenameCommunityModalOpen] = useState(false);
+	const [newCommunityName, setNewCommunityName] = useState('');
+	const [isDeleteCommunityModalOpen, setIsDeleteCommunityModalOpen] = useState(false);
+	const [deleteConfirmationName, setDeleteConfirmationName] = useState('');
 	const router = useRouter();
 	const params = useParams();
 	const communityId = params.communityId as string;
+
+	// React Query mutations
+	const updateCommunityMutation = useUpdateCommunity();
+	const deleteCommunityMutation = useDeleteCommunity();
 
 	useEffect(() => {
 		const loadData = async () => {
@@ -277,6 +269,50 @@ function CommunityPageContent() {
 		}
 	};
 
+	const handleRenameCommunity = async () => {
+		if (!community || !newCommunityName.trim()) return;
+
+		try {
+			const updatedCommunity = await updateCommunityMutation.mutateAsync({
+				id: communityId,
+				name: newCommunityName.trim(),
+			});
+
+			setCommunity(updatedCommunity);
+			setIsRenameCommunityModalOpen(false);
+			setNewCommunityName('');
+			toast.success('Community renamed successfully');
+		} catch (error) {
+			console.error('Error renaming community:', error);
+			toast.error(error instanceof Error ? error.message : 'Failed to rename community');
+		}
+	};
+
+	const handleDeleteCommunity = async () => {
+		if (!community || deleteConfirmationName !== community.name) return;
+
+		try {
+			await deleteCommunityMutation.mutateAsync(communityId);
+			toast.success('Community deleted successfully');
+			router.push('/dashboard');
+		} catch (error) {
+			console.error('Error deleting community:', error);
+			toast.error(error instanceof Error ? error.message : 'Failed to delete community');
+		}
+	};
+
+	const handleOpenRenameModal = () => {
+		if (community) {
+			setNewCommunityName(community.name);
+			setIsRenameCommunityModalOpen(true);
+		}
+	};
+
+	const handleOpenDeleteModal = () => {
+		setDeleteConfirmationName('');
+		setIsDeleteCommunityModalOpen(true);
+	};
+
 	if (loading) {
 		return (
 			<div className='min-h-screen flex items-center justify-center'>
@@ -307,120 +343,89 @@ function CommunityPageContent() {
 			{/* Public Links Section */}
 			{(applicationForm || memberDirectory || (!applicationForm && !memberDirectory && community)) && (
 				<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg mb-6'>
-					<CardContent className='p-4 sm:p-6'>
-						<div className='flex items-center justify-between mb-4'>
-							<h2 className='text-lg font-semibold text-gray-900'>Public Links</h2>
+					<CardContent className='p-4'>
+						<div className='flex items-center justify-between mb-3'>
+							<h2 className='text-base font-semibold text-gray-900'>Public Links</h2>
 							<Badge variant='secondary' className='text-xs'>
-								Share these with your community
+								Shareable
 							</Badge>
 						</div>
-						<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+						<div className='space-y-3'>
 							{applicationForm && (
-								<div className='p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors'>
-									<div className='flex items-center justify-between mb-3'>
-										<div className='flex items-center space-x-3'>
-											<div
-												className={`w-10 h-10 rounded-full flex items-center justify-center ${
-													applicationForm.isActive && applicationForm.isPublic ? 'bg-blue-100' : 'bg-gray-200'
-												}`}>
-												<ClipboardList className={`w-5 h-5 ${applicationForm.isActive && applicationForm.isPublic ? 'text-blue-600' : 'text-gray-500'}`} />
+								<div className='flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200'>
+									<div className='flex items-center space-x-3'>
+										<div
+											className={`w-8 h-8 rounded-full flex items-center justify-center ${
+												applicationForm.isActive && applicationForm.isPublic ? 'bg-blue-100' : 'bg-gray-200'
+											}`}>
+											<ClipboardList className={`w-4 h-4 ${applicationForm.isActive && applicationForm.isPublic ? 'text-blue-600' : 'text-gray-500'}`} />
+										</div>
+										<div className='flex-1'>
+											<div className='flex items-center gap-2'>
+												<h3 className='font-medium text-gray-900 text-sm'>Application Form</h3>
+												{(!applicationForm.isActive || !applicationForm.isPublic) && (
+													<Badge variant='secondary' className='text-xs'>
+														{!applicationForm.isActive ? 'Inactive' : 'Private'}
+													</Badge>
+												)}
 											</div>
-											<div>
-												<div className='flex items-center gap-2'>
-													<h3 className='font-medium text-gray-900'>Application Form</h3>
-													{(!applicationForm.isActive || !applicationForm.isPublic) && (
-														<Badge variant='secondary' className='text-xs'>
-															{!applicationForm.isActive ? 'Inactive' : 'Private'}
-														</Badge>
-													)}
-												</div>
-												<p className='text-sm text-gray-600'>
-													{applicationForm.isActive && applicationForm.isPublic ? 'Public application form' : 'Form currently unavailable to public'}
-												</p>
-											</div>
+											<p className='text-xs text-gray-500'>
+												{applicationForm.isActive && applicationForm.isPublic ? 'Public form' : 'Currently unavailable'}
+											</p>
 										</div>
 									</div>
-									<div className='flex gap-2 flex-wrap'>
-										<Button
-											variant='outline'
-											size='sm'
-											onClick={() => window.open(`/apply/${applicationForm.customSlug}`, '_blank')}
-											className='flex items-center gap-2'>
+									<div className='flex gap-1'>
+										<Button variant='ghost' size='sm' onClick={() => window.open(`/apply/${applicationForm.customSlug}`, '_blank')} className='h-8 w-8 p-0'>
 											<ExternalLink className='w-4 h-4' />
-											<span className='hidden sm:inline'>Open</span>
 										</Button>
-										<Button
-											variant='outline'
-											size='sm'
-											onClick={() => router.push(`/dashboard/community/${communityId}/form-builder`)}
-											className='flex items-center gap-2'>
+										<Button variant='ghost' size='sm' onClick={() => router.push(`/dashboard/community/${communityId}/form-builder`)} className='h-8 w-8 p-0'>
 											<Edit className='w-4 h-4' />
-											<span className='hidden sm:inline'>Settings</span>
 										</Button>
-										<Button
-											variant='outline'
-											size='sm'
-											onClick={handleDeleteApplicationForm}
-											className='flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300'>
+										<Button variant='ghost' size='sm' onClick={handleDeleteApplicationForm} className='h-8 w-8 p-0 text-red-600 hover:text-red-700'>
 											<Trash2 className='w-4 h-4' />
-											<span className='hidden sm:inline'>Delete</span>
 										</Button>
 									</div>
 								</div>
 							)}
 							{memberDirectory && (
-								<div className='p-4 bg-white rounded-lg border border-gray-200 hover:border-green-300 transition-colors'>
-									<div className='flex items-center justify-between mb-3'>
-										<div className='flex items-center space-x-3'>
-											<div className='w-10 h-10 bg-green-100 rounded-full flex items-center justify-center'>
-												<Users className='w-5 h-5 text-green-600' />
-											</div>
-											<div>
-												<h3 className='font-medium text-gray-900'>Member Directory</h3>
-												<p className='text-sm text-gray-600'>{memberDirectory.password ? 'Password protected' : 'Public access'}</p>
-											</div>
+								<div className='flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200'>
+									<div className='flex items-center space-x-3'>
+										<div className='w-8 h-8 bg-green-100 rounded-full flex items-center justify-center'>
+											<Users className='w-4 h-4 text-green-600' />
+										</div>
+										<div className='flex-1'>
+											<h3 className='font-medium text-gray-900 text-sm'>Member Directory</h3>
+											<p className='text-xs text-gray-500'>{memberDirectory.password ? 'Password protected' : 'Public access'}</p>
 										</div>
 									</div>
-									<div className='flex gap-2 flex-wrap'>
-										<Button
-											variant='outline'
-											size='sm'
-											onClick={() => window.open(`/directory/${memberDirectory.id}`, '_blank')}
-											className='flex items-center gap-2'>
+									<div className='flex gap-1'>
+										<Button variant='ghost' size='sm' onClick={() => window.open(`/directory/${memberDirectory.id}`, '_blank')} className='h-8 w-8 p-0'>
 											<ExternalLink className='w-4 h-4' />
-											<span className='hidden sm:inline'>Open</span>
 										</Button>
-										<Button variant='outline' size='sm' onClick={handleEditDirectory} className='flex items-center gap-2'>
+										<Button variant='ghost' size='sm' onClick={handleEditDirectory} className='h-8 w-8 p-0'>
 											<Edit className='w-4 h-4' />
-											<span className='hidden sm:inline'>Settings</span>
 										</Button>
-										<Button
-											variant='outline'
-											size='sm'
-											onClick={handleDeleteDirectory}
-											className='flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300'>
+										<Button variant='ghost' size='sm' onClick={handleDeleteDirectory} className='h-8 w-8 p-0 text-red-600 hover:text-red-700'>
 											<Trash2 className='w-4 h-4' />
-											<span className='hidden sm:inline'>Delete</span>
 										</Button>
 									</div>
 								</div>
 							)}
 							{!memberDirectory && community && (
-								<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
+								<div className='flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200'>
 									<div className='flex items-center space-x-3'>
-										<div className='w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center'>
-											<Users className='w-5 h-5 text-gray-600' />
+										<div className='w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center'>
+											<Users className='w-4 h-4 text-gray-600' />
 										</div>
-										<div>
-											<h3 className='font-medium text-gray-700'>Member Directory</h3>
-											<p className='text-sm text-gray-500'>Create shareable member directory</p>
+										<div className='flex-1'>
+											<h3 className='font-medium text-gray-700 text-sm'>Member Directory</h3>
+											<p className='text-xs text-gray-500'>Create shareable directory</p>
 										</div>
 									</div>
 									<Dialog open={isCreateDirectoryModalOpen} onOpenChange={setIsCreateDirectoryModalOpen}>
 										<DialogTrigger asChild>
-											<Button variant='outline' size='sm' className='flex items-center gap-2'>
+											<Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
 												<Plus className='w-4 h-4' />
-												<span className='hidden sm:inline'>Create</span>
 											</Button>
 										</DialogTrigger>
 										<DialogContent className='sm:max-w-lg'>
@@ -479,23 +484,18 @@ function CommunityPageContent() {
 								</div>
 							)}
 							{!applicationForm && (
-								<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
+								<div className='flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200'>
 									<div className='flex items-center space-x-3'>
-										<div className='w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center'>
-											<ClipboardList className='w-5 h-5 text-gray-600' />
+										<div className='w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center'>
+											<ClipboardList className='w-4 h-4 text-gray-600' />
 										</div>
-										<div>
-											<h3 className='font-medium text-gray-700'>Application Form</h3>
-											<p className='text-sm text-gray-500'>Create member application form</p>
+										<div className='flex-1'>
+											<h3 className='font-medium text-gray-700 text-sm'>Application Form</h3>
+											<p className='text-xs text-gray-500'>Create application form</p>
 										</div>
 									</div>
-									<Button
-										variant='outline'
-										size='sm'
-										onClick={() => router.push(`/dashboard/community/${communityId}/form-builder`)}
-										className='flex items-center gap-2'>
+									<Button variant='ghost' size='sm' onClick={() => router.push(`/dashboard/community/${communityId}/form-builder`)} className='h-8 w-8 p-0'>
 										<Plus className='w-4 h-4' />
-										<span className='hidden sm:inline'>Create</span>
 									</Button>
 								</div>
 							)}
@@ -507,7 +507,7 @@ function CommunityPageContent() {
 			{/* Community Overview */}
 			<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
 				<CardContent className='p-6'>
-					<h2 className='text-xl font-semibold text-gray-900 mb-4'>Community Overview</h2>
+					<h2 className='text-xl font-semibold text-gray-900 mb-4'>Overview</h2>
 					<div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
 						<div className='text-center p-4 bg-blue-50 rounded-lg'>
 							<div className='text-2xl font-bold text-blue-600'>{community._count.chatAnalyses}</div>
@@ -615,6 +615,149 @@ function CommunityPageContent() {
 								<>
 									<Settings className='w-4 h-4 mr-2' />
 									Update Settings
+								</>
+							)}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Community Settings Section */}
+			<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
+				<CardContent className='p-6'>
+					<h2 className='text-xl font-semibold text-gray-900 mb-4'>Settings</h2>
+					<div className='space-y-4'>
+						{/* Rename Community */}
+						<div className='flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200'>
+							<div>
+								<h3 className='font-medium text-gray-900'>Name</h3>
+								<p className='text-sm text-gray-600'>Current name: {community?.name}</p>
+							</div>
+							<Button variant='outline' onClick={handleOpenRenameModal}>
+								<Edit className='w-4 h-4 mr-2' />
+								Rename
+							</Button>
+						</div>
+
+						{/* Delete Community */}
+						<div className='flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200'>
+							<div>
+								<h3 className='font-medium text-red-900'>Delete Community</h3>
+								<p className='text-sm text-red-600'>This action cannot be undone. All data will be permanently deleted.</p>
+							</div>
+							<Button variant='outline' onClick={handleOpenDeleteModal} className='text-red-600 hover:text-red-700 hover:border-red-300'>
+								<Trash2 className='w-4 h-4 mr-2' />
+								Delete
+							</Button>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Rename Community Modal */}
+			<Dialog open={isRenameCommunityModalOpen} onOpenChange={setIsRenameCommunityModalOpen}>
+				<DialogContent className='sm:max-w-lg'>
+					<DialogHeader>
+						<DialogTitle>Rename Community</DialogTitle>
+						<DialogDescription>Enter a new name for your community. This will update the name everywhere it appears.</DialogDescription>
+					</DialogHeader>
+					<div className='space-y-4 py-4'>
+						<div>
+							<label htmlFor='community-name' className='text-sm font-medium'>
+								Name
+							</label>
+							<Input
+								id='community-name'
+								value={newCommunityName}
+								onChange={(e) => setNewCommunityName(e.target.value)}
+								placeholder='Enter new community name'
+								className='mt-1'
+								disabled={updateCommunityMutation.isPending}
+							/>
+						</div>
+					</div>
+					<div className='flex justify-end gap-2'>
+						<Button
+							variant='outline'
+							onClick={() => {
+								setIsRenameCommunityModalOpen(false);
+								setNewCommunityName('');
+							}}
+							disabled={updateCommunityMutation.isPending}>
+							Cancel
+						</Button>
+						<Button onClick={handleRenameCommunity} disabled={updateCommunityMutation.isPending || !newCommunityName.trim() || newCommunityName === community?.name}>
+							{updateCommunityMutation.isPending ? (
+								<>
+									<div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
+									Renaming...
+								</>
+							) : (
+								<>
+									<Edit className='w-4 h-4 mr-2' />
+									Rename Community
+								</>
+							)}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Delete Community Modal */}
+			<Dialog open={isDeleteCommunityModalOpen} onOpenChange={setIsDeleteCommunityModalOpen}>
+				<DialogContent className='sm:max-w-lg'>
+					<DialogHeader>
+						<DialogTitle>Delete Community</DialogTitle>
+						<DialogDescription>
+							This action cannot be undone. This will permanently delete the community, all its data, chat analyses, forms, and applications.
+						</DialogDescription>
+					</DialogHeader>
+					<div className='space-y-4 py-4'>
+						<div className='bg-red-50 p-3 rounded-lg border border-red-200'>
+							<p className='text-sm text-red-800'>
+								<strong>Warning:</strong> This will delete:
+							</p>
+							<ul className='text-sm text-red-700 mt-2 list-disc list-inside'>
+								<li>All chat analyses and data</li>
+								<li>Application forms and submissions</li>
+								<li>Member directories</li>
+								<li>All community settings</li>
+							</ul>
+						</div>
+						<div>
+							<label htmlFor='delete-confirmation' className='text-sm font-medium'>
+								Type <strong>{community?.name}</strong> to confirm deletion
+							</label>
+							<Input
+								id='delete-confirmation'
+								value={deleteConfirmationName}
+								onChange={(e) => setDeleteConfirmationName(e.target.value)}
+								placeholder={community?.name}
+								className='mt-1'
+								disabled={deleteCommunityMutation.isPending}
+							/>
+						</div>
+					</div>
+					<div className='flex justify-end gap-2'>
+						<Button
+							variant='outline'
+							onClick={() => {
+								setIsDeleteCommunityModalOpen(false);
+								setDeleteConfirmationName('');
+							}}
+							disabled={deleteCommunityMutation.isPending}>
+							Cancel
+						</Button>
+						<Button variant='destructive' onClick={handleDeleteCommunity} disabled={deleteCommunityMutation.isPending || deleteConfirmationName !== community?.name}>
+							{deleteCommunityMutation.isPending ? (
+								<>
+									<div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
+									Deleting...
+								</>
+							) : (
+								<>
+									<Trash2 className='w-4 h-4 mr-2' />
+									Delete Community
 								</>
 							)}
 						</Button>

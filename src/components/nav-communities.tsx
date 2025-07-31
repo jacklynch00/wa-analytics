@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Users, ChevronRight, FileText, ClipboardList, Upload, BarChart3 } from 'lucide-react';
 
@@ -27,6 +27,7 @@ import { useCommunities, useCreateCommunity } from '@/hooks';
 
 export function NavCommunities() {
 	const pathname = usePathname();
+	const router = useRouter();
 	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 	const [newCommunity, setNewCommunity] = useState({ name: '', description: '' });
 
@@ -46,7 +47,7 @@ export function NavCommunities() {
 		}
 
 		try {
-			await createCommunityMutation.mutateAsync({
+			const createdCommunity = await createCommunityMutation.mutateAsync({
 				name: newCommunity.name,
 				description: newCommunity.description || undefined,
 			});
@@ -54,6 +55,9 @@ export function NavCommunities() {
 			setNewCommunity({ name: '', description: '' });
 			setIsCreateModalOpen(false);
 			toast.success('Community created successfully');
+			
+			// Redirect to the new community details page
+			router.push(`/dashboard/community/${createdCommunity.id}`);
 		} catch (error) {
 			console.error('Error creating community:', error);
 			if (error instanceof Error) {

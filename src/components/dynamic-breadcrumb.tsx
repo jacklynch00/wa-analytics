@@ -60,52 +60,8 @@ export function DynamicBreadcrumb() {
 		});
 
 		// Handle different route patterns
-		if (segments.includes('analytics')) {
-			breadcrumbs.push({
-				label: 'Analytics',
-				href: '/analytics',
-				isCurrentPage: pathname === '/analytics',
-			});
-
-			if (segments.includes('reports')) {
-				breadcrumbs.push({
-					label: 'Reports',
-					href: '/analytics/reports',
-					isCurrentPage: pathname === '/analytics/reports',
-				});
-			} else if (segments.includes('insights')) {
-				breadcrumbs.push({
-					label: 'Insights',
-					href: '/analytics/insights',
-					isCurrentPage: pathname === '/analytics/insights',
-				});
-			}
-		} else if (segments.includes('settings')) {
-			if (segments.includes('organization')) {
-				breadcrumbs.push({
-					label: 'Settings',
-					href: '/settings/organization',
-					isCurrentPage: false,
-				});
-				breadcrumbs.push({
-					label: 'Organization',
-					href: '/settings/organization',
-					isCurrentPage: pathname === '/settings/organization',
-				});
-			} else if (segments.includes('team')) {
-				breadcrumbs.push({
-					label: 'Settings',
-					href: '/settings/team',
-					isCurrentPage: false,
-				});
-				breadcrumbs.push({
-					label: 'Team',
-					href: '/settings/team',
-					isCurrentPage: pathname === '/settings/team',
-				});
-			}
-		} else if (segments.includes('community')) {
-			// Handle community routes
+		if (segments.includes('community')) {
+			// Handle community routes first (before general analytics)
 			const communityIdIndex = segments.indexOf('community') + 1;
 			const communityId = segments[communityIdIndex];
 			const community = communities.find((c) => c.id === communityId);
@@ -124,7 +80,7 @@ export function DynamicBreadcrumb() {
 					href: `/dashboard/community/${communityId}/responses`,
 					isCurrentPage: pathname === `/dashboard/community/${communityId}/responses`,
 				});
-			} else if (segments.includes('analytics') && segments.includes('community')) {
+			} else if (segments.includes('analytics')) {
 				breadcrumbs.push({
 					label: 'Chat Analytics',
 					href: `/dashboard/community/${communityId}/analytics`,
@@ -167,6 +123,50 @@ export function DynamicBreadcrumb() {
 						isCurrentPage: pathname === `/dashboard/community/${communityId}/analysis/${analysisId}`,
 					});
 				}
+			}
+		} else if (segments.includes('analytics')) {
+			breadcrumbs.push({
+				label: 'Analytics',
+				href: '/analytics',
+				isCurrentPage: pathname === '/analytics',
+			});
+
+			if (segments.includes('reports')) {
+				breadcrumbs.push({
+					label: 'Reports',
+					href: '/analytics/reports',
+					isCurrentPage: pathname === '/analytics/reports',
+				});
+			} else if (segments.includes('insights')) {
+				breadcrumbs.push({
+					label: 'Insights',
+					href: '/analytics/insights',
+					isCurrentPage: pathname === '/analytics/insights',
+				});
+			}
+		} else if (segments.includes('settings')) {
+			if (segments.includes('organization')) {
+				breadcrumbs.push({
+					label: 'Settings',
+					href: '/settings/organization',
+					isCurrentPage: false,
+				});
+				breadcrumbs.push({
+					label: 'Organization',
+					href: '/settings/organization',
+					isCurrentPage: pathname === '/settings/organization',
+				});
+			} else if (segments.includes('team')) {
+				breadcrumbs.push({
+					label: 'Settings',
+					href: '/settings/team',
+					isCurrentPage: false,
+				});
+				breadcrumbs.push({
+					label: 'Team',
+					href: '/settings/team',
+					isCurrentPage: pathname === '/settings/team',
+				});
 			}
 		} else if (segments.includes('help')) {
 			breadcrumbs.push({
