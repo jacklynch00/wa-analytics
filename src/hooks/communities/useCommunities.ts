@@ -5,6 +5,7 @@ export interface Community {
   id: string;
   name: string;
   description: string | null;
+  imageUrl?: string;
   createdAt: string;
   _count: {
     chatAnalyses: number;

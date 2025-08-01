@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { AlertCircle, Send } from 'lucide-react';
 import { ApplicationFormData, FormQuestion } from '@/types';
 import { toast } from 'sonner';
+import { getFileUrl } from '@/lib/utils';
 
 interface ApplicationFormProps {
 	form: ApplicationFormData;
@@ -251,6 +252,18 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
 			<div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
 				<Card className='bg-white/70 backdrop-blur-sm border-white/60 shadow-lg'>
 					<CardHeader className='text-center'>
+						{form.community?.imageUrl && (
+							<div className='mb-6 flex justify-center'>
+								<div className='max-w-48 max-h-48 rounded-lg overflow-hidden bg-gray-100'>
+									{/* eslint-disable-next-line @next/next/no-img-element */}
+									<img
+										src={getFileUrl(form.community.imageUrl)}
+										alt={`${form.community.name} logo`}
+										className='w-auto h-auto max-w-full max-h-full object-contain'
+									/>
+								</div>
+							</div>
+						)}
 						<CardTitle className='text-3xl font-bold text-gray-900'>{form.title}</CardTitle>
 						{form.description && <p className='text-gray-600 mt-3 text-lg leading-relaxed'>{form.description}</p>}
 					</CardHeader>

@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Users, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Users, ArrowLeft, Plus, Settings, ExternalLink, ClipboardList, Edit, Trash2, Eye, EyeOff, Image } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useUpdateCommunity } from '@/hooks/communities/useCommunity';
 import { useDeleteCommunity, type Community } from '@/hooks/communities/useCommunities';
+import ImageUpload from '@/components/ui/image-upload';
 
 interface FormQuestion {
 	id: string;
@@ -63,6 +64,7 @@ function CommunityPageContent() {
 	const [newCommunityName, setNewCommunityName] = useState('');
 	const [isDeleteCommunityModalOpen, setIsDeleteCommunityModalOpen] = useState(false);
 	const [deleteConfirmationName, setDeleteConfirmationName] = useState('');
+	const [isUploadingImage, setIsUploadingImage] = useState(false);
 	const router = useRouter();
 	const params = useParams();
 	const communityId = params.communityId as string;
@@ -301,6 +303,60 @@ function CommunityPageContent() {
 		}
 	};
 
+	const handleImageUpload = async (file: File) => {
+		if (!community) return;
+
+		setIsUploadingImage(true);
+		try {
+			const formData = new FormData();
+			formData.append('image', file);
+
+			const response = await fetch(`/api/communities/${communityId}/image`, {
+				method: 'POST',
+				body: formData,
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				throw new Error(error.error || 'Failed to upload image');
+			}
+
+			const result = await response.json();
+			setCommunity(result.community);
+			toast.success('Community image uploaded successfully');
+		} catch (error) {
+			console.error('Error uploading image:', error);
+			toast.error(error instanceof Error ? error.message : 'Failed to upload image');
+		} finally {
+			setIsUploadingImage(false);
+		}
+	};
+
+	const handleImageRemove = async () => {
+		if (!community) return;
+
+		setIsUploadingImage(true);
+		try {
+			const response = await fetch(`/api/communities/${communityId}/image`, {
+				method: 'DELETE',
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				throw new Error(error.error || 'Failed to remove image');
+			}
+
+			const result = await response.json();
+			setCommunity(result.community);
+			toast.success('Community image removed successfully');
+		} catch (error) {
+			console.error('Error removing image:', error);
+			toast.error(error instanceof Error ? error.message : 'Failed to remove image');
+		} finally {
+			setIsUploadingImage(false);
+		}
+	};
+
 	const handleOpenRenameModal = () => {
 		if (community) {
 			setNewCommunityName(community.name);
@@ -510,7 +566,7 @@ function CommunityPageContent() {
 					<h2 className='text-xl font-semibold text-gray-900 mb-4'>Overview</h2>
 					<div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
 						<div className='text-center p-4 bg-blue-50 rounded-lg'>
-							<div className='text-2xl font-bold text-blue-600'>{community._count.chatAnalyses}</div>
+							<div className='text-2xl font-bold text-blue-600'>{community?._count?.chatAnalyses || 0}</div>
 							<div className='text-sm text-blue-700'>Chat Analyses</div>
 						</div>
 						<div className='text-center p-4 bg-green-50 rounded-lg'>
@@ -637,6 +693,32 @@ function CommunityPageContent() {
 								<Edit className='w-4 h-4 mr-2' />
 								Rename
 							</Button>
+						</div>
+
+						{/* Community Image */}
+						<div className='p-4 bg-gray-50 rounded-lg border border-gray-200'>
+							<div className='flex items-center justify-between mb-4'>
+								<div>
+									<h3 className='font-medium text-gray-900'>Community Image</h3>
+									<p className='text-sm text-gray-600'>Upload an image to display on your application forms and member directory</p>
+								</div>
+								{/* eslint-disable-next-line jsx-a11y/alt-text */}
+								<Image className='w-4 h-4 text-gray-600' />
+							</div>
+							<ImageUpload
+								onImageUpload={handleImageUpload}
+								onImageRemove={handleImageRemove}
+								currentImageUrl={community?.imageUrl}
+								maxSize={5}
+								acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
+								className='w-full'
+							/>
+							{isUploadingImage && (
+								<div className='mt-4 flex items-center justify-center'>
+									<div className='animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600'></div>
+									<span className='ml-2 text-sm text-gray-600'>Uploading...</span>
+								</div>
+							)}
 						</div>
 
 						{/* Delete Community */}

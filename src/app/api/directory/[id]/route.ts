@@ -125,6 +125,7 @@ export async function POST(
     const directoryData = {
       communityName: sharedDirectory.community.name,
       communityDescription: sharedDirectory.community.description,
+      communityImageUrl: sharedDirectory.community.imageUrl,
       members: members,
       totalMembers: members.length,
       analyses: analyses,

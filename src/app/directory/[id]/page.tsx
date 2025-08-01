@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Users, MessageCircle, Calendar, Lock, Eye, EyeOff, Search, FileText, Lightbulb, Sparkles, Link, Mail, User } from 'lucide-react';
+import { getFileUrl } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Pagination, usePagination } from '@/components/ui/pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -41,6 +42,7 @@ interface Analysis {
 interface SharedDirectoryData {
 	communityName: string;
 	communityDescription: string | null;
+	communityImageUrl?: string;
 	members: MemberData[];
 	totalMembers: number;
 	analyses?: Analysis[];
@@ -179,8 +181,7 @@ export default function SharedDirectoryPage() {
 	// Filter members based on search query
 	const filteredMembers = allMembers.filter((member) => {
 		const displayName = getMemberDisplayName(member);
-		return displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			member.email.toLowerCase().includes(searchQuery.toLowerCase());
+		return displayName.toLowerCase().includes(searchQuery.toLowerCase()) || member.email.toLowerCase().includes(searchQuery.toLowerCase());
 	});
 
 	const { currentItems: paginatedMembers, currentPage, totalPages, totalItems, itemsPerPage, handlePageChange } = usePagination(filteredMembers, 12);
@@ -256,10 +257,23 @@ export default function SharedDirectoryPage() {
 					<div className='py-4 sm:py-6'>
 						<div className='flex flex-col lg:flex-row justify-between items-start gap-4 lg:gap-6'>
 							<div className='flex-1 min-w-0'>
-								<h1 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate'>{directoryData.communityName}</h1>
-								{directoryData.communityDescription && (
-									<p className='text-sm sm:text-base lg:text-lg text-gray-700 mt-2 line-clamp-2'>{directoryData.communityDescription}</p>
-								)}
+								<div className='flex items-center gap-4'>
+									{directoryData.communityImageUrl && (
+										<div className='w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0'>
+											<img
+												src={getFileUrl(directoryData.communityImageUrl)}
+												alt={`${directoryData.communityName} logo`}
+												className='w-auto h-auto max-w-full max-h-full object-contain'
+											/>
+										</div>
+									)}
+									<div className='flex-1 min-w-0'>
+										<h1 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate'>{directoryData.communityName}</h1>
+										{directoryData.communityDescription && (
+											<p className='text-sm sm:text-base lg:text-lg text-gray-700 mt-2 line-clamp-2'>{directoryData.communityDescription}</p>
+										)}
+									</div>
+								</div>
 							</div>
 
 							{/* Analysis Selector */}
@@ -327,13 +341,13 @@ export default function SharedDirectoryPage() {
 
 					<TabsContent value='members'>
 						<Card>
-						<CardHeader className='pb-4'>
-							<CardTitle className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0'>
-								<span className='text-base sm:text-lg'>Member Directory</span>
-								<Badge variant='secondary' className='text-xs'>
-									{totalItems} {searchQuery ? 'filtered' : 'total'} members
-								</Badge>
-							</CardTitle>
+							<CardHeader className='pb-4'>
+								<CardTitle className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0'>
+									<span className='text-base sm:text-lg'>Member Directory</span>
+									<Badge variant='secondary' className='text-xs'>
+										{totalItems} {searchQuery ? 'filtered' : 'total'} members
+									</Badge>
+								</CardTitle>
 								<div className='relative mt-3 sm:mt-4'>
 									<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
 									<Input placeholder='Search members...' value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className='pl-10' />
@@ -360,16 +374,10 @@ export default function SharedDirectoryPage() {
 												<div key={member.id} className='p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition-colors bg-white shadow-sm'>
 													<div className='flex items-start space-x-3'>
 														<div className='w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0'>
-															<span className='text-blue-600 font-semibold text-sm sm:text-base'>
-																{displayName.charAt(0).toUpperCase()}
-															</span>
+															<span className='text-blue-600 font-semibold text-sm sm:text-base'>{displayName.charAt(0).toUpperCase()}</span>
 														</div>
 														<div className='flex-1 min-w-0'>
-															{visibleFields.name && (
-																<h3 className='font-medium text-sm sm:text-base text-gray-900 truncate'>
-																	{displayName}
-																</h3>
-															)}
+															{visibleFields.name && <h3 className='font-medium text-sm sm:text-base text-gray-900 truncate'>{displayName}</h3>}
 															<div className='text-xs sm:text-sm text-gray-500 space-y-1'>
 																{visibleFields.email && (
 																	<div className='flex items-center space-x-1'>
@@ -380,27 +388,25 @@ export default function SharedDirectoryPage() {
 																{member.joinedAt && (
 																	<div className='flex items-center space-x-1'>
 																		<Calendar className='w-3 h-3 flex-shrink-0' />
-																		<span className='truncate'>
-																			Joined {format(new Date(member.joinedAt), 'MMM dd, yyyy')}
-																		</span>
+																		<span className='truncate'>Joined {format(new Date(member.joinedAt), 'MMM dd, yyyy')}</span>
 																	</div>
 																)}
 																{/* Display additional form fields based on visibility settings */}
 																{directoryData.formQuestions.map((question) => {
 																	const value = member[question.id];
 																	const label = question.label.toLowerCase();
-																	
+
 																	// Skip if no value
 																	if (!value) return null;
-																	
+
 																	// Skip name and email as they're handled separately
 																	if (label.includes('name') || label.includes('email')) {
 																		return null;
 																	}
-																	
+
 																	// Only show fields that are explicitly set to visible
 																	let shouldShow = false;
-																	
+
 																	// Check if this is a LinkedIn field
 																	if (label.includes('linkedin')) {
 																		shouldShow = visibleFields.linkedin;
@@ -413,14 +419,15 @@ export default function SharedDirectoryPage() {
 																	else {
 																		shouldShow = false;
 																	}
-																	
+
 																	if (!shouldShow) return null;
-																	
+
 																	return (
 																		<div key={question.id} className='flex items-start space-x-1'>
 																			<User className='w-3 h-3 flex-shrink-0 mt-0.5' />
 																			<span className='truncate text-xs'>
-																				{question.label}: {String(value).substring(0, 50)}{String(value).length > 50 ? '...' : ''}
+																				{question.label}: {String(value).substring(0, 50)}
+																				{String(value).length > 50 ? '...' : ''}
 																			</span>
 																		</div>
 																	);

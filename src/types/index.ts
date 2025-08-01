@@ -85,6 +85,12 @@ export interface ApplicationFormData {
   questions: FormQuestion[];
   createdAt: Date;
   updatedAt: Date;
+  community?: {
+    id: string;
+    name: string;
+    description?: string;
+    imageUrl?: string;
+  };
 }
 
 export interface MemberApplicationData {
