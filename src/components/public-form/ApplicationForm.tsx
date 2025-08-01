@@ -58,10 +58,6 @@ export default function ApplicationForm({ form, hasCooldown, onSubmissionSuccess
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [multiSelectValues, setMultiSelectValues] = useState<Record<string, string[]>>({});
 
-	// Add debugging
-	console.log('Form data received:', form);
-	console.log('Form questions:', form.questions);
-
 	const formSchema = createFormSchema(form.questions);
 	type FormData = z.infer<typeof formSchema>;
 
