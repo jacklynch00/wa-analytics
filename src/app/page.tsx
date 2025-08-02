@@ -243,11 +243,6 @@ export default function HomePage() {
 									Whether it&apos;s your friend group, work team, family chat, or hobby community - give everyone access to beautiful, organized insights about
 									your shared conversations.
 								</p>
-								<div className='bg-white/10 rounded-xl p-4 border border-white/20'>
-									<p className='text-white/80 text-sm italic'>
-										&quot;Finally, a way to see who the real group chat MVP is! Our whole team loves browsing the member directory.&quot;
-									</p>
-								</div>
 							</div>
 						</div>
 					</div>
