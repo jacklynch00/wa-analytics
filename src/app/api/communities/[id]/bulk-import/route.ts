@@ -6,243 +6,246 @@ import type { Community, ApplicationForm } from '@prisma/client';
 const prisma = new PrismaClient();
 
 interface Params {
-  id: string;
+	id: string;
 }
 
 interface FormQuestion {
-  id: string;
-  label: string;
-  type: string;
-  required: boolean;
-  placeholder?: string;
-  options?: string[];
+	id: string;
+	label: string;
+	type: string;
+	required: boolean;
+	placeholder?: string;
+	options?: string[];
 }
 
 interface BulkMemberData {
-  responses: Record<string, string>;
-  status: 'PENDING' | 'ACCEPTED' | 'DENIED';
+	responses: Record<string, string>;
+	status: 'PENDING' | 'ACCEPTED' | 'DENIED';
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<Params> }) {
-  try {
-    const { id: communityId } = await params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-    
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+	try {
+		const { id: communityId } = await params;
+		const session = await auth.api.getSession({
+			headers: request.headers,
+		});
 
-    const { members }: { members: BulkMemberData[] } = await request.json();
+		if (!session?.user) {
+			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		}
 
-    if (!members || !Array.isArray(members) || members.length === 0) {
-      return NextResponse.json({ error: 'No members provided' }, { status: 400 });
-    }
+		const { members }: { members: BulkMemberData[] } = await request.json();
 
-    // Verify the community belongs to the user and get application form
-    const community = await prisma.community.findFirst({
-      where: {
-        id: communityId,
-        createdBy: session.user.id,
-      },
-      include: {
-        applicationForm: true,
-      },
-    }) as (Community & { applicationForm: ApplicationForm | null }) | null;
+		if (!members || !Array.isArray(members) || members.length === 0) {
+			return NextResponse.json({ error: 'No members provided' }, { status: 400 });
+		}
 
-    if (!community) {
-      return NextResponse.json({ error: 'Community not found' }, { status: 404 });
-    }
+		// Verify the community belongs to the user and get application form
+		const community = (await prisma.community.findFirst({
+			where: {
+				id: communityId,
+				createdBy: session.user.id,
+			},
+			include: {
+				applicationForm: true,
+			},
+		})) as (Community & { applicationForm: ApplicationForm | null }) | null;
 
-    if (!community.applicationForm) {
-      return NextResponse.json({ error: 'Community does not have an application form' }, { status: 400 });
-    }
+		if (!community) {
+			return NextResponse.json({ error: 'Community not found' }, { status: 404 });
+		}
 
-    // Get the form questions from the JSON field
-    const formQuestions = (community.applicationForm.questions as unknown as FormQuestion[]) || [];
+		if (!community.applicationForm) {
+			return NextResponse.json({ error: 'Community does not have an application form' }, { status: 400 });
+		}
 
-    // Validate that all required questions are answered
-    const requiredQuestionIds = formQuestions
-      .filter((q: FormQuestion) => q.required)
-      .map((q: FormQuestion) => q.id);
+		// Get the form questions from the JSON field
+		const formQuestions = (community.applicationForm.questions as unknown as FormQuestion[]) || [];
 
-    const invalidMembers: number[] = [];
-    const validMembers: BulkMemberData[] = [];
+		// Validate that all required questions are answered
+		const requiredQuestionIds = formQuestions.filter((q: FormQuestion) => q.required).map((q: FormQuestion) => q.id);
 
-    members.forEach((member, index) => {
-      const missingRequired = requiredQuestionIds.some(qId => 
-        !member.responses[qId] || member.responses[qId].trim() === ''
-      );
+		const invalidMembers: number[] = [];
+		const validMembers: BulkMemberData[] = [];
+		const detailedErrors: { [row: number]: string[] } = {};
 
-      if (missingRequired) {
-        invalidMembers.push(index + 1);
-      } else {
-        validMembers.push(member);
-      }
-    });
+		members.forEach((member, index) => {
+			const missingRequiredFields: string[] = [];
 
-    if (invalidMembers.length > 0) {
-      return NextResponse.json({
-        error: `Members at rows ${invalidMembers.join(', ')} are missing required fields`,
-        invalidRows: invalidMembers
-      }, { status: 400 });
-    }
+			requiredQuestionIds.forEach((qId) => {
+				if (!member.responses[qId] || member.responses[qId].trim() === '') {
+					const question = formQuestions.find((q) => q.id === qId);
+					missingRequiredFields.push(question?.label || qId);
+				}
+			});
 
-    // Separate existing form questions from new dynamic fields
-    const newFieldsToCreate: { label: string; type: string }[] = [];
-    const processedResponses = validMembers.map(member => {
-      const existingResponses: Record<string, string> = {};
-      const dynamicFields: Record<string, string> = {};
+			if (missingRequiredFields.length > 0) {
+				invalidMembers.push(index + 1);
+				detailedErrors[index + 1] = missingRequiredFields;
+			} else {
+				validMembers.push(member);
+			}
+		});
 
-      Object.entries(member.responses).forEach(([key, value]) => {
-        if (key.startsWith('new:')) {
-          // This is a dynamic field - extract the field name
-          const fieldName = key.replace('new:', '');
-          dynamicFields[fieldName] = value;
-          
-          // Add to fields to create if not already added
-          if (!newFieldsToCreate.some(f => f.label === fieldName)) {
-            newFieldsToCreate.push({
-              label: fieldName,
-              type: 'text' // Default to text type for dynamic fields
-            });
-          }
-        } else {
-          // This is an existing form question
-          existingResponses[key] = value;
-        }
-      });
+		if (invalidMembers.length > 0) {
+			return NextResponse.json(
+				{
+					error: `Members at rows ${invalidMembers.join(', ')} are missing required fields`,
+					invalidRows: invalidMembers,
+					detailedErrors,
+					requiredFields: formQuestions.filter((q) => q.required).map((q) => ({ id: q.id, label: q.label })),
+					receivedKeys: Object.keys(members[0]?.responses || {}),
+				},
+				{ status: 400 }
+			);
+		}
 
-      return {
-        ...member,
-        existingResponses,
-        dynamicFields
-      };
-    });
+		// Separate existing form questions from new dynamic fields
+		const newFieldsToCreate: { label: string; type: string }[] = [];
+		const processedResponses = validMembers.map((member) => {
+			const existingResponses: Record<string, string> = {};
+			const dynamicFields: Record<string, string> = {};
 
-    // Create new form questions for dynamic fields by updating the JSON
-    const createdQuestions: { [fieldName: string]: string } = {};
-    if (newFieldsToCreate.length > 0) {
-      const updatedQuestions = [...formQuestions];
-      
-      for (const field of newFieldsToCreate) {
-        const newQuestionId = `question_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const newQuestion = {
-          id: newQuestionId,
-          label: field.label,
-          type: field.type,
-          required: false,
-          placeholder: `Enter ${field.label}`,
-          options: []
-        };
-        
-        updatedQuestions.push(newQuestion);
-        createdQuestions[field.label] = newQuestionId;
-      }
-      
-      // Update the application form with new questions
-      await prisma.applicationForm.update({
-        where: { id: community.applicationForm!.id },
-        data: { questions: updatedQuestions as unknown as never }
-      });
-    }
+			Object.entries(member.responses).forEach(([key, value]) => {
+				if (key.startsWith('new:')) {
+					// This is a dynamic field - extract the field name
+					const fieldName = key.replace('new:', '');
+					dynamicFields[fieldName] = value;
 
-    // Extract emails for duplicate checking (from both existing and new fields)
-    const emailQuestion = formQuestions.find((q: FormQuestion) => 
-      q.label.toLowerCase().includes('email')
-    );
+					// Add to fields to create if not already added
+					if (!newFieldsToCreate.some((f) => f.label === fieldName)) {
+						newFieldsToCreate.push({
+							label: fieldName,
+							type: 'text', // Default to text type for dynamic fields
+						});
+					}
+				} else {
+					// This is an existing form question
+					existingResponses[key] = value;
+				}
+			});
 
-    const getEmailFromMember = (member: { existingResponses: Record<string, string>; dynamicFields: Record<string, string> }) => {
-      // Try existing email question first
-      if (emailQuestion && member.existingResponses[emailQuestion.id]) {
-        return member.existingResponses[emailQuestion.id].toLowerCase();
-      }
-      
-      // Try dynamic email field
-      const emailField = Object.keys(member.dynamicFields).find(key => 
-        key.toLowerCase().includes('email')
-      );
-      if (emailField && member.dynamicFields[emailField]) {
-        return member.dynamicFields[emailField].toLowerCase();
-      }
-      
-      return null;
-    };
+			return {
+				...member,
+				existingResponses,
+				dynamicFields,
+			};
+		});
 
-    const emails = processedResponses.map(getEmailFromMember).filter((email): email is string => email !== null);
-    
-    // Check for existing applications with these emails
-    const existingApplications = await prisma.memberApplication.findMany({
-      where: {
-        form: {
-          communityId: communityId,
-        },
-        email: {
-          in: emails,
-        },
-      },
-      select: {
-        email: true,
-      },
-    });
+		// Create new form questions for dynamic fields by updating the JSON
+		const createdQuestions: { [fieldName: string]: string } = {};
+		if (newFieldsToCreate.length > 0) {
+			const updatedQuestions = [...formQuestions];
 
-    const existingEmailSet = new Set(existingApplications.map(app => app.email.toLowerCase()));
-    const duplicates: string[] = [];
-    const membersToCreate: { existingResponses: Record<string, string>; dynamicFields: Record<string, string>; status: 'PENDING' | 'ACCEPTED' | 'DENIED' }[] = [];
+			for (const field of newFieldsToCreate) {
+				const newQuestionId = `question_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+				const newQuestion = {
+					id: newQuestionId,
+					label: field.label,
+					type: field.type,
+					required: false,
+					placeholder: `Enter ${field.label}`,
+					options: [],
+				};
 
-    processedResponses.forEach(member => {
-      const email = getEmailFromMember(member);
-      if (email && existingEmailSet.has(email)) {
-        duplicates.push(email);
-      } else {
-        membersToCreate.push(member);
-      }
-    });
+				updatedQuestions.push(newQuestion);
+				createdQuestions[field.label] = newQuestionId;
+			}
 
-    // Create applications for non-duplicate members
-    const createdApplications = await prisma.$transaction(
-      membersToCreate.map(member => {
-        const email = getEmailFromMember(member) || 'no-email@example.com';
-        
-        // Merge existing responses with dynamic field responses (using their new question IDs)
-        const finalResponses = { ...member.existingResponses };
-        Object.entries(member.dynamicFields).forEach(([fieldName, value]) => {
-          if (createdQuestions[fieldName]) {
-            finalResponses[createdQuestions[fieldName]] = value;
-          }
-        });
+			// Update the application form with new questions
+			await prisma.applicationForm.update({
+				where: { id: community.applicationForm!.id },
+				data: { questions: updatedQuestions as unknown as never },
+			});
+		}
 
-        return prisma.memberApplication.create({
-          data: {
-            email: email,
-            status: member.status,
-            responses: finalResponses,
-            form: {
-              connect: {
-                id: community.applicationForm!.id,
-              },
-            },
-          },
-        });
-      })
-    );
+		// Extract emails for duplicate checking (from both existing and new fields)
+		const emailQuestion = formQuestions.find((q: FormQuestion) => q.label.toLowerCase().includes('email'));
 
-    return NextResponse.json({
-      imported: createdApplications.length,
-      duplicates: duplicates.length,
-      duplicateEmails: duplicates,
-      newFieldsCreated: newFieldsToCreate.length,
-      newFields: newFieldsToCreate.map(f => f.label),
-      total: members.length,
-      message: `Successfully imported ${createdApplications.length} members${duplicates.length > 0 ? `. ${duplicates.length} duplicates were skipped.` : ''}${newFieldsToCreate.length > 0 ? ` Created ${newFieldsToCreate.length} new fields.` : ''}`
-    });
+		const getEmailFromMember = (member: { existingResponses: Record<string, string>; dynamicFields: Record<string, string> }) => {
+			// Try existing email question first
+			if (emailQuestion && member.existingResponses[emailQuestion.id]) {
+				return member.existingResponses[emailQuestion.id].toLowerCase();
+			}
 
-  } catch (error) {
-    console.error('Bulk import error:', error);
-    return NextResponse.json(
-      { error: 'Failed to import members' },
-      { status: 500 }
-    );
-  }
+			// Try dynamic email field
+			const emailField = Object.keys(member.dynamicFields).find((key) => key.toLowerCase().includes('email'));
+			if (emailField && member.dynamicFields[emailField]) {
+				return member.dynamicFields[emailField].toLowerCase();
+			}
+
+			return null;
+		};
+
+		const emails = processedResponses.map(getEmailFromMember).filter((email): email is string => email !== null);
+
+		// Check for existing applications with these emails
+		const existingApplications = await prisma.memberApplication.findMany({
+			where: {
+				form: {
+					communityId: communityId,
+				},
+				email: {
+					in: emails,
+				},
+			},
+			select: {
+				email: true,
+			},
+		});
+
+		const existingEmailSet = new Set(existingApplications.map((app) => app.email.toLowerCase()));
+		const duplicates: string[] = [];
+		const membersToCreate: { existingResponses: Record<string, string>; dynamicFields: Record<string, string>; status: 'PENDING' | 'ACCEPTED' | 'DENIED' }[] = [];
+
+		processedResponses.forEach((member) => {
+			const email = getEmailFromMember(member);
+			if (email && existingEmailSet.has(email)) {
+				duplicates.push(email);
+			} else {
+				membersToCreate.push(member);
+			}
+		});
+
+		// Create applications for non-duplicate members
+		const createdApplications = await prisma.$transaction(
+			membersToCreate.map((member) => {
+				const email = getEmailFromMember(member) || 'no-email@example.com';
+
+				// Merge existing responses with dynamic field responses (using their new question IDs)
+				const finalResponses = { ...member.existingResponses };
+				Object.entries(member.dynamicFields).forEach(([fieldName, value]) => {
+					if (createdQuestions[fieldName]) {
+						finalResponses[createdQuestions[fieldName]] = value;
+					}
+				});
+
+				return prisma.memberApplication.create({
+					data: {
+						email: email,
+						status: member.status,
+						responses: finalResponses,
+						form: {
+							connect: {
+								id: community.applicationForm!.id,
+							},
+						},
+					},
+				});
+			})
+		);
+
+		return NextResponse.json({
+			imported: createdApplications.length,
+			duplicates: duplicates.length,
+			duplicateEmails: duplicates,
+			newFieldsCreated: newFieldsToCreate.length,
+			newFields: newFieldsToCreate.map((f) => f.label),
+			total: members.length,
+			message: `Successfully imported ${createdApplications.length} members${duplicates.length > 0 ? `. ${duplicates.length} duplicates were skipped.` : ''}${newFieldsToCreate.length > 0 ? ` Created ${newFieldsToCreate.length} new fields.` : ''}`,
+		});
+	} catch (error) {
+		console.error('Bulk import error:', error);
+		return NextResponse.json({ error: 'Failed to import members' }, { status: 500 });
+	}
 }
